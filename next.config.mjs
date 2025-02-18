@@ -6,6 +6,10 @@ const jiti = createJiti(fileURLToPath(import.meta.url));
 jiti("./lib/env");
 
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  images: {
+    domains: ["ui-avatars.com"],
+  },
+};
 
 export default nextConfig;
