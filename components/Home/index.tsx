@@ -28,7 +28,7 @@ export default function Home() {
       );
     }
   };
-
+  
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4">
       <div className="text-center space-y-4">
@@ -69,6 +69,13 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      <Link href="/admin">
+        <button className="mt-4 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200">
+          Go to Admin Panel
+        </button>
+      </Link>
+
       <Link href="/presave" className="text-lg text-muted-foreground mt-4">
         Go to Presave
       </Link>

@@ -7,15 +7,17 @@ import {
   useWriteContract,
   useWaitForTransactionReceipt,
   useSendTransaction,
+  useAccount    
 } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { PinataSDK } from "pinata-web3";
 import { env } from "@/lib/env";
+import TransactionModal from '../transaction-modal';
 
 export default function AdminPage() {
   const {
     data: createTxHash,
-    isPending: isCreatedPending,
+    isPending: isCreatePending,
     error: createError,
     writeContract: writeContract_create,
   } = useWriteContract();
@@ -23,6 +25,7 @@ export default function AdminPage() {
   const { isLoading: isCreateConfirming, isSuccess: isCreateConfirmed } =
     useWaitForTransactionReceipt({ hash: createTxHash });
 
+    
   console.log("write error", createError);
 
   const [formData, setFormData] = useState<{
@@ -51,6 +54,28 @@ export default function AdminPage() {
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalStatus, setModalStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [modalMessage, setModalMessage] = useState('');
+
+  useEffect(() => {
+    if (isCreateConfirmed) {
+      setModalStatus('success');
+      setModalMessage('Transaction successful');
+    } 
+    if (createError) {
+      setModalStatus('error');
+      setModalMessage('Error: ' + createError.message);
+    }
+    if (isCreatePending) {
+      setModalStatus('loading');
+      setModalMessage('Pending transaction');
+    }
+    if (createTxHash) {
+      console.log("Transaction hash: ", createTxHash);
+    }
+  }, [isCreateConfirmed, createError, isCreatePending, createTxHash]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -104,69 +129,83 @@ export default function AdminPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("form data: ", formData);
-    console.log("diocane bastardo");
-    let contractAddress;
+    setModalOpen(true);
+    setModalStatus('loading');
+    setModalMessage('Uploading files to IPFS');
 
+    console.log("form data: ", formData);
+  
+    // Validate required files
+    if (!formData.audioFile || !formData.coverImage) {
+      console.error("Audio file and cover image are required");
+      return;
+    }
+  
+    let contractAddress;
     if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
       contractAddress = process.env.NEXT_PUBLIC_SMART_CONTRACT_TEST_ADDRESS;
     } else {
       contractAddress = process.env.NEXT_PUBLIC_SMART_CONTRACT_ADDRESS;
     }
+  
+    try {
+      // Create form data for server-side upload
+      const uploadFormData = new FormData();
+      uploadFormData.set("type", "combined");
+      uploadFormData.set("audioFile", formData.audioFile);
+      uploadFormData.set("imageFile", formData.coverImage);
+      uploadFormData.set("title", formData.title);
+      uploadFormData.set("description", "Acid test hit");
+      
+      // Send combined upload request to the server
+      const uploadResponse = await fetch("/api/pinata", {
+        method: "POST",
+        body: uploadFormData,
+      });
+      
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json();
+        setModalStatus('error');
+        setModalMessage(errorData.error || 'Error during upload process');
+        return;
+      }
+      
+      const uploadResult = await uploadResponse.json();
+      setModalStatus('success');
+      setModalMessage('Upload successful!');
+      
+      // Wait for 2 seconds before writing to the contract
+      setTimeout(async () => {
+        setModalOpen(true);
+        setModalStatus('loading');
+        setModalMessage('Pending transaction');
 
-    // Create metadata object
-    const metadata = {
-      name: formData.title,
-      image: imagePreview, // Assuming imagePreview contains the IPFS URI of the cover image
-      animation_url: formData.audioFile, // Replace with actual IPFS URI of the audio file
-      description: "Acid test hit",
-    };
+        // Call the smart contract with the metadata URL
+        console.log({
+          contractAddress,
+          startDate: formData.startDate,
+          endDate: formData.endDate,
+          price: BigInt(formData.price),
+          metadataUrl: uploadResult.metadataUrl,
+        });
 
-    console.log("Metadata to upload: ", metadata);
+        writeContract_create({
+          address: contractAddress as `0x${string}`,
+          abi: AcidTestABI,
+          functionName: "create",
+          args: [
+            formData.startDate,
+            formData.endDate,
+            BigInt(formData.price),
+            uploadResult.metadataUrl,
+          ],
+        });
 
-    // Create a file from the metadata JSON
-    const file = new File([JSON.stringify(metadata)], "metadata.json", {
-      type: "application/json",
-    });
+      }, 2000); // 2000 milliseconds = 2 seconds
 
-    const data = new FormData();
-    data.set("file", file);
-    const uploadRequest = await fetch("/api/pinata", {
-      method: "POST",
-      body: data,
-    });
-    console.log(uploadRequest);
-    let uploadResponse;
-    if (!uploadRequest.ok) {
-      const errorResponse = await uploadRequest.json();
-      console.error("Upload failed: ", errorResponse);
-    } else {
-      uploadResponse = await uploadRequest.json();
-      console.log("Upload response: ", uploadResponse);
-    }
-
-    // Log the IPFS hash if upload succeeded
-    console.log({
-      contractAddress,
-      startDate: formData.startDate,
-      endDate: formData.endDate,
-      price: BigInt(formData.price),
-      uploadUrl: uploadResponse.url, // corrected variable name
-    });
-
-    // Call the smart contract function with the uploaded IPFS CID
-    writeContract_create({
-      address: contractAddress as `0x${string}`,
-      abi: AcidTestABI,
-      functionName: "create",
-      args: [16777214, 16777215, BigInt(formData.price), uploadRequest.url], // Use the IPFS hash from the upload response
-    });
-  };
-
-  const handlePriceKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // Prevent minus sign (both keyboard and numpad)
-    if (e.key === "-" || e.keyCode === 189 || e.keyCode === 109) {
-      e.preventDefault();
+    } catch (error) {
+      setModalStatus('error');
+      setModalMessage('Error during upload process');
     }
   };
 
@@ -379,6 +418,13 @@ export default function AdminPage() {
       >
         Upload Mocked JSON
       </button>
+
+      <TransactionModal
+        isOpen={modalOpen}
+        status={modalStatus}
+        message={modalMessage}
+        onClose={() => setModalOpen(false)}
+      />
     </div>
   );
 }
