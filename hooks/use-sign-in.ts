@@ -1,7 +1,7 @@
-import { sdk } from "@farcaster/frame-sdk";
-import { useCallback, useState } from "react";
 import { MESSAGE_EXPIRATION_TIME } from "@/lib/constants";
+import { sdk } from "@farcaster/frame-sdk";
 import { MiniKit } from "@worldcoin/minikit-js";
+import { useCallback, useState } from "react";
 import { ContextType, useMiniAppContext } from "./use-miniapp-context";
 
 export const useSignIn = () => {
@@ -73,6 +73,7 @@ export const useSignIn = () => {
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
+        console.error(errorData);
         throw new Error(errorData.message || "Sign in failed");
       }
 
