@@ -4,11 +4,12 @@ import { FrameContext } from "@farcaster/frame-core/dist/context";
 import sdk from "@farcaster/frame-sdk";
 import {
   createContext,
+  ReactNode,
   useContext,
   useEffect,
   useState,
-  ReactNode,
 } from "react";
+import FrameWalletProvider from "./frame-wallet-provider";
 
 interface FrameContextValue {
   context: FrameContext | null;
@@ -75,7 +76,7 @@ export function FrameProvider({ children }: FrameProviderProps) {
 
   return (
     <FrameProviderContext.Provider value={value}>
-      {children}
+      <FrameWalletProvider>{children}</FrameWalletProvider>
     </FrameProviderContext.Provider>
   );
 }
