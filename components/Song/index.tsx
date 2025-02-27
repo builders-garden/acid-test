@@ -95,7 +95,7 @@ export default function Song() {
     fetchEthPrice();
 
     // Refresh price every 10 seconds
-    const interval = setInterval(fetchEthPrice, 10000);
+    const interval = setInterval(fetchEthPrice, 20000);
     return () => clearInterval(interval);
   }, []);
 
@@ -141,6 +141,8 @@ export default function Song() {
         audio.addEventListener("ended", () => {
           setIsPlaying(false);
         });
+
+        setIsLoading(false);
       } catch (error) {
         console.error("Error fetching metadata:", error);
         setIsLoading(false);
@@ -257,6 +259,34 @@ export default function Song() {
     return sortedList;
   }, []);
 
+  // Add spin animation state to track rotation degree
+  const [rotation, setRotation] = useState(0);
+  const rotationRef = useRef(0);
+  const animationRef = useRef<number | null>(null);
+
+  // Function to handle CD spinning animation
+  const animateSpin = () => {
+    rotationRef.current = (rotationRef.current + 0.5) % 360; // Slower rotation (0.1 degree per frame)
+    setRotation(rotationRef.current);
+    animationRef.current = requestAnimationFrame(animateSpin);
+  };
+
+  // Control the spin animation based on playing state
+  useEffect(() => {
+    if (isPlaying) {
+      animationRef.current = requestAnimationFrame(animateSpin);
+    } else if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
+    }
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [isPlaying]);
+
   return (
     <div className="min-h-screen bg-black text-white font-mono p-6 flex flex-col items-center w-full">
       {/* Header */}
@@ -285,27 +315,48 @@ export default function Song() {
       </div>
 
       {/* CD Visualization */}
-      <div className="w-full max-w-md aspect-square bg-black border-2 border-white/20 rounded-lg mb-6 relative">
-        {metadata?.image && (
-          <Image
-            src={metadata.image}
-            alt="Song artwork"
-            fill
-            className="object-cover rounded-lg opacity-60"
-          />
-        )}
+      <div className="w-full max-w-md aspect-square bg-black border-2 border-white/20 rounded-lg mb-6 relative overflow-hidden">
+        {/* Black background */}
+        <div className="absolute inset-0 bg-zinc-800 opacity-50"></div>
+
+        {/* Circular mask with rotating artwork */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div
-            className={`w-3/4 h-3/4 rounded-full border-2 border-white/40 flex items-center justify-center ${
-              isPlaying ? "animate-spin" : ""
-            }`}
+            className={`w-[90%] h-[90%] rounded-full overflow-hidden relative`}
           >
-            <div className="w-4 h-4 rounded-full bg-white/40" />
+            {metadata?.image && (
+              <div
+                className="absolute inset-0"
+                style={{
+                  transform: `rotate(${rotation}deg)`,
+                  transition: isPlaying ? "none" : "transform 0.1s ease", // Smooth transition only when pausing
+                }}
+              >
+                <Image
+                  src={metadata.image}
+                  alt="Song artwork"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            )}
+
+            {/* CD center hole */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-4 h-4 rounded-full bg-black z-10 border-[1px] border-white/40" />
+            </div>
           </div>
         </div>
+
+        {/* CD ring overlay */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-5/6 h-5/6 rounded-full border-2 border-white/40 flex items-center justify-center" />
+        </div>
+
+        {/* Play/Pause button */}
         <Button
           variant="outline"
-          className="absolute bottom-4 right-4 w-16 h-16 border-2 bg-white text-black hover:bg-white/90 hover:text-black flex items-center justify-center p-0"
+          className="absolute bottom-2 right-2 w-12 h-12 border-2 bg-white text-black hover:bg-white/90 hover:text-black flex items-center justify-center p-0"
           onClick={() => setIsPlaying(!isPlaying)}
           disabled={isLoading}
         >
