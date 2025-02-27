@@ -11,19 +11,13 @@ import { useAccount, useReadContract } from "wagmi";
 import { usePathname } from "next/navigation";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
+import { SongMetadata } from "@/types";
 
 interface Collector {
   address: string;
   quantity: number;
   displayName: string;
   profilePicture: string;
-}
-
-interface SongMetadata {
-  name: string;
-  image: string;
-  animation_url: string;
-  description: string;
 }
 
 const generateDummyCollectors = (count: number): Collector[] => {

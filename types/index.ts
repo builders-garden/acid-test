@@ -4,3 +4,10 @@ export interface SafeAreaInsets {
   left?: number;
   right?: number;
 }
+
+export interface SongMetadata {
+  name: string;
+  image: string;
+  animation_url: string;
+  description: string;
+}
