@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, Info, Disc } from "lucide-react";
 import Link from "next/link";
@@ -12,6 +12,13 @@ interface Collector {
   quantity: number;
   displayName: string;
   profilePicture: string;
+}
+
+interface SongMetadata {
+  name: string;
+  image: string;
+  animation_url: string;
+  description: string;
 }
 
 const generateDummyCollectors = (count: number): Collector[] => {
@@ -61,10 +68,51 @@ export default function Song() {
   const [isMintModalOpen, setIsMintModalOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"ETH" | "USDC">("ETH");
   const [countdown, setCountdown] = useState(19330); // 05:22:10 in seconds
+  const [metadata, setMetadata] = useState<SongMetadata | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const songIpfsUrl =
+    "https://gateway.pinata.cloud/ipfs/bafkreihzorpemrpz7usazqogqecpqbad6gon45e3mpnv4ahq3y542idowm";
 
   const totalMinted = 55400;
   const totalCollectors = 460;
   const totalRevenue = 2200; // $2.2k
+
+  useEffect(() => {
+    const fetchMetadata = async () => {
+      try {
+        const response = await fetch(songIpfsUrl);
+        const data: SongMetadata = await response.json();
+        setMetadata(data);
+
+        // Initialize audio
+        const audio = new Audio(data.animation_url);
+        audio.preload = "auto";
+        audioRef.current = audio;
+
+        audio.addEventListener("canplaythrough", () => {
+          setIsLoading(false);
+        });
+
+        audio.addEventListener("ended", () => {
+          setIsPlaying(false);
+        });
+      } catch (error) {
+        console.error("Error fetching metadata:", error);
+        setIsLoading(false);
+      }
+    };
+
+    fetchMetadata();
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, [songIpfsUrl]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -79,6 +127,16 @@ export default function Song() {
 
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.play();
+      } else {
+        audioRef.current.pause();
+      }
+    }
+  }, [isPlaying]);
 
   const formatCountdown = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -137,8 +195,20 @@ export default function Song() {
 
       {/* CD Visualization */}
       <div className="w-full max-w-md aspect-square bg-black border-2 border-white/20 rounded-lg mb-6 relative">
+        {metadata?.image && (
+          <Image
+            src={metadata.image}
+            alt="Song artwork"
+            fill
+            className="object-cover rounded-lg opacity-60"
+          />
+        )}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-3/4 h-3/4 rounded-full border-2 border-white/40 flex items-center justify-center">
+          <div
+            className={`w-3/4 h-3/4 rounded-full border-2 border-white/40 flex items-center justify-center ${
+              isPlaying ? "animate-spin" : ""
+            }`}
+          >
             <div className="w-4 h-4 rounded-full bg-white/40" />
           </div>
         </div>
@@ -146,8 +216,11 @@ export default function Song() {
           variant="outline"
           className="absolute bottom-4 right-4 w-16 h-16 border-2 bg-white text-black hover:bg-white/90 hover:text-black flex items-center justify-center p-0"
           onClick={() => setIsPlaying(!isPlaying)}
+          disabled={isLoading}
         >
-          {isPlaying ? (
+          {isLoading ? (
+            <div className="animate-spin h-8 w-8 border-2 border-black rounded-full border-t-transparent" />
+          ) : isPlaying ? (
             <Pause className="w-[40px] h-[40px] scale-[1.5] fill-current" />
           ) : (
             <Play className="w-[40px] h-[40px] scale-[1.5] fill-current" />
@@ -157,8 +230,13 @@ export default function Song() {
 
       {/* Song Title and Release Number */}
       <div className="w-full max-w-md text-center mb-8">
-        <h2 className="text-xl font-bold">PARADISE</h2>
+        <h2 className="text-xl font-bold">{metadata?.name || "PARADISE"}</h2>
         <div className="text-sm text-white/60">AT001</div>
+        {metadata?.description && (
+          <div className="text-sm text-white/60 mt-2">
+            {metadata.description}
+          </div>
+        )}
       </div>
 
       {/* Mint Status and Controls */}

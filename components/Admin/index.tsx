@@ -7,12 +7,12 @@ import {
   useWriteContract,
   useWaitForTransactionReceipt,
   useSendTransaction,
-  useAccount    
+  useAccount,
 } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { PinataSDK } from "pinata-web3";
 import { env } from "@/lib/env";
-import TransactionModal from '../transaction-modal';
+import TransactionModal from "../transaction-modal";
 
 export default function AdminPage() {
   const {
@@ -24,9 +24,6 @@ export default function AdminPage() {
 
   const { isLoading: isCreateConfirming, isSuccess: isCreateConfirmed } =
     useWaitForTransactionReceipt({ hash: createTxHash });
-
-    
-  console.log("write error", createError);
 
   const [formData, setFormData] = useState<{
     title: string;
@@ -56,21 +53,23 @@ export default function AdminPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalStatus, setModalStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [modalMessage, setModalMessage] = useState('');
+  const [modalStatus, setModalStatus] = useState<
+    "loading" | "success" | "error"
+  >("loading");
+  const [modalMessage, setModalMessage] = useState("");
 
   useEffect(() => {
     if (isCreateConfirmed) {
-      setModalStatus('success');
-      setModalMessage('Transaction successful');
-    } 
+      setModalStatus("success");
+      setModalMessage("Transaction successful");
+    }
     if (createError) {
-      setModalStatus('error');
-      setModalMessage('Error: ' + createError.message);
+      setModalStatus("error");
+      setModalMessage("Error: " + createError.message);
     }
     if (isCreatePending) {
-      setModalStatus('loading');
-      setModalMessage('Pending transaction');
+      setModalStatus("loading");
+      setModalMessage("Pending transaction");
     }
     if (createTxHash) {
       console.log("Transaction hash: ", createTxHash);
@@ -130,24 +129,24 @@ export default function AdminPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setModalOpen(true);
-    setModalStatus('loading');
-    setModalMessage('Uploading files to IPFS');
+    setModalStatus("loading");
+    setModalMessage("Uploading files to IPFS");
 
     console.log("form data: ", formData);
-  
+
     // Validate required files
     if (!formData.audioFile || !formData.coverImage) {
       console.error("Audio file and cover image are required");
       return;
     }
-  
+
     let contractAddress;
     if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
       contractAddress = process.env.NEXT_PUBLIC_SMART_CONTRACT_TEST_ADDRESS;
     } else {
       contractAddress = process.env.NEXT_PUBLIC_SMART_CONTRACT_ADDRESS;
     }
-  
+
     try {
       // Create form data for server-side upload
       const uploadFormData = new FormData();
@@ -156,29 +155,29 @@ export default function AdminPage() {
       uploadFormData.set("imageFile", formData.coverImage);
       uploadFormData.set("title", formData.title);
       uploadFormData.set("description", "Acid test hit");
-      
+
       // Send combined upload request to the server
       const uploadResponse = await fetch("/api/pinata", {
         method: "POST",
         body: uploadFormData,
       });
-      
+
       if (!uploadResponse.ok) {
         const errorData = await uploadResponse.json();
-        setModalStatus('error');
-        setModalMessage(errorData.error || 'Error during upload process');
+        setModalStatus("error");
+        setModalMessage(errorData.error || "Error during upload process");
         return;
       }
-      
+
       const uploadResult = await uploadResponse.json();
-      setModalStatus('success');
-      setModalMessage('Upload successful!');
-      
+      setModalStatus("success");
+      setModalMessage("Upload successful!");
+
       // Wait for 2 seconds before writing to the contract
       setTimeout(async () => {
         setModalOpen(true);
-        setModalStatus('loading');
-        setModalMessage('Pending transaction');
+        setModalStatus("loading");
+        setModalMessage("Pending transaction");
 
         // Call the smart contract with the metadata URL
         console.log({
@@ -200,12 +199,10 @@ export default function AdminPage() {
             uploadResult.metadataUrl,
           ],
         });
-
       }, 2000); // 2000 milliseconds = 2 seconds
-
     } catch (error) {
-      setModalStatus('error');
-      setModalMessage('Error during upload process');
+      setModalStatus("error");
+      setModalMessage("Error during upload process");
     }
   };
 
