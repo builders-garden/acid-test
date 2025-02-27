@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 import { Play, Pause, Info, Disc } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -71,6 +72,10 @@ export default function Song() {
   const [metadata, setMetadata] = useState<SongMetadata | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [seekValue, setSeekValue] = useState(0); // New state for tracking slider position during dragging
+  const [isDragging, setIsDragging] = useState(false); // Track whether user is dragging the slider
 
   const songIpfsUrl =
     "https://gateway.pinata.cloud/ipfs/bafkreihzorpemrpz7usazqogqecpqbad6gon45e3mpnv4ahq3y542idowm";
@@ -138,6 +143,30 @@ export default function Song() {
     }
   }, [isPlaying]);
 
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handleTimeUpdate = () => {
+      if (!isDragging) {
+        setCurrentTime(audio.currentTime);
+        setSeekValue(audio.currentTime);
+      }
+    };
+
+    const handleLoadedMetadata = () => {
+      setDuration(audio.duration);
+    };
+
+    audio.addEventListener("timeupdate", handleTimeUpdate);
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+
+    return () => {
+      audio.removeEventListener("timeupdate", handleTimeUpdate);
+      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+    };
+  }, [audioRef.current, isDragging]);
+
   const formatCountdown = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -146,6 +175,30 @@ export default function Song() {
       .toString()
       .padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  };
+
+  const handleSliderValueChange = (value: number[]) => {
+    // Update the seek value during dragging without changing audio position
+    setSeekValue(value[0]);
+    setIsDragging(true);
+  };
+
+  const handleSliderCommit = (value: number[]) => {
+    const [newTime] = value;
+    if (audioRef.current) {
+      audioRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
+    }
+    setIsDragging(false);
+  };
+
+  // Get the display time (either the seek position during drag, or current time)
+  const displayTime = isDragging ? seekValue : currentTime;
 
   const sortedCollectors = useMemo(() => {
     const userCollector: Collector = {
@@ -226,6 +279,22 @@ export default function Song() {
             <Play className="w-[40px] h-[40px] scale-[1.5] fill-current" />
           )}
         </Button>
+      </div>
+
+      {/* Audio Controls */}
+      <div className="w-full max-w-md space-y-2 mb-6">
+        <Slider
+          value={[isDragging ? seekValue : currentTime]}
+          max={duration || 100}
+          step={0.1}
+          onValueChange={handleSliderValueChange}
+          onValueCommit={handleSliderCommit}
+          className="cursor-pointer"
+        />
+        <div className="flex justify-between text-xs text-white/60">
+          <span>{formatTime(displayTime)}</span>
+          <span>{formatTime(duration)}</span>
+        </div>
       </div>
 
       {/* Song Title and Release Number */}
