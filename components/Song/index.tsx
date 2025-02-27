@@ -7,8 +7,10 @@ import { Play, Pause, Info, Disc } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { MintModal } from "@/components/mint-modal";
-import { useAccount } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
 import { usePathname } from "next/navigation";
+import { AcidTestABI } from "@/lib/abi/AcidTestABI";
+import { CONTRACT_ADDRESS } from "@/lib/constants";
 
 interface Collector {
   address: string;
@@ -78,6 +80,30 @@ export default function Song() {
   const [duration, setDuration] = useState(0);
   const [seekValue, setSeekValue] = useState(0); // New state for tracking slider position during dragging
   const [isDragging, setIsDragging] = useState(false); // Track whether user is dragging the slider
+  const [usdPrice, setUsdPrice] = useState(0);
+  const [ethUsd, setEthUsd] = useState(2325);
+
+  const ETH_PRICE_API =
+    "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd";
+
+  // Fetch ETH price on component mount
+  useEffect(() => {
+    const fetchEthPrice = async () => {
+      try {
+        const response = await fetch(ETH_PRICE_API);
+        const data = await response.json();
+        setEthUsd(data.ethereum.usd);
+      } catch (error) {
+        console.error("Error fetching ETH price:", error);
+      }
+    };
+
+    fetchEthPrice();
+
+    // Refresh price every 10 seconds
+    const interval = setInterval(fetchEthPrice, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   const { address } = useAccount();
 
@@ -93,17 +119,19 @@ export default function Song() {
     return isNaN(parsedId) ? 1 : parsedId;
   }, [pathname]);
 
-  const songIpfsUrl =
-    "https://gateway.pinata.cloud/ipfs/bafkreihzorpemrpz7usazqogqecpqbad6gon45e3mpnv4ahq3y542idowm";
-
-  const totalMinted = 55400;
-  const totalCollectors = 460;
-  const totalRevenue = 2200; // $2.2k
+  const getTokenInfoResult = useReadContract({
+    abi: AcidTestABI,
+    address: CONTRACT_ADDRESS,
+    functionName: "getTokenInfo",
+    args: [BigInt(tokenId)],
+  });
 
   useEffect(() => {
     const fetchMetadata = async () => {
+      if (!getTokenInfoResult.data?.uri) return;
       try {
-        const response = await fetch(songIpfsUrl);
+        setUsdPrice(Number(getTokenInfoResult.data.usdPrice) / 10 ** 6);
+        const response = await fetch(getTokenInfoResult.data.uri);
         const data: SongMetadata = await response.json();
         setMetadata(data);
 
@@ -133,7 +161,7 @@ export default function Song() {
         audioRef.current = null;
       }
     };
-  }, [songIpfsUrl]);
+  }, [getTokenInfoResult.data]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -412,6 +440,8 @@ export default function Song() {
         setPaymentMethod={setPaymentMethod}
         userAddress={address}
         tokenId={tokenId}
+        usdPrice={usdPrice}
+        ethUsd={ethUsd}
       />
     </div>
   );

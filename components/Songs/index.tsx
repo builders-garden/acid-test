@@ -4,6 +4,16 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Info, Disc } from "lucide-react";
+import { useReadContract } from "wagmi";
+import { AcidTestABI } from "@/lib/abi/AcidTestABI";
+import { CONTRACT_ADDRESS } from "@/lib/constants";
+
+interface TokenInfo {
+  salesStartDate: number;
+  salesExpirationDate: number;
+  usdPrice: bigint;
+  uri: string;
+}
 
 interface ReleaseBlock {
   id: string;
@@ -14,6 +24,7 @@ interface ReleaseBlock {
 
 export default function SongsPage() {
   const [countdown, setCountdown] = useState(19330); // 05:22:10 in seconds
+  const [releases, setReleases] = useState<ReleaseBlock[]>([]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -38,18 +49,59 @@ export default function SongsPage() {
       .padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
-  const releases: ReleaseBlock[] = [
-    { id: "AT001", title: "PARADISE", isLive: true, countdown: countdown },
-    { id: "AT002", title: "██████████", isLive: false },
-    { id: "AT003", title: "██████████", isLive: false },
-    { id: "AT004", title: "██████████", isLive: false },
-    { id: "AT005", title: "██████████", isLive: false },
-    { id: "AT006", title: "██████████", isLive: false },
-    { id: "AT007", title: "██████████", isLive: false },
-    { id: "AT008", title: "██████████", isLive: false },
-    { id: "AT009", title: "██████████", isLive: false },
-    { id: "AT010", title: "██████████", isLive: false },
-  ];
+  const getTokenInfosResult = useReadContract({
+    abi: AcidTestABI,
+    address: CONTRACT_ADDRESS,
+    functionName: "getTokenInfos",
+    args: [BigInt(1), BigInt(2)],
+  });
+
+  useEffect(() => {
+    if (getTokenInfosResult.data) {
+      const contractReleases =
+        getTokenInfosResult.data as ReadonlyArray<TokenInfo>;
+
+      const fetchReleasesData = async () => {
+        try {
+          const releasesData = await Promise.all(
+            contractReleases.map(async (release, i) => {
+              let title = `Release ${i + 1}`;
+              try {
+                const response = await fetch(release.uri);
+                if (response.ok) {
+                  const metadata = await response.json();
+                  title = metadata.name || title;
+                }
+              } catch (error) {
+                console.error(
+                  `Error fetching metadata for release ${i + 1}:`,
+                  error
+                );
+              }
+
+              const now = Math.floor(Date.now() / 1000);
+              const isLive =
+                now >= release.salesStartDate &&
+                now < release.salesExpirationDate;
+
+              return {
+                id: String(i + 1),
+                title,
+                isLive,
+                countdown: release.salesExpirationDate - now,
+              };
+            })
+          );
+
+          setReleases(releasesData);
+        } catch (error) {
+          console.error("Error processing release data:", error);
+        }
+      };
+
+      fetchReleasesData();
+    }
+  }, [getTokenInfosResult.data]);
 
   return (
     <div className="min-h-screen bg-black text-white font-mono p-6 flex flex-col items-center w-full">
@@ -98,7 +150,9 @@ export default function SongsPage() {
                   <div className="flex-1">
                     <div className="flex justify-between items-start">
                       <div className="space-y-1">
-                        <h2 className="text-lg font-bold">{release.title}</h2>
+                        <h2 className="text-lg font-bold truncate">
+                          {release.title}
+                        </h2>
                         <p className="text-sm text-white/60">{release.id}</p>
                       </div>
                       <div className="font-mono text-sm">
@@ -128,7 +182,7 @@ export default function SongsPage() {
                 </div>
                 <div className="flex-1">
                   <div className="space-y-1">
-                    <h2 className="text-lg font-bold font-mono">
+                    <h2 className="text-lg font-bold font-mono truncate">
                       {release.title}
                     </h2>
                     <p className="text-sm text-white/40">{release.id}</p>

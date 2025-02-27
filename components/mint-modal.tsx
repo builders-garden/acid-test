@@ -12,6 +12,7 @@ import {
 import { useWriteContract } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { toast } from "sonner";
+import { CONTRACT_ADDRESS } from "@/lib/constants";
 
 interface MintModalProps {
   isOpen: boolean;
@@ -22,6 +23,8 @@ interface MintModalProps {
   setPaymentMethod: (method: "ETH" | "USDC") => void;
   userAddress: `0x${string}` | undefined;
   tokenId: number;
+  usdPrice: number;
+  ethUsd: number;
 }
 
 enum MintState {
@@ -39,6 +42,8 @@ export function MintModal({
   setPaymentMethod,
   userAddress,
   tokenId,
+  usdPrice,
+  ethUsd,
 }: MintModalProps) {
   const [isSliderInteracting, setIsSliderInteracting] = useState(false);
   const [mintState, setMintState] = useState<MintState>(MintState.Initial);
@@ -53,21 +58,15 @@ export function MintModal({
     status: mintStatus,
   } = useWriteContract();
 
-  let contractAddress;
-  if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
-    contractAddress = process.env.NEXT_PUBLIC_SMART_CONTRACT_TEST_ADDRESS;
-  } else {
-    contractAddress = process.env.NEXT_PUBLIC_SMART_CONTRACT_ADDRESS;
-  }
-
   const handleMint = async (amount: number, isWETH: boolean) => {
     try {
       if (userAddress) {
         writeContractMint({
-          address: contractAddress as `0x${string}`,
+          address: CONTRACT_ADDRESS,
           abi: AcidTestABI,
           functionName: "mint",
           args: [userAddress, BigInt(tokenId), BigInt(amount), isWETH],
+          value: BigInt(Math.ceil((usdPrice / ethUsd) * amount * 10 ** 18)),
         });
       }
     } catch (error: unknown) {
