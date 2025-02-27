@@ -9,6 +9,9 @@ import {
   CircleDollarSign,
   Loader2,
 } from "lucide-react";
+import { useWriteContract } from "wagmi";
+import { AcidTestABI } from "@/lib/abi/AcidTestABI";
+import { toast } from "sonner";
 
 interface MintModalProps {
   isOpen: boolean;
@@ -17,6 +20,8 @@ interface MintModalProps {
   setMintQuantity: (quantity: number) => void;
   paymentMethod: "ETH" | "USDC";
   setPaymentMethod: (method: "ETH" | "USDC") => void;
+  userAddress: `0x${string}` | undefined;
+  tokenId: number;
 }
 
 enum MintState {
@@ -32,11 +37,52 @@ export function MintModal({
   setMintQuantity,
   paymentMethod,
   setPaymentMethod,
+  userAddress,
+  tokenId,
 }: MintModalProps) {
   const [isSliderInteracting, setIsSliderInteracting] = useState(false);
   const [mintState, setMintState] = useState<MintState>(MintState.Initial);
   const modalRef = useRef<HTMLDivElement>(null);
   const dragControls = useDragControls();
+
+  const {
+    data: mintTxHash,
+    isPending: isMintPending,
+    error: mintError,
+    writeContract: writeContractMint,
+    status: mintStatus,
+  } = useWriteContract();
+
+  let contractAddress;
+  if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
+    contractAddress = process.env.NEXT_PUBLIC_SMART_CONTRACT_TEST_ADDRESS;
+  } else {
+    contractAddress = process.env.NEXT_PUBLIC_SMART_CONTRACT_ADDRESS;
+  }
+
+  const handleMint = async (amount: number, isWETH: boolean) => {
+    try {
+      if (userAddress) {
+        writeContractMint({
+          address: contractAddress as `0x${string}`,
+          abi: AcidTestABI,
+          functionName: "mint",
+          args: [userAddress, BigInt(tokenId), BigInt(amount), isWETH],
+        });
+      }
+    } catch (error: unknown) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    if (mintError) {
+      console.log(mintError);
+      if (!mintError.message.includes("The user rejected the request")) {
+        toast(mintError.message);
+      }
+    }
+  }, [mintError]);
 
   const handleSliderPointerDown = useCallback((e: React.PointerEvent) => {
     e.stopPropagation();
@@ -72,17 +118,24 @@ export function MintModal({
     }
   };
 
-  const handleMint = () => {
-    setMintState(MintState.Confirm);
-    setTimeout(() => {
-      setMintState(MintState.Success);
-    }, 3000);
-  };
-
   const handleClose = () => {
     setMintState(MintState.Initial);
     onClose();
   };
+
+  useEffect(() => {
+    switch (mintStatus) {
+      case "pending":
+        setMintState(MintState.Confirm);
+        break;
+      case "success":
+        setMintState(MintState.Success);
+        break;
+      case "error":
+        setMintState(MintState.Initial);
+        break;
+    }
+  }, [mintStatus]);
 
   return (
     <AnimatePresence>
@@ -175,7 +228,7 @@ export function MintModal({
                   <Button
                     variant="outline"
                     className="w-full py-6 text-lg border-2 bg-white text-black hover:bg-white/90 hover:text-black"
-                    onClick={handleMint}
+                    onClick={() => handleMint(mintQuantity, false)}
                   >
                     MINT
                   </Button>

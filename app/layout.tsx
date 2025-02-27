@@ -4,6 +4,7 @@ import "./globals.css";
 import MiniKitProvider from "@/components/minikit-provider";
 import dynamic from "next/dynamic";
 import { FrameProvider } from "@/components/farcaster-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,11 +27,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-          <ErudaProvider>
-            <FrameProvider>
-              <MiniKitProvider>{children}</MiniKitProvider>
-            </FrameProvider>
-          </ErudaProvider>
+        <ErudaProvider>
+          <FrameProvider>
+            <MiniKitProvider>
+              {children}
+              <Toaster />
+            </MiniKitProvider>
+          </FrameProvider>
+        </ErudaProvider>
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { env } from "@/lib/env";
 import SongPage from "@/components/pages/song";
+import { usePathname } from "next/navigation";
 
 const appUrl = env.NEXT_PUBLIC_URL;
 

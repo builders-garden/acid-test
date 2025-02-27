@@ -7,6 +7,8 @@ import { Play, Pause, Info, Disc } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { MintModal } from "@/components/mint-modal";
+import { useAccount } from "wagmi";
+import { usePathname } from "next/navigation";
 
 interface Collector {
   address: string;
@@ -76,6 +78,20 @@ export default function Song() {
   const [duration, setDuration] = useState(0);
   const [seekValue, setSeekValue] = useState(0); // New state for tracking slider position during dragging
   const [isDragging, setIsDragging] = useState(false); // Track whether user is dragging the slider
+
+  const { address } = useAccount();
+
+  // Extract token ID from the URL path
+  const pathname = usePathname();
+  const tokenId = useMemo(() => {
+    // Extract the last segment from the pathname
+    const pathSegments = pathname.split("/");
+    const lastSegment = pathSegments[pathSegments.length - 1];
+
+    // Try to parse as integer, default to 1 if not a valid number
+    const parsedId = parseInt(lastSegment);
+    return isNaN(parsedId) ? 1 : parsedId;
+  }, [pathname]);
 
   const songIpfsUrl =
     "https://gateway.pinata.cloud/ipfs/bafkreihzorpemrpz7usazqogqecpqbad6gon45e3mpnv4ahq3y542idowm";
@@ -394,6 +410,8 @@ export default function Song() {
         setMintQuantity={setMintQuantity}
         paymentMethod={paymentMethod}
         setPaymentMethod={setPaymentMethod}
+        userAddress={address}
+        tokenId={tokenId}
       />
     </div>
   );
