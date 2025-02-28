@@ -4,10 +4,6 @@ import { z } from "zod";
 // https://env.t3.gg/docs/nextjs
 export const env = createEnv({
   server: {
-    APP_ID: z.string().min(1),
-    DEV_PORTAL_API_KEY: z.string().min(1),
-    WLD_CLIENT_ID: z.string().min(1),
-    WLD_CLIENT_SECRET: z.string().min(1),
     NEYNAR_API_KEY: z.string().min(1),
     JWT_SECRET: z.string().min(1),
     PINATA_JWT_SECRET: z.string().min(1),
@@ -25,7 +21,8 @@ export const env = createEnv({
   experimental__runtimeEnv: {
     NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
     NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV,
-    NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID,
+    NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID:
+      process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID,
     NEXT_PUBLIC_GATEWAY_URL: process.env.NEXT_PUBLIC_GATEWAY_URL,
   },
 });
