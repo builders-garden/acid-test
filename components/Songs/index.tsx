@@ -21,7 +21,7 @@ interface TokenInfo {
 interface ReleaseBlock {
   id: string;
   title: string;
-  isLive: boolean;
+  status: "live" | "end" | "coming";
   countdown?: number;
   image?: string;
 }
@@ -90,14 +90,24 @@ export default function SongsPage() {
               }
 
               const now = Math.floor(Date.now() / 1000);
-              const isLive =
+
+              // Determine status based on timestamps
+              let status: "live" | "end" | "coming";
+              if (
                 now >= release.salesStartDate &&
-                now < release.salesExpirationDate;
+                now < release.salesExpirationDate
+              ) {
+                status = "live";
+              } else if (now >= release.salesExpirationDate) {
+                status = "end";
+              } else {
+                status = "coming";
+              }
 
               return {
                 id: String(i + 1),
                 title,
-                isLive,
+                status,
                 countdown: release.salesExpirationDate - now,
                 image,
               };
@@ -181,7 +191,7 @@ export default function SongsPage() {
               </div>
             ))
           : releases.map((release) =>
-              release.isLive ? (
+              release.status === "live" ? (
                 <Link
                   href={`/songs/${release.id.toLowerCase()}`}
                   key={release.id}
@@ -227,6 +237,43 @@ export default function SongsPage() {
                     </div>
                   </div>
                 </Link>
+              ) : release.status === "coming" ? (
+                <div
+                  key={release.id}
+                  className="border-2 border-white/10 rounded-lg p-4 opacity-50"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-20 h-20 bg-black border-2 border-white/20 rounded-lg relative flex-shrink-0 my-1 overflow-hidden">
+                      {release.image ? (
+                        <Image
+                          src={release.image}
+                          alt={release.title}
+                          fill
+                          className="object-cover opacity-50"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-12 h-12 rounded-full border-2 border-white/20 flex items-center justify-center">
+                            <div className="w-2 h-2 rounded-full bg-white/20" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="space-y-1">
+                        <h2 className="text-sm font-bold max-w-[14rem] truncate">
+                          {release.title}
+                        </h2>
+                        <p className="text-sm text-white/40">
+                          Release {release.id}
+                        </p>
+                      </div>
+                      <p className="text-sm text-white/40 italic mt-4">
+                        coming soon...
+                      </p>
+                    </div>
+                  </div>
+                </div>
               ) : (
                 <div
                   key={release.id}
@@ -251,7 +298,7 @@ export default function SongsPage() {
                     </div>
                     <div className="flex-1">
                       <div className="space-y-1">
-                        <h2 className="text-lg font-bold font-mono truncate">
+                        <h2 className="text-sm font-bold max-w-[14rem] truncate">
                           {release.title}
                         </h2>
                         <p className="text-sm text-white/40">
@@ -259,7 +306,7 @@ export default function SongsPage() {
                         </p>
                       </div>
                       <p className="text-sm text-white/40 italic mt-4">
-                        coming soon...
+                        mint ended
                       </p>
                     </div>
                   </div>
