@@ -1,18 +1,18 @@
 {
   "accountAssociation": {
-    "header": "eyJmaWQiOjI2NjUwNiwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweGMwNTYxM0I4MDM5MjhBM2I2NTUwZDAzYmYwZEU2NjBBYzI2YzM5M2YifQ",
-    "payload": "eyJkb21haW4iOiJodHRwOi8vbG9jYWxob3N0OjMwMDAifQ",
-    "signature": "MHg1MDA5ODI2Mzg1YTZhOWJmMzA1YTJlNTUzNzI2ZmUzZWY5MDYzMjQ3ZDM3OGEzNDU2YTFlZjU3NDc2MmU3YzQxMGFiNDQzMGM0YWM1YzQ2ZGFmNmZjZjM5ZTZjNDFmM2NjMmM2OGY4NjdkMzk5MWFmMzViZWFhZjA3NDk0MTUwMDFj"
+    "header": "eyJmaWQiOjU2OTgsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHg5Qzk1QjM1M2MxMDM5RTQzNUM5MTE1NzM3MjBhNGU2MmY4ZTBhYmNhIn0",
+    "payload": "eyJkb21haW4iOiJhY2lkLXRlc3QudmVyY2VsLmFwcCJ9",
+    "signature": "MHhjNTRjOWEyZjdjNmY5YjZkOTIwMzQzOWY2YTJlMWRjY2Y5N2I0MTdmNzhmOGEyZDc1MmQ4NDVjNDc1MmI1OWQ4NjdmODE2NzJkZDdhY2U0MzcxODUwN2E4YWYwMjA1YmVlN2U5ZGQwYTFiYzA3YzQwNGM2YzdjYzZmMzMwOGUzNzFj"
   },
   "frame": {
     "version": "1",
     "name": "Example Frame",
-    "iconUrl": "https://mini.builders.garden/icon.png",
-    "homeUrl": "https://mini.builders.garden",
-    "imageUrl": "https://mini.builders.garden/feed.png",
+    "iconUrl": "https://acid-test.vercel.app/icon.png",
+    "homeUrl": "https://acid-test.vercel.app",
+    "imageUrl": "https://acid-test.vercel.app/image.png",
     "buttonTitle": "Check this out",
-    "splashImageUrl": "https://mini.builders.garden/splash.png",
-    "splashBackgroundColor": "#ffffff",
-    "webhookUrl": "https://mini.builders.garden/api/webhook"
+    "splashImageUrl": "https://acid-test.vercel.app/splash.png",
+    "splashBackgroundColor": "#eeccff",
+    "webhookUrl": "https://acid-test.vercel.app/api/webhook"
   }
 }
