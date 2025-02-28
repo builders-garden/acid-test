@@ -13,6 +13,7 @@ import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { PinataSDK } from "pinata-web3";
 import { env } from "@/lib/env";
 import TransactionModal from "../transaction-modal";
+import Link from "next/link";
 
 export default function AdminPage() {
   const {
@@ -238,7 +239,15 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-black text-white font-mono p-6 flex flex-col items-center w-full">
-      <h1 className="text-2xl font-bold mb-2">Admin Panel</h1>
+      <div className="w-full flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Admin Panel</h1>
+        <Link
+          href="/"
+          className="p-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg"
+        >
+          Home
+        </Link>
+      </div>
 
       {selectedAction && (
         <div className="absolute top-16 left-6">

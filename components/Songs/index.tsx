@@ -5,11 +5,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Info, Disc } from "lucide-react";
+import { Info, Disc, Clock } from "lucide-react";
 import { useReadContract } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
 import { SongMetadata } from "@/types";
+import { Header } from "../header";
 
 interface TokenInfo {
   salesStartDate: number;
@@ -22,8 +23,9 @@ interface ReleaseBlock {
   id: string;
   title: string;
   status: "live" | "end" | "coming";
-  countdown?: number;
-  image?: string;
+  countdown: number;
+  image: string;
+  salesStartDate: number; // Added salesStartDate to interface
 }
 
 export default function SongsPage() {
@@ -59,7 +61,7 @@ export default function SongsPage() {
     abi: AcidTestABI,
     address: CONTRACT_ADDRESS,
     functionName: "getTokenInfos",
-    args: [BigInt(1), BigInt(2)],
+    args: [BigInt(1), BigInt(20)],
   });
 
   useEffect(() => {
@@ -72,6 +74,9 @@ export default function SongsPage() {
         try {
           const releasesData = await Promise.all(
             contractReleases.map(async (release, i) => {
+              if (release.uri === "") {
+                return null;
+              }
               let title = `Release ${i + 1}`;
               let image = "";
 
@@ -110,11 +115,30 @@ export default function SongsPage() {
                 status,
                 countdown: release.salesExpirationDate - now,
                 image,
+                salesStartDate: release.salesStartDate, // Store the salesStartDate
               };
             })
           );
 
-          setReleases(releasesData);
+          const filteredReleases = releasesData.filter(
+            (item): item is ReleaseBlock => item !== null
+          );
+
+          // Sort releases: live first, coming second, ended last
+          // Within each group, sort by salesStartDate (newest first)
+          const sortedReleases = filteredReleases.sort((a, b) => {
+            // First sort by status priority
+            const statusPriority = { live: 0, coming: 1, end: 2 };
+            const statusDiff =
+              statusPriority[a.status] - statusPriority[b.status];
+
+            if (statusDiff !== 0) return statusDiff;
+
+            // Then sort by salesStartDate (newest first)
+            return b.salesStartDate - a.salesStartDate;
+          });
+
+          setReleases(sortedReleases);
         } catch (error) {
           console.error("Error processing release data:", error);
         } finally {
@@ -146,36 +170,12 @@ export default function SongsPage() {
 
   return (
     <div className="min-h-screen bg-black text-white font-mono p-6 flex flex-col items-center w-full">
-      {/* Header */}
-      <div className="w-full max-w-md flex justify-between items-start mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">ACID TEST</h1>
-        <div className="flex space-x-2">
-          <Link href="/songs">
-            <Button
-              variant="outline"
-              size="icon"
-              className="w-10 h-10 rounded-lg border-2 border-white/60 bg-black hover:bg-white/10"
-            >
-              <Disc className="w-5 h-5" />
-            </Button>
-          </Link>
-          <Link href="/about">
-            <Button
-              variant="outline"
-              size="icon"
-              className="w-10 h-10 rounded-lg border-2 border-white/60 bg-black hover:bg-white/10"
-            >
-              <Info className="w-5 h-5" />
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <Header />
 
       {/* Release Blocks */}
       <div className="flex flex-col w-full max-w-md space-y-4">
         {metadataLoading
-          ? // Loading state with Skeletons
-            Array.from({ length: 2 }).map((_, i) => (
+          ? Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={`loading-${i}`}
                 className="border-2 border-white/20 rounded-lg p-4 h-[124px]"
@@ -215,23 +215,23 @@ export default function SongsPage() {
                         )}
                       </div>
                       <div className="flex flex-1 flex-col">
-                        <div className="flex justify-between items-start">
-                          <div className="space-y-1">
-                            <h2 className="text-sm font-bold max-w-[9rem] truncate">
-                              {release.title}
-                            </h2>
-                            <p className="text-sm text-white/60">
-                              Release {release.id}
-                            </p>
+                        <div className="space-y-1">
+                          <h2 className="text-sm font-bold max-w-[14rem] truncate">
+                            {release.title}
+                          </h2>
+                          <p className="text-sm text-white/60">
+                            Release {release.id}
+                          </p>
+                        </div>
+                        <div className="flex items-center justify-between mt-4">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                            <span className="text-sm">Mint Open</span>
                           </div>
                           <div className="font-mono text-sm">
                             {release.countdown !== undefined &&
                               formatCountdown(release.countdown)}
                           </div>
-                        </div>
-                        <div className="flex items-center gap-2 mt-4">
-                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                          <span className="text-sm">Mint Open</span>
                         </div>
                       </div>
                     </div>
@@ -240,16 +240,22 @@ export default function SongsPage() {
               ) : release.status === "coming" ? (
                 <div
                   key={release.id}
-                  className="border-2 border-white/10 rounded-lg p-4 opacity-50"
+                  className="border-2 border-white/20 rounded-lg p-4 opacity-70 relative overflow-hidden"
                 >
-                  <div className="flex items-start gap-4">
+                  {/* Pulsing border effect */}
+                  <div
+                    className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 animate-pulse"
+                    style={{ opacity: 0.3 }}
+                  ></div>
+
+                  <div className="flex items-start gap-4 relative z-10">
                     <div className="w-20 h-20 bg-black border-2 border-white/20 rounded-lg relative flex-shrink-0 my-1 overflow-hidden">
                       {release.image ? (
                         <Image
                           src={release.image}
                           alt={release.title}
                           fill
-                          className="object-cover opacity-50"
+                          className="object-cover opacity-60"
                         />
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center">
@@ -268,9 +274,13 @@ export default function SongsPage() {
                           Release {release.id}
                         </p>
                       </div>
-                      <p className="text-sm text-white/40 italic mt-4">
-                        coming soon...
-                      </p>
+                      <div className="flex items-center gap-2 mt-4 text-white/60">
+                        <Clock
+                          size={14}
+                          className="animate-pulse"
+                        />
+                        <p className="text-sm italic">coming soon...</p>
+                      </div>
                     </div>
                   </div>
                 </div>

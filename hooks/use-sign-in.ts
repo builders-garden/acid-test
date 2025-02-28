@@ -1,7 +1,7 @@
 import { MESSAGE_EXPIRATION_TIME } from "@/lib/constants";
 import { sdk } from "@farcaster/frame-sdk";
 import { MiniKit } from "@worldcoin/minikit-js";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { ContextType, useMiniAppContext } from "./use-miniapp-context";
 
 export const useSignIn = () => {
@@ -9,6 +9,29 @@ export const useSignIn = () => {
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Check for existing auth token on mount
+  useEffect(() => {
+    const checkAuthToken = async () => {
+      try {
+        // Make a request to a protected endpoint to verify the token
+        const res = await fetch("/api/auth/verify", {
+          credentials: "include",
+        });
+
+        if (res.ok) {
+          setIsSignedIn(true);
+        }
+      } catch (error) {
+        console.error("Error checking auth status:", error);
+        // Don't update isSignedIn, leave as false
+      }
+    };
+
+    if (!isSignedIn) {
+      checkAuthToken();
+    }
+  }, [isSignedIn]);
 
   const signIn = useCallback(async () => {
     try {

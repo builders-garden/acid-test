@@ -3,8 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Play, Pause, Info, Disc } from "lucide-react";
-import Link from "next/link";
+import { Play, Pause } from "lucide-react";
 import Image from "next/image";
 import { MintModal } from "@/components/mint-modal";
 import { useAccount, useReadContract } from "wagmi";
@@ -12,6 +11,7 @@ import { usePathname } from "next/navigation";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
 import { SongMetadata } from "@/types";
+import { Header } from "../header";
 
 interface Collector {
   address: string;
@@ -289,30 +289,7 @@ export default function Song() {
 
   return (
     <div className="min-h-screen bg-black text-white font-mono p-6 flex flex-col items-center w-full">
-      {/* Header */}
-      <div className="w-full max-w-md flex justify-between items-start mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">ACID TEST</h1>
-        <div className="flex space-x-2">
-          <Link href="/songs">
-            <Button
-              variant="outline"
-              size="icon"
-              className="w-10 h-10 rounded-lg border-2 border-white/60 bg-black hover:bg-white/10"
-            >
-              <Disc className="w-5 h-5" />
-            </Button>
-          </Link>
-          <Link href="/about">
-            <Button
-              variant="outline"
-              size="icon"
-              className="w-10 h-10 rounded-lg border-2 border-white/60 bg-black hover:bg-white/10"
-            >
-              <Info className="w-5 h-5" />
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <Header />
 
       {/* CD Visualization */}
       <div className="w-full max-w-md aspect-square bg-black border-2 border-white/20 rounded-lg mb-6 relative overflow-hidden">
