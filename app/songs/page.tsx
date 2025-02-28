@@ -4,11 +4,7 @@ import SongsPage from "@/components/pages/songs";
 
 const appUrl = env.NEXT_PUBLIC_URL;
 
-export async function generateMetadata(
-  params: Promise<{ id: string }>
-): Promise<Metadata> {
-  const { id: requestId } = await params;
-
+export async function generateMetadata(): Promise<Metadata> {
   const frame = {
     version: "next",
     imageUrl: `${appUrl}/images/feed.png`,
@@ -36,6 +32,6 @@ export async function generateMetadata(
   };
 }
 
-export default function Presave() {
+export default function Songs() {
   return <SongsPage />;
 }

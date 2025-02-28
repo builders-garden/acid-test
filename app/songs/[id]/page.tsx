@@ -1,14 +1,15 @@
 import { Metadata } from "next";
 import { env } from "@/lib/env";
 import SongPage from "@/components/pages/song";
-import { usePathname } from "next/navigation";
 
 const appUrl = env.NEXT_PUBLIC_URL;
 
-export async function generateMetadata(
-  params: Promise<{ id: string }>
-): Promise<Metadata> {
-  const { id: requestId } = await params;
+export async function generateMetadata({
+  params,
+}: {
+  params: { id: string };
+}): Promise<Metadata> {
+  const requestId = params.id;
 
   const frame = {
     version: "next",
@@ -37,6 +38,6 @@ export async function generateMetadata(
   };
 }
 
-export default function Presave() {
+export default function Song() {
   return <SongPage />;
 }
