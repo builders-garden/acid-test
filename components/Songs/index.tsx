@@ -238,89 +238,93 @@ export default function SongsPage() {
                   </div>
                 </Link>
               ) : release.status === "coming" ? (
-                <div
+                <Link
+                  href={`/songs/${release.id.toLowerCase()}`}
                   key={release.id}
-                  className="border-2 border-white/20 rounded-lg p-4 opacity-70 relative overflow-hidden"
                 >
-                  {/* Pulsing border effect */}
-                  <div
-                    className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 animate-pulse"
-                    style={{ opacity: 0.3 }}
-                  ></div>
+                  <div className="border-2 border-white/20 rounded-lg p-4 opacity-70 relative overflow-hidden hover:bg-white/5 transition-colors">
+                    {/* Pulsing border effect */}
+                    <div
+                      className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 animate-pulse"
+                      style={{ opacity: 0.3 }}
+                    ></div>
 
-                  <div className="flex items-start gap-4 relative z-10">
-                    <div className="w-20 h-20 bg-black border-2 border-white/20 rounded-lg relative flex-shrink-0 my-1 overflow-hidden">
-                      {release.image ? (
-                        <Image
-                          src={release.image}
-                          alt={release.title}
-                          fill
-                          className="object-cover opacity-60"
-                        />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-12 h-12 rounded-full border-2 border-white/20 flex items-center justify-center">
-                            <div className="w-2 h-2 rounded-full bg-white/20" />
+                    <div className="flex items-start gap-4 relative z-10">
+                      <div className="w-20 h-20 bg-black border-2 border-white/20 rounded-lg relative flex-shrink-0 my-1 overflow-hidden">
+                        {release.image ? (
+                          <Image
+                            src={release.image}
+                            alt={release.title}
+                            fill
+                            className="object-cover opacity-60"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-full border-2 border-white/20 flex items-center justify-center">
+                              <div className="w-2 h-2 rounded-full bg-white/20" />
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="space-y-1">
-                        <h2 className="text-sm font-bold max-w-[14rem] truncate">
-                          {release.title}
-                        </h2>
-                        <p className="text-sm text-white/40">
-                          Release {release.id}
-                        </p>
+                        )}
                       </div>
-                      <div className="flex items-center gap-2 mt-4 text-white/60">
-                        <Clock
-                          size={14}
-                          className="animate-pulse"
-                        />
-                        <p className="text-sm italic">coming soon...</p>
+                      <div className="flex-1">
+                        <div className="space-y-1">
+                          <h2 className="text-sm font-bold max-w-[14rem] truncate">
+                            {release.title}
+                          </h2>
+                          <p className="text-sm text-white/40">
+                            Release {release.id}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 mt-4 text-white/60">
+                          <Clock
+                            size={14}
+                            className="animate-pulse"
+                          />
+                          <p className="text-sm italic">coming soon...</p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                </Link>
               ) : (
-                <div
+                <Link
+                  href={`/songs/${release.id.toLowerCase()}`}
                   key={release.id}
-                  className="border-2 border-white/10 rounded-lg p-4 opacity-50"
                 >
-                  <div className="flex items-start gap-4">
-                    <div className="w-20 h-20 bg-black border-2 border-white/20 rounded-lg relative flex-shrink-0 my-1 overflow-hidden">
-                      {release.image ? (
-                        <Image
-                          src={release.image}
-                          alt={release.title}
-                          fill
-                          className="object-cover opacity-50"
-                        />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-12 h-12 rounded-full border-2 border-white/20 flex items-center justify-center">
-                            <div className="w-2 h-2 rounded-full bg-white/20" />
+                  <div className="border-2 border-white/10 rounded-lg p-4 opacity-50 hover:bg-white/5 transition-colors">
+                    <div className="flex items-start gap-4">
+                      <div className="w-20 h-20 bg-black border-2 border-white/20 rounded-lg relative flex-shrink-0 my-1 overflow-hidden">
+                        {release.image ? (
+                          <Image
+                            src={release.image}
+                            alt={release.title}
+                            fill
+                            className="object-cover opacity-50"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-full border-2 border-white/20 flex items-center justify-center">
+                              <div className="w-2 h-2 rounded-full bg-white/20" />
+                            </div>
                           </div>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="space-y-1">
+                          <h2 className="text-sm font-bold max-w-[14rem] truncate">
+                            {release.title}
+                          </h2>
+                          <p className="text-sm text-white/40">
+                            Release {release.id}
+                          </p>
                         </div>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="space-y-1">
-                        <h2 className="text-sm font-bold max-w-[14rem] truncate">
-                          {release.title}
-                        </h2>
-                        <p className="text-sm text-white/40">
-                          Release {release.id}
+                        <p className="text-sm text-white/40 italic mt-4">
+                          mint ended
                         </p>
                       </div>
-                      <p className="text-sm text-white/40 italic mt-4">
-                        mint ended
-                      </p>
                     </div>
                   </div>
-                </div>
+                </Link>
               )
             )}
       </div>

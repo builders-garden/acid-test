@@ -69,6 +69,7 @@ export default function Song() {
   const [countdown, setCountdown] = useState(19330); // 05:22:10 in seconds
   const [metadata, setMetadata] = useState<SongMetadata | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [status, setStatus] = useState<"live" | "end" | "coming">("live"); // Add status state
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -125,6 +126,31 @@ export default function Song() {
       if (!getTokenInfoResult.data?.uri) return;
       try {
         setUsdPrice(Number(getTokenInfoResult.data.usdPrice) / 10 ** 6);
+
+        // Determine status based on timestamps
+        const now = Math.floor(Date.now() / 1000);
+        const salesStartDate = Number(getTokenInfoResult.data.salesStartDate);
+        const salesExpirationDate = Number(
+          getTokenInfoResult.data.salesExpirationDate
+        );
+
+        let songStatus: "live" | "end" | "coming";
+        if (now >= salesStartDate && now < salesExpirationDate) {
+          songStatus = "live";
+        } else if (now >= salesExpirationDate) {
+          songStatus = "end";
+        } else {
+          songStatus = "coming";
+        }
+
+        setStatus(songStatus);
+
+        // Only set countdown for live status
+        if (songStatus === "live") {
+          setCountdown(salesExpirationDate - now);
+        }
+
+        // Rest of the metadata fetching...
         const response = await fetch(getTokenInfoResult.data.uri);
         const data: SongMetadata = await response.json();
         setMetadata(data);
@@ -374,83 +400,126 @@ export default function Song() {
         )}
       </div>
 
-      {/* Mint Status and Controls */}
+      {/* Mint Status and Controls - Dynamically adjust based on status */}
       <div className="w-full max-w-md flex flex-col items-center gap-4 mb-6">
         <div className="w-full flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-sm">Mint Open</span>
+            {status === "live" ? (
+              <>
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-sm">Mint Open</span>
+              </>
+            ) : status === "coming" ? (
+              <>
+                <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
+                <span className="text-sm">Coming Soon</span>
+              </>
+            ) : (
+              <>
+                <div className="w-2 h-2 rounded-full bg-white/40" />
+                <span className="text-sm">Mint Ended</span>
+              </>
+            )}
           </div>
-          <div className="text-sm font-mono">{formatCountdown(countdown)}</div>
+          {status === "live" && (
+            <div className="text-sm font-mono">
+              {formatCountdown(countdown)}
+            </div>
+          )}
         </div>
 
-        <Button
-          variant="outline"
-          className="w-full h-12 text-lg border-2 bg-white text-black hover:bg-white/90 hover:text-black"
-          onClick={() => setIsMintModalOpen(true)}
-        >
-          MINT
-        </Button>
+        {status === "live" ? (
+          <Button
+            variant="outline"
+            className="w-full h-12 text-lg border-2 bg-white text-black hover:bg-white/90 hover:text-black"
+            onClick={() => setIsMintModalOpen(true)}
+          >
+            MINT
+          </Button>
+        ) : status === "end" ? (
+          <Button
+            variant="outline"
+            className="w-full h-12 text-lg border-2 border-white/60 bg-transparent text-white hover:bg-white/20"
+            onClick={() =>
+              window.open(
+                `https://opensea.io/collection/acid-test-${tokenId}`,
+                "_blank"
+              )
+            }
+          >
+            VIEW ON OPENSEA
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            className="w-full h-12 text-lg border-2 bg-white/20 text-white/60 cursor-not-allowed"
+            disabled
+          >
+            COMING SOON
+          </Button>
+        )}
       </div>
 
-      {/* Collectors */}
-      <div className="w-full max-w-md">
-        <h2 className="text-lg mb-3 font-bold">COLLECTORS</h2>
-        <div className="space-y-2">
-          {/* Signed-in user's collector spot at the top */}
-          <div className="flex items-center justify-between border border-white/20 p-2 rounded bg-blue-500/10">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-xs">
-                42
-              </div>
-              <img
-                src="https://ui-avatars.com/api/?name=Y&background=random&size=32"
-                alt="Your profile"
-                width={24}
-                height={24}
-                className="rounded-full"
-              />
-              <span>You</span>
-            </div>
-            <a
-              href={`https://opensea.io/assets/ethereum/0x123...456/${2505}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:underline"
-            >
-              2505
-            </a>
-          </div>
-          {sortedCollectors.map((collector, i) => (
-            <div
-              key={collector.address}
-              className="flex items-center justify-between p-2 rounded border border-white/20"
-            >
+      {/* Collectors - Only show for live or ended tracks */}
+      {status !== "coming" && (
+        <div className="w-full max-w-md">
+          <h2 className="text-lg mb-3 font-bold">COLLECTORS</h2>
+          <div className="space-y-2">
+            {/* Signed-in user's collector spot at the top */}
+            <div className="flex items-center justify-between border border-white/20 p-2 rounded bg-blue-500/10">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-black flex items-center justify-center text-xs">
-                  {i + 1}
+                <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-xs">
+                  42
                 </div>
                 <img
-                  src={collector.profilePicture || "/images/default_pfp.png"}
-                  alt={`${collector.displayName} profile`}
+                  src="https://ui-avatars.com/api/?name=Y&background=random&size=32"
+                  alt="Your profile"
                   width={24}
                   height={24}
                   className="rounded-full"
                 />
-                <span>{collector.displayName}</span>
+                <span>You</span>
               </div>
               <a
-                href={`https://opensea.io/assets/ethereum/0x123...456/${collector.quantity}`}
+                href={`https://opensea.io/assets/ethereum/0x123...456/${2505}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:underline"
               >
-                {collector.quantity}
+                2505
               </a>
             </div>
-          ))}
+            {sortedCollectors.map((collector, i) => (
+              <div
+                key={collector.address}
+                className="flex items-center justify-between p-2 rounded border border-white/20"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-black flex items-center justify-center text-xs">
+                    {i + 1}
+                  </div>
+                  <img
+                    src={collector.profilePicture || "/images/default_pfp.png"}
+                    alt={`${collector.displayName} profile`}
+                    width={24}
+                    height={24}
+                    className="rounded-full"
+                  />
+                  <span>{collector.displayName}</span>
+                </div>
+                <a
+                  href={`https://opensea.io/assets/ethereum/0x123...456/${collector.quantity}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline"
+                >
+                  {collector.quantity}
+                </a>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Mint Modal */}
       <MintModal

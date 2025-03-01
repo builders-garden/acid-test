@@ -16,6 +16,8 @@ export const env = createEnv({
       .default("development"),
     NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID: z.string().min(1),
     NEXT_PUBLIC_GATEWAY_URL: z.string().min(1),
+    NEXT_PUBLIC_SMART_CONTRACT_TEST_ADDRESS: z.string().min(1),
+    NEXT_PUBLIC_SMART_CONTRACT_ADDRESS: z.string().min(1),
   },
   // For Next.js >= 13.4.4, you only need to destructure client variables:
   experimental__runtimeEnv: {
@@ -24,5 +26,9 @@ export const env = createEnv({
     NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID:
       process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID,
     NEXT_PUBLIC_GATEWAY_URL: process.env.NEXT_PUBLIC_GATEWAY_URL,
+    NEXT_PUBLIC_SMART_CONTRACT_TEST_ADDRESS:
+      process.env.NEXT_PUBLIC_SMART_CONTRACT_TEST_ADDRESS,
+    NEXT_PUBLIC_SMART_CONTRACT_ADDRESS:
+      process.env.NEXT_PUBLIC_SMART_CONTRACT_ADDRESS,
   },
 });
