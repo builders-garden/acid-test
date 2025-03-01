@@ -14,6 +14,8 @@ import { PinataSDK } from "pinata-web3";
 import { env } from "@/lib/env";
 import TransactionModal from "../transaction-modal";
 import Link from "next/link";
+import { Header } from "../header";
+import { Button } from "@/components/ui/button";
 
 export default function AdminPage() {
   const {
@@ -207,223 +209,256 @@ export default function AdminPage() {
     }
   };
 
-  const handleMockUpload = async () => {
-    // Create a mocked metadata object
-    const mockedMetadata = {
-      name: "Mocked Title",
-      image: "ipfs://mocked-cover-image-uri",
-      animation_url: "ipfs://mocked-audio-file-uri",
-      description: "Mocked description for testing",
-    };
+  // Commented out for now
+  // const handleMockUpload = async () => {
+  //   // Create a mocked metadata object
+  //   const mockedMetadata = {
+  //     name: "Mocked Title",
+  //     image: "ipfs://mocked-cover-image-uri",
+  //     animation_url: "ipfs://mocked-audio-file-uri",
+  //     description: "Mocked description for testing",
+  //   };
 
-    // Create a file from the mocked metadata JSON
-    const file = new File(
-      [JSON.stringify(mockedMetadata)],
-      "mocked_metadata.json",
-      { type: "application/json" }
-    );
+  //   // Create a file from the mocked metadata JSON
+  //   const file = new File(
+  //     [JSON.stringify(mockedMetadata)],
+  //     "mocked_metadata.json",
+  //     { type: "application/json" }
+  //   );
 
-    const data = new FormData();
-    data.set("file", file);
+  //   const data = new FormData();
+  //   data.set("file", file);
 
-    // Upload the mocked file
-    const uploadRequest = await fetch("api/pinata", {
-      method: "POST",
-      body: data,
-    });
+  //   // Upload the mocked file
+  //   const uploadRequest = await fetch("api/pinata", {
+  //     method: "POST",
+  //     body: data,
+  //   });
 
-    console.log("Upload request: ", uploadRequest);
-    const uploadResponse = await uploadRequest.json();
-    console.log("Upload response: ", uploadResponse);
-  };
+  //   console.log("Upload request: ", uploadRequest);
+  //   const uploadResponse = await uploadRequest.json();
+  //   console.log("Upload response: ", uploadResponse);
+  // };
 
   return (
     <div className="min-h-screen bg-black text-white font-mono p-6 flex flex-col items-center w-full">
-      <div className="w-full flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Admin Panel</h1>
-        <Link
-          href="/"
-          className="p-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg"
-        >
-          Home
-        </Link>
-      </div>
+      <Header />
 
-      {selectedAction && (
-        <div className="absolute top-16 left-6">
-          <h2 className="text-lg font-semibold">{selectedAction}</h2>
+      <div className="w-full max-w-md space-y-6 mt-4">
+        <div className="flex justify-between items-center">
+          <h1 className="text-xl font-bold">Admin Panel</h1>
+          <Link href="/">
+            <Button
+              variant="outline"
+              className="border-2 border-white/60 bg-transparent text-white hover:bg-white/20 transition-colors"
+            >
+              Back to Home
+            </Button>
+          </Link>
         </div>
-      )}
 
-      {showForm && (
-        <button
-          onClick={() => {
-            setShowForm(false);
-            setSelectedAction(null);
-          }}
-          className="absolute top-6 right-6 p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
-        >
-          Go Back
-        </button>
-      )}
+        {selectedAction && (
+          <div className="w-full">
+            <h2 className="text-lg font-bold mb-4 border-b border-white/20 pb-2">
+              {selectedAction}
+            </h2>
+          </div>
+        )}
 
-      {!showForm && (
-        <div className="flex space-x-4 mb-6">
-          <button
+        {showForm && (
+          <Button
+            variant="outline"
             onClick={() => {
-              setShowForm(true);
-              setSelectedAction("Create Song Sale");
+              setShowForm(false);
+              setSelectedAction(null);
             }}
-            className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+            className="w-full border-2 border-white/60 bg-transparent text-white hover:bg-white/20 transition-colors"
           >
-            Create Song Sale
-          </button>
-          <button
-            onClick={() => {
-              setShowForm(true);
-              setSelectedAction("Update Song Sale");
-            }}
-            className="p-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg"
+            Go Back
+          </Button>
+        )}
+
+        {!showForm && (
+          <div className="flex flex-col space-y-4 w-full">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowForm(true);
+                setSelectedAction("Create Song Sale");
+              }}
+              className="w-full h-12 border-2 bg-white text-black hover:bg-white/90 hover:text-black transition-colors"
+            >
+              Create Song Sale
+            </Button>
+            {/* Commented out for now
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowForm(true);
+                setSelectedAction("Update Song Sale");
+              }}
+              className="w-full h-12 border-2 border-white/60 bg-transparent text-white hover:bg-white/20 transition-colors"
+            >
+              Update Song Sale
+            </Button>
+            */}
+          </div>
+        )}
+
+        {showForm && (
+          <form
+            onSubmit={handleSubmit}
+            className="w-full space-y-4"
           >
-            Update Song Sale
-          </button>
-        </div>
-      )}
+            <div>
+              <label
+                htmlFor="title"
+                className="block mb-1 text-sm text-white/80"
+              >
+                Title
+              </label>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white"
+              />
+            </div>
 
-      {showForm && (
-        <form
-          onSubmit={handleSubmit}
-          className="w-full max-w-md space-y-4 mt-8"
-        >
-          <div>
-            <label
-              htmlFor="title"
-              className="block mb-1"
-            >
-              Title
-            </label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border border-white/60 bg-black text-white rounded-lg"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="startDate"
-              className="block mb-1"
-            >
-              Start Date <CalendarIcon />
-            </label>
-            <input
-              type="datetime-local"
-              name="startDate"
-              value={displayValues.startDate}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border border-white/60 bg-black text-white rounded-lg [color-scheme:dark]"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="endDate"
-              className="block mb-1"
-            >
-              End Date <CalendarIcon />
-            </label>
-            <input
-              type="datetime-local"
-              name="endDate"
-              value={displayValues.endDate}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border border-white/60 bg-black text-white rounded-lg [color-scheme:dark]"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="price"
-              className="block mb-1"
-            >
-              Price <DollarSignIcon />
-            </label>
-            <input
-              type="number"
-              name="price"
-              value={displayValues.price}
-              onChange={handleChange}
-              min="0"
-              step="0.000001"
-              required
-              className="w-full p-2 border border-white/60 bg-black text-white rounded-lg"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="audioFile"
-              className="block mb-1"
-            >
-              Audio File <FileIcon />
-            </label>
-            <input
-              type="file"
-              name="audioFile"
-              onChange={handleFileChange}
-              accept="audio/*"
-              required
-              className="w-full p-2 border border-white/60 bg-black text-white rounded-lg"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="coverImage"
-              className="block mb-1"
-            >
-              Cover Image <FileIcon />
-            </label>
-            <input
-              type="file"
-              name="coverImage"
-              onChange={handleFileChange}
-              accept="image/*"
-              required
-              className="w-full p-2 border border-white/60 bg-black text-white rounded-lg"
-            />
-            {imagePreview && (
-              <div className="mt-2 flex justify-center">
-                <img
-                  src={imagePreview}
-                  alt="Cover preview"
-                  className="max-w-[200px] max-h-[200px] object-contain"
+            <div>
+              <label
+                htmlFor="startDate"
+                className="block mb-1 text-sm text-white/80"
+              >
+                Start Date
+              </label>
+              <div className="relative">
+                <input
+                  type="datetime-local"
+                  name="startDate"
+                  value={displayValues.startDate}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white [color-scheme:dark]"
                 />
+                <CalendarIcon className="absolute top-2.5 right-2.5 h-4 w-4 text-white/60" />
               </div>
-            )}
-          </div>
+            </div>
 
-          <button
-            type="submit"
-            className="w-full p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+            <div>
+              <label
+                htmlFor="endDate"
+                className="block mb-1 text-sm text-white/80"
+              >
+                End Date
+              </label>
+              <div className="relative">
+                <input
+                  type="datetime-local"
+                  name="endDate"
+                  value={displayValues.endDate}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white [color-scheme:dark]"
+                />
+                <CalendarIcon className="absolute top-2.5 right-2.5 h-4 w-4 text-white/60" />
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="price"
+                className="block mb-1 text-sm text-white/80"
+              >
+                Price
+              </label>
+              <div className="relative">
+                <input
+                  type="number"
+                  name="price"
+                  value={displayValues.price}
+                  onChange={handleChange}
+                  min="0"
+                  step="0.000001"
+                  required
+                  className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white"
+                />
+                <DollarSignIcon className="absolute top-2.5 right-2.5 h-4 w-4 text-white/60" />
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="audioFile"
+                className="block mb-1 text-sm text-white/80"
+              >
+                Audio File
+              </label>
+              <div className="relative">
+                <input
+                  type="file"
+                  name="audioFile"
+                  onChange={handleFileChange}
+                  accept="audio/*"
+                  required
+                  className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none file:mr-4 file:py-1 file:px-2 file:rounded-none file:border-0 file:bg-white/10 file:text-white"
+                />
+                <FileIcon className="absolute top-2.5 right-2.5 h-4 w-4 text-white/60" />
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="coverImage"
+                className="block mb-1 text-sm text-white/80"
+              >
+                Cover Image
+              </label>
+              <div className="relative">
+                <input
+                  type="file"
+                  name="coverImage"
+                  onChange={handleFileChange}
+                  accept="image/*"
+                  required
+                  className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none file:mr-4 file:py-1 file:px-2 file:rounded-none file:border-0 file:bg-white/10 file:text-white"
+                />
+                <FileIcon className="absolute top-2.5 right-2.5 h-4 w-4 text-white/60" />
+              </div>
+              {imagePreview && (
+                <div className="mt-2 flex justify-center border-2 border-white/20 p-2">
+                  <img
+                    src={imagePreview}
+                    alt="Cover preview"
+                    className="max-w-[200px] max-h-[200px] object-contain"
+                  />
+                </div>
+              )}
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full h-12 text-lg border-2 bg-white text-black hover:bg-white/90 hover:text-black"
+            >
+              Confirm
+            </Button>
+          </form>
+        )}
+
+        {/* Hidden in production - Development helper */}
+        {/* Commented out for now
+        {process.env.NODE_ENV === "development" && (
+          <Button
+            onClick={handleMockUpload}
+            className="mt-4 w-full border-2 border-white/60 bg-transparent text-white hover:bg-white/20 transition-colors opacity-50"
           >
-            Confirm
-          </button>
-        </form>
-      )}
-
-      {/* New button for mocked upload */}
-      <button
-        onClick={handleMockUpload}
-        className="mt-4 p-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
-      >
-        Upload Mocked JSON
-      </button>
+            Upload Mocked JSON (Dev Only)
+          </Button>
+        )}
+        */}
+      </div>
 
       <TransactionModal
         isOpen={modalOpen}

@@ -3,60 +3,72 @@
 import { useSignIn } from "@/hooks/use-sign-in";
 import Link from "next/link";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Header } from "../header";
 
 export default function Home() {
   const { signIn, isLoading, isSignedIn } = useSignIn();
   const [testResult, setTestResult] = useState<string>("");
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold">Welcome</h1>
-        <p className="text-lg text-muted-foreground">
-          {isSignedIn ? "You are signed in!" : "Sign in to get started"}
-        </p>
+    <div className="min-h-screen bg-black text-white font-mono p-6 flex flex-col items-center w-full">
+      <Header />
 
-        {!isSignedIn ? (
-          <button
-            onClick={signIn}
-            disabled={isLoading}
-            className="px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-          >
-            {isLoading ? "Signing in..." : "Sign in"}
-          </button>
-        ) : (
-          <div className="space-y-4">
-            {testResult && (
-              <div className="mt-4 p-4 rounded-lg bg-gray-100 text-black text-sm">
-                {testResult}
-              </div>
-            )}
+      <div className="w-full max-w-md flex flex-col items-center space-y-6 mt-8">
+        <div className="text-center space-y-4 w-full">
+          <h1 className="text-xl font-bold">Welcome</h1>
+          <p className="text-sm text-white/60">
+            {isSignedIn ? "You are signed in!" : "Sign in to get started"}
+          </p>
+
+          {!isSignedIn ? (
+            <Button
+              variant="outline"
+              onClick={signIn}
+              disabled={isLoading}
+              className="w-full h-12 text-lg border-2 bg-white text-black hover:bg-white/90 hover:text-black transition-colors"
+            >
+              {isLoading ? "Signing in..." : "Sign in"}
+            </Button>
+          ) : (
+            <div className="space-y-4">
+              {testResult && (
+                <div className="mt-4 p-4 rounded-none border-2 border-white/20 bg-black text-white text-sm">
+                  {testResult}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {isSignedIn && (
+          <div className="flex flex-col space-y-4 w-full">
+            <Link
+              href="/songs"
+              className="w-full"
+            >
+              <Button
+                variant="outline"
+                className="w-full h-12 text-lg border-2 bg-white text-black hover:bg-white/90 hover:text-black transition-colors"
+              >
+                SONGS
+              </Button>
+            </Link>
+
+            <Link
+              href="/admin"
+              className="w-full"
+            >
+              <Button
+                variant="outline"
+                className="w-full h-12 text-lg border-2 border-white/60 bg-transparent text-white hover:bg-white/20 transition-colors"
+              >
+                ADMIN PANEL
+              </Button>
+            </Link>
           </div>
         )}
       </div>
-
-      {isSignedIn && (
-        <>
-          <Link href="/admin">
-            <button className="mt-4 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200">
-              Admin Panel
-            </button>
-          </Link>
-
-          <Link href="/songs">
-            <button className="mt-4 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200">
-              Songs
-            </button>
-          </Link>
-
-          {/* <Link
-            href="/presave"
-            className="text-lg text-muted-foreground mt-4"
-          >
-            Presave
-          </Link> */}
-        </>
-      )}
     </div>
   );
 }
