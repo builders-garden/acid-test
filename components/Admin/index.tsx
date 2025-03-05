@@ -401,7 +401,7 @@ export default function AdminPage() {
                   type="file"
                   name="audioFile"
                   onChange={handleFileChange}
-                  accept="audio/*"
+                  accept=".wav,.aif,.aiff,.flac,.alac,.aac,.ogg,.mp3"
                   required
                   className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none file:mr-4 file:py-1 file:px-2 file:rounded-none file:border-0 file:bg-white/10 file:text-white"
                 />
