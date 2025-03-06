@@ -12,6 +12,7 @@ import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
 import { SongMetadata } from "@/types";
 import { Header } from "../header";
+import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
 
 interface Collector {
   address: string;
@@ -62,21 +63,53 @@ const initialCollectors: Collector[] = [
 ];
 
 export default function Song() {
-  const [isPlaying, setIsPlaying] = useState(false);
   const [mintQuantity, setMintQuantity] = useState(1);
   const [isMintModalOpen, setIsMintModalOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"ETH" | "USDC">("ETH");
-  const [countdown, setCountdown] = useState(19330); // 05:22:10 in seconds
+  const [countdown, setCountdown] = useState(19330);
   const [metadata, setMetadata] = useState<SongMetadata | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [status, setStatus] = useState<"live" | "end" | "coming">("live"); // Add status state
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [seekValue, setSeekValue] = useState(0); // New state for tracking slider position during dragging
-  const [isDragging, setIsDragging] = useState(false); // Track whether user is dragging the slider
+  const [status, setStatus] = useState<"live" | "end" | "coming">("live");
+  const [isDragging, setIsDragging] = useState(false);
+  const [seekValue, setSeekValue] = useState(0);
   const [usdPrice, setUsdPrice] = useState(0);
   const [ethUsd, setEthUsd] = useState(2325);
+  const [rotation, setRotation] = useState(0);
+  const rotationRef = useRef(0);
+  const animationRef = useRef<number | null>(null);
+
+  // Use the global audio player context
+  const {
+    isPlaying,
+    currentSong,
+    play,
+    pause,
+    toggle,
+    currentTime,
+    duration,
+    seek,
+  } = useAudioPlayer();
+
+  const { address } = useAccount();
+
+  // Extract token ID from the URL path
+  const pathname = usePathname();
+  const tokenId = useMemo(() => {
+    // Extract the last segment from the pathname
+    const pathSegments = pathname.split("/");
+    const lastSegment = pathSegments[pathSegments.length - 1];
+
+    // Try to parse as integer, default to 1 if not a valid number
+    const parsedId = parseInt(lastSegment);
+    return isNaN(parsedId) ? 1 : parsedId;
+  }, [pathname]);
+
+  const getTokenInfoResult = useReadContract({
+    abi: AcidTestABI,
+    address: CONTRACT_ADDRESS,
+    functionName: "getTokenInfo",
+    args: [BigInt(tokenId)],
+  });
 
   const ETH_PRICE_API =
     "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd";
@@ -99,27 +132,6 @@ export default function Song() {
     const interval = setInterval(fetchEthPrice, 20000);
     return () => clearInterval(interval);
   }, []);
-
-  const { address } = useAccount();
-
-  // Extract token ID from the URL path
-  const pathname = usePathname();
-  const tokenId = useMemo(() => {
-    // Extract the last segment from the pathname
-    const pathSegments = pathname.split("/");
-    const lastSegment = pathSegments[pathSegments.length - 1];
-
-    // Try to parse as integer, default to 1 if not a valid number
-    const parsedId = parseInt(lastSegment);
-    return isNaN(parsedId) ? 1 : parsedId;
-  }, [pathname]);
-
-  const getTokenInfoResult = useReadContract({
-    abi: AcidTestABI,
-    address: CONTRACT_ADDRESS,
-    functionName: "getTokenInfo",
-    args: [BigInt(tokenId)],
-  });
 
   useEffect(() => {
     const fetchMetadata = async () => {
@@ -155,19 +167,6 @@ export default function Song() {
         const data: SongMetadata = await response.json();
         setMetadata(data);
 
-        // Initialize audio
-        const audio = new Audio(data.animation_url);
-        audio.preload = "auto";
-        audioRef.current = audio;
-
-        audio.addEventListener("canplaythrough", () => {
-          setIsLoading(false);
-        });
-
-        audio.addEventListener("ended", () => {
-          setIsPlaying(false);
-        });
-
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching metadata:", error);
@@ -176,15 +175,9 @@ export default function Song() {
     };
 
     fetchMetadata();
-
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
   }, [getTokenInfoResult.data]);
 
+  // Countdown timer effect
   useEffect(() => {
     const timer = setInterval(() => {
       setCountdown((prevCountdown) => {
@@ -199,39 +192,30 @@ export default function Song() {
     return () => clearInterval(timer);
   }, []);
 
+  // Handle CD spinning animation based on global playback state
   useEffect(() => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.play();
-      } else {
-        audioRef.current.pause();
-      }
+    const isCurrentSong = currentSong.tokenId === tokenId;
+
+    if (isPlaying && isCurrentSong) {
+      animationRef.current = requestAnimationFrame(animateSpin);
+    } else if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
     }
-  }, [isPlaying]);
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const handleTimeUpdate = () => {
-      if (!isDragging) {
-        setCurrentTime(audio.currentTime);
-        setSeekValue(audio.currentTime);
-      }
-    };
-
-    const handleLoadedMetadata = () => {
-      setDuration(audio.duration);
-    };
-
-    audio.addEventListener("timeupdate", handleTimeUpdate);
-    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
 
     return () => {
-      audio.removeEventListener("timeupdate", handleTimeUpdate);
-      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
     };
-  }, [audioRef.current, isDragging]);
+  }, [isPlaying, currentSong.tokenId, tokenId]);
+
+  // Function to handle CD spinning animation
+  const animateSpin = () => {
+    rotationRef.current = (rotationRef.current + 0.5) % 360; // Slower rotation (0.5 degree per frame)
+    setRotation(rotationRef.current);
+    animationRef.current = requestAnimationFrame(animateSpin);
+  };
 
   const formatCountdown = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -249,22 +233,32 @@ export default function Song() {
   };
 
   const handleSliderValueChange = (value: number[]) => {
-    // Update the seek value during dragging without changing audio position
     setSeekValue(value[0]);
     setIsDragging(true);
   };
 
   const handleSliderCommit = (value: number[]) => {
     const [newTime] = value;
-    if (audioRef.current) {
-      audioRef.current.currentTime = newTime;
-      setCurrentTime(newTime);
-    }
+    seek(newTime);
     setIsDragging(false);
   };
 
+  const handlePlayPause = () => {
+    if (isLoading || !metadata) return;
+
+    if (isPlaying && currentSong.tokenId === tokenId) {
+      pause();
+    } else {
+      play(metadata, tokenId);
+    }
+  };
+
+  // Check if this is the currently playing song
+  const isCurrentSong = currentSong.tokenId === tokenId;
+
   // Get the display time (either the seek position during drag, or current time)
-  const displayTime = isDragging ? seekValue : currentTime;
+  const displayTime = isDragging ? seekValue : isCurrentSong ? currentTime : 0;
+  const displayDuration = isCurrentSong ? duration : 0;
 
   const sortedCollectors = useMemo(() => {
     const userCollector: Collector = {
@@ -285,34 +279,6 @@ export default function Song() {
     return sortedList;
   }, []);
 
-  // Add spin animation state to track rotation degree
-  const [rotation, setRotation] = useState(0);
-  const rotationRef = useRef(0);
-  const animationRef = useRef<number | null>(null);
-
-  // Function to handle CD spinning animation
-  const animateSpin = () => {
-    rotationRef.current = (rotationRef.current + 0.5) % 360; // Slower rotation (0.1 degree per frame)
-    setRotation(rotationRef.current);
-    animationRef.current = requestAnimationFrame(animateSpin);
-  };
-
-  // Control the spin animation based on playing state
-  useEffect(() => {
-    if (isPlaying) {
-      animationRef.current = requestAnimationFrame(animateSpin);
-    } else if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-      animationRef.current = null;
-    }
-
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, [isPlaying]);
-
   return (
     <div className="min-h-screen bg-black text-white font-mono p-6 flex flex-col items-center w-full">
       <Header />
@@ -331,8 +297,10 @@ export default function Song() {
               <div
                 className="absolute inset-0"
                 style={{
-                  transform: `rotate(${rotation}deg)`,
-                  transition: isPlaying ? "none" : "transform 0.1s ease", // Smooth transition only when pausing
+                  transform: `rotate(${
+                    isCurrentSong && isPlaying ? rotation : 0
+                  }deg)`,
+                  transition: !isPlaying ? "transform 0.1s ease" : "none", // Smooth transition only when pausing
                 }}
               >
                 <Image
@@ -360,12 +328,12 @@ export default function Song() {
         <Button
           variant="outline"
           className="absolute bottom-2 right-2 w-12 h-12 border-2 bg-white text-black hover:bg-white/90 hover:text-black flex items-center justify-center p-0"
-          onClick={() => setIsPlaying(!isPlaying)}
+          onClick={handlePlayPause}
           disabled={isLoading}
         >
           {isLoading ? (
             <div className="animate-spin h-8 w-8 border-2 border-black rounded-full border-t-transparent" />
-          ) : isPlaying ? (
+          ) : isCurrentSong && isPlaying ? (
             <Pause className="w-[40px] h-[40px] scale-[1.5] fill-current" />
           ) : (
             <Play className="w-[40px] h-[40px] scale-[1.5] fill-current" />
@@ -376,16 +344,17 @@ export default function Song() {
       {/* Audio Controls */}
       <div className="w-full max-w-md space-y-2 mb-6">
         <Slider
-          value={[isDragging ? seekValue : currentTime]}
-          max={duration || 100}
+          value={[isCurrentSong ? displayTime : 0]}
+          max={isCurrentSong ? displayDuration || 100 : 100}
           step={0.1}
           onValueChange={handleSliderValueChange}
           onValueCommit={handleSliderCommit}
           className="cursor-pointer"
+          disabled={!isCurrentSong}
         />
         <div className="flex justify-between text-xs text-white/60">
-          <span>{formatTime(displayTime)}</span>
-          <span>{formatTime(duration)}</span>
+          <span>{isCurrentSong ? formatTime(displayTime) : "0:00"}</span>
+          <span>{isCurrentSong ? formatTime(displayDuration) : "0:00"}</span>
         </div>
       </div>
 

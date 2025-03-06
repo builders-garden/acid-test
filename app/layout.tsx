@@ -5,6 +5,7 @@ import MiniKitProvider from "@/components/minikit-provider";
 import dynamic from "next/dynamic";
 import { FrameProvider } from "@/components/farcaster-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,8 +31,10 @@ export default function RootLayout({
         <ErudaProvider>
           <FrameProvider>
             <MiniKitProvider>
-              {children}
-              <Toaster />
+              <AudioPlayerProvider>
+                {children}
+                <Toaster />
+              </AudioPlayerProvider>
             </MiniKitProvider>
           </FrameProvider>
         </ErudaProvider>
