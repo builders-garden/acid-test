@@ -178,11 +178,11 @@ export default function SongsPage() {
           ? Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={`loading-${i}`}
-                className="border-2 border-white/20 rounded-lg p-4 h-[124px]"
+                className="border-2 border-white/20 rounded-lg p-4 h-[124px] w-full"
               >
                 <div className="flex items-start gap-4">
                   <Skeleton className="w-20 h-20 bg-white/10 rounded-lg relative flex-shrink-0 my-1" />
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <Skeleton className="h-4 bg-white/10 rounded w-2/3 mb-2" />
                     <Skeleton className="h-3 bg-white/10 rounded w-1/4 mb-4" />
                     <Skeleton className="h-3 bg-white/10 rounded w-1/2" />
@@ -195,8 +195,9 @@ export default function SongsPage() {
                 <Link
                   href={`/songs/${release.id.toLowerCase()}`}
                   key={release.id}
+                  className="w-full"
                 >
-                  <div className="border-2 border-white/20 rounded-lg p-4 hover:bg-white/5 transition-colors">
+                  <div className="border-2 border-white/20 rounded-lg p-4 hover:bg-white/5 transition-colors w-full">
                     <div className="flex items-start gap-4">
                       <div className="w-20 h-20 bg-black border-2 border-white/40 rounded-lg relative flex-shrink-0 my-1 overflow-hidden">
                         {release.image ? (
@@ -214,9 +215,9 @@ export default function SongsPage() {
                           </div>
                         )}
                       </div>
-                      <div className="flex flex-1 flex-col">
+                      <div className="flex flex-1 flex-col min-w-0">
                         <div className="space-y-1">
-                          <h2 className="text-sm font-bold max-w-[14rem] truncate">
+                          <h2 className="text-sm font-bold truncate">
                             {release.title}
                           </h2>
                           <p className="text-sm text-white/60">
@@ -241,8 +242,9 @@ export default function SongsPage() {
                 <Link
                   href={`/songs/${release.id.toLowerCase()}`}
                   key={release.id}
+                  className="w-full"
                 >
-                  <div className="border-2 border-white/20 rounded-lg p-4 opacity-70 relative overflow-hidden hover:bg-white/5 transition-colors">
+                  <div className="border-2 border-white/20 rounded-lg p-4 opacity-70 relative overflow-hidden hover:bg-white/5 transition-colors w-full">
                     {/* Pulsing border effect */}
                     <div
                       className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 animate-pulse"
@@ -266,9 +268,9 @@ export default function SongsPage() {
                           </div>
                         )}
                       </div>
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <div className="space-y-1">
-                          <h2 className="text-sm font-bold max-w-[14rem] truncate">
+                          <h2 className="text-sm font-bold truncate">
                             {release.title}
                           </h2>
                           <p className="text-sm text-white/40">
@@ -290,8 +292,9 @@ export default function SongsPage() {
                 <Link
                   href={`/songs/${release.id.toLowerCase()}`}
                   key={release.id}
+                  className="w-full"
                 >
-                  <div className="border-2 border-white/10 rounded-lg p-4 opacity-50 hover:bg-white/5 transition-colors">
+                  <div className="border-2 border-white/10 rounded-lg p-4 opacity-50 hover:bg-white/5 transition-colors w-full">
                     <div className="flex items-start gap-4">
                       <div className="w-20 h-20 bg-black border-2 border-white/20 rounded-lg relative flex-shrink-0 my-1 overflow-hidden">
                         {release.image ? (
@@ -309,9 +312,9 @@ export default function SongsPage() {
                           </div>
                         )}
                       </div>
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <div className="space-y-1">
-                          <h2 className="text-sm font-bold max-w-[14rem] truncate">
+                          <h2 className="text-sm font-bold truncate">
                             {release.title}
                           </h2>
                           <p className="text-sm text-white/40">
