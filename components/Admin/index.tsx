@@ -84,8 +84,25 @@ export default function AdminPage() {
 
     if (name === "startDate" || name === "endDate") {
       setDisplayValues((prev) => ({ ...prev, [name]: value }));
-      const date = Math.floor(new Date(value).getTime() / 1000);
-      setFormData((prev) => ({ ...prev, [name]: date }));
+
+      // Convert Eastern Time to UTC
+      if (value) {
+        // Parse the input value
+        const [datePart, timePart] = value.split("T");
+
+        // Create a date object representing this time in Eastern Time
+        const easternDate = new Date(
+          `${datePart}T${timePart || "00:00:00"}-05:00`
+        );
+
+        // Get the equivalent UTC time
+        const utcDate = new Date(easternDate.toISOString());
+
+        // Calculate timestamp for the contract
+        const timestamp = Math.floor(utcDate.getTime() / 1000);
+
+        setFormData((prev) => ({ ...prev, [name]: timestamp }));
+      }
     } else if (name === "price") {
       // Prevent negative values
       const numValue = parseFloat(value);
@@ -332,7 +349,7 @@ export default function AdminPage() {
                 htmlFor="startDate"
                 className="block mb-1 text-sm text-white/80"
               >
-                Start Date
+                Start Date (Eastern Time)
               </label>
               <div className="relative">
                 <input
@@ -352,7 +369,7 @@ export default function AdminPage() {
                 htmlFor="endDate"
                 className="block mb-1 text-sm text-white/80"
               >
-                End Date
+                End Date (Eastern Time)
               </label>
               <div className="relative">
                 <input
