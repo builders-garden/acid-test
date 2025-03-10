@@ -50,6 +50,8 @@ export function MintModal({
   const [mintState, setMintState] = useState<MintState>(MintState.Initial);
   const modalRef = useRef<HTMLDivElement>(null);
   const dragControls = useDragControls();
+  const price = usdPrice / ethUsd;
+  const safePrice = price + price * 0.01;
 
   const {
     data: mintTxHash,
@@ -72,7 +74,7 @@ export function MintModal({
           abi: AcidTestABI,
           functionName: "mint",
           args: [userAddress, BigInt(tokenId), BigInt(amount), isWETH],
-          value: BigInt(Math.ceil((usdPrice / ethUsd) * amount * 10 ** 18)),
+          value: BigInt(Math.ceil(safePrice * amount * 10 ** 18)),
         });
       }
     } catch (error: unknown) {
@@ -245,13 +247,22 @@ export function MintModal({
                     MINT
                   </Button>
 
-                  <div className="flex justify-between items-center text-sm">
+                  <div className="flex justify-between items-start text-sm">
                     <span className="text-white/60">Total Cost</span>
-                    <span>
-                      {paymentMethod === "ETH"
-                        ? `${(mintQuantity * 0.0003).toFixed(4)} ETH`
-                        : `${mintQuantity} USDC`}
-                    </span>
+                    <div className="text-right">
+                      <div>
+                        {paymentMethod === "ETH"
+                          ? `${(safePrice * mintQuantity).toFixed(6)} ETH`
+                          : `${mintQuantity} USDC`}
+                      </div>
+                      <div className="text-white/60 text-xs">
+                        {paymentMethod === "ETH"
+                          ? `$${(safePrice * mintQuantity * ethUsd).toFixed(
+                              2
+                            )} USD`
+                          : `${(mintQuantity / ethUsd).toFixed(6)} ETH`}
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
