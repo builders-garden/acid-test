@@ -1,4 +1,12 @@
+import { fetchUser } from "@/lib/neynar";
 import { sendFrameNotification } from "@/lib/notifs";
+import {
+  createUser,
+  deleteUserNotificationDetails,
+  getUser,
+  setUserNotificationDetails,
+} from "@/lib/prisma/queries";
+import { InsertDbUser } from "@/lib/types";
 import {
   ParseWebhookEvent,
   parseWebhookEvent,
@@ -44,39 +52,48 @@ export async function POST(request: NextRequest) {
   switch (event.event) {
     case "frame_added":
       if (event.notificationDetails) {
-        // TODO: Get user
-        const user = null;
+        const user = await getUser(fid);
         if (!user) {
-          // TODO: Create user
+          const neynarUser = await fetchUser(fid.toString());
+          const newUser: InsertDbUser = {
+            fid: Number(neynarUser.fid),
+            username: neynarUser.username,
+            displayName: neynarUser.display_name,
+            avatarUrl: neynarUser.pfp_url,
+            walletAddress: neynarUser.custody_address,
+            notificationDetails: JSON.stringify(event.notificationDetails),
+          };
+          await createUser(newUser);
+          // TODO: Track signup event
         } else {
-          // TODO: Set user notification details
+          await setUserNotificationDetails(fid, event.notificationDetails);
         }
         await sendFrameNotification({
           fid,
-          title: "Welcome to FarVille 🧑‍🌾",
-          body: "Plant, grow, and harvest your crops to earn rewards!",
+          title: "Welcome to Acid Test 💿",
+          body: "Explore new tracks and mint your favorite ones now!",
         });
       } else {
-        // TODO: Delete user notification details
+        await deleteUserNotificationDetails(fid);
       }
-      // TODO: Track event
+      // TODO: Track frame added event
       break;
     case "frame_removed":
-      // TODO: Delete user notification details
+      await deleteUserNotificationDetails(fid);
       // TODO: Track event
       break;
     case "notifications_enabled":
       // TODO: Set user notification details
-      // TODO: Send frame notification
+      await setUserNotificationDetails(fid, event.notificationDetails);
       await sendFrameNotification({
         fid,
         title: "Ding ding ding",
-        body: "Notifications for FarVille are now enabled",
+        body: "Notifications for Acid Test are now enabled",
       });
       // TODO: Track event
       break;
     case "notifications_disabled":
-      // TODO: Delete user notification details
+      await deleteUserNotificationDetails(fid);
       // TODO: Track event
       break;
   }

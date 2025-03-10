@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 import FrameWalletProvider from "./frame-wallet-provider";
+import { env } from "@/lib/env";
 
 interface FrameContextValue {
   context: FrameContext | null;
@@ -62,7 +63,16 @@ export function FrameProvider({ children }: FrameProviderProps) {
     if (sdk && !isSDKLoaded) {
       load().then(() => {
         setIsSDKLoaded(true);
-        console.log("SDK loaded");
+        if (
+          !context?.client.added &&
+          !env.NEXT_PUBLIC_URL?.includes("localhost")
+        ) {
+          try {
+            sdk.actions.addFrame();
+          } catch (err) {
+            console.error("Failed to add frame:", err);
+          }
+        }
       });
     }
   }, [isSDKLoaded]);

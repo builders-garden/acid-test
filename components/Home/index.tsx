@@ -2,40 +2,18 @@
 
 import { useSignIn } from "@/hooks/use-sign-in";
 import Link from "next/link";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Header } from "../header";
+import sdk from "@farcaster/frame-sdk";
 
 export default function Home() {
   const { signIn, isLoading, isSignedIn } = useSignIn();
-  const [testResult, setTestResult] = useState<string>("");
-  const [isAddingUser, setIsAddingUser] = useState(false);
 
-  const addTestUser = async () => {
+  const handleAddFrame = () => {
     try {
-      setIsAddingUser(true);
-      const response = await fetch("/api/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setTestResult(
-          `User added successfully: ${JSON.stringify(data.user, null, 2)}`
-        );
-      } else {
-        setTestResult(`Error adding user: ${data.error}`);
-      }
+      sdk.actions.addFrame();
     } catch (error) {
-      setTestResult(
-        `Error: ${error instanceof Error ? error.message : String(error)}`
-      );
-    } finally {
-      setIsAddingUser(false);
+      console.error("Error adding frame:", error);
     }
   };
 
@@ -50,7 +28,7 @@ export default function Home() {
             {isSignedIn ? "You are signed in!" : "Sign in to get started"}
           </p>
 
-          {!isSignedIn ? (
+          {!isSignedIn && (
             <Button
               variant="outline"
               onClick={signIn}
@@ -59,23 +37,6 @@ export default function Home() {
             >
               {isLoading ? "Signing in..." : "Sign in"}
             </Button>
-          ) : (
-            <div className="space-y-4">
-              <Button
-                variant="outline"
-                onClick={addTestUser}
-                disabled={isAddingUser}
-                className="w-full h-12 text-lg border-2 border-green-500 bg-transparent text-green-500 hover:bg-green-500/20 transition-colors"
-              >
-                {isAddingUser ? "Adding User..." : "Add Test User"}
-              </Button>
-
-              {testResult && (
-                <div className="mt-4 p-4 rounded-none border-2 border-white/20 bg-black text-white text-sm">
-                  <pre className="whitespace-pre-wrap">{testResult}</pre>
-                </div>
-              )}
-            </div>
           )}
         </div>
 
@@ -104,6 +65,14 @@ export default function Home() {
                 ADMIN PANEL
               </Button>
             </Link>
+
+            <Button
+              variant="outline"
+              onClick={handleAddFrame}
+              className="w-full h-12 text-lg border-2 border-white/60 bg-transparent text-white hover:bg-white/20 transition-colors"
+            >
+              ADD FRAME
+            </Button>
           </div>
         )}
       </div>
