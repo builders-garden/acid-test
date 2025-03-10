@@ -1,18 +1,18 @@
 {
   "accountAssociation": {
     "header": "eyJmaWQiOjU2OTgsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHg5Qzk1QjM1M2MxMDM5RTQzNUM5MTE1NzM3MjBhNGU2MmY4ZTBhYmNhIn0",
-    "payload": "eyJkb21haW4iOiJhY2lkLXRlc3QudmVyY2VsLmFwcCJ9",
-    "signature": "MHhjNTRjOWEyZjdjNmY5YjZkOTIwMzQzOWY2YTJlMWRjY2Y5N2I0MTdmNzhmOGEyZDc1MmQ4NDVjNDc1MmI1OWQ4NjdmODE2NzJkZDdhY2U0MzcxODUwN2E4YWYwMjA1YmVlN2U5ZGQwYTFiYzA3YzQwNGM2YzdjYzZmMzMwOGUzNzFj"
+    "payload": "eyJkb21haW4iOiJhY2lkLXRlc3QtZ2l0LW5vdGlmaWNhdGlvbnMtYnVpbGRlcnNnYXJkZW4udmVyY2VsLmFwcCJ9",
+    "signature": "MHhmODkzNTQzODE4YzI2NmQ4Y2M1ZTc4ODUxMzI5NGRiMTY3OWEyMmI3YzZmZDhlMjkzNzVhNjM4MDk3Njc2NGI1MjMyNTI5MjlmMWZkMDE2OTE5NDAyZmJlYTJhZjBmMjVlZjBlZDZmYjc2NjAwZWI0MmY3MWU5NjMyZjZkZDAzNzFi"
   },
   "frame": {
     "version": "1",
     "name": "Example Frame",
-    "iconUrl": "https://acid-test.vercel.app/icon.png",
-    "homeUrl": "https://acid-test.vercel.app",
-    "imageUrl": "https://acid-test.vercel.app/image.png",
+    "iconUrl": "https://acid-test-git-notifications-buildersgarden.vercel.app/icon.png",
+    "homeUrl": "https://acid-test-git-notifications-buildersgarden.vercel.app",
+    "imageUrl": "https://acid-test-git-notifications-buildersgarden.vercel.app/image.png",
     "buttonTitle": "Check this out",
-    "splashImageUrl": "https://acid-test.vercel.app/splash.png",
+    "splashImageUrl": "https://acid-test-git-notifications-buildersgarden.vercel.app/splash.png",
     "splashBackgroundColor": "#eeccff",
-    "webhookUrl": "https://acid-test.vercel.app/api/webhook"
+    "webhookUrl": "https://acid-test-git-notifications-buildersgarden.vercel.app/api/webhook"
   }
 }
