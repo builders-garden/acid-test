@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as jose from "jose";
 import { env } from "./lib/env";
+import { validateQstashRequest } from "./lib/qstash";
 
 export const config = {
   matcher: ["/api/:path*"],
@@ -13,6 +14,21 @@ export default async function middleware(req: NextRequest) {
     req.nextUrl.pathname.includes("/api/og") ||
     req.nextUrl.pathname.includes("/api/webhook")
   ) {
+    return NextResponse.next();
+  }
+
+  if (req.nextUrl.pathname.includes("qstash")) {
+    try {
+      await validateQstashRequest(
+        req.headers.get("Upstash-Signature")!,
+        req.nextUrl.pathname
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        return NextResponse.json({ error: error.toString() }, { status: 401 });
+      }
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     return NextResponse.next();
   }
 

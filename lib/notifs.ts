@@ -3,6 +3,7 @@ import {
   sendNotificationResponseSchema,
 } from "@farcaster/frame-sdk";
 import { env } from "./env";
+import { getUserNotificationDetails } from "./prisma/queries";
 
 const appUrl = env.NEXT_PUBLIC_URL || "";
 
@@ -24,8 +25,7 @@ export async function sendFrameNotification({
   title: string;
   body: string;
 }): Promise<SendFrameNotificationResult> {
-  // TODO: Get notification details
-  const notificationDetails = { url: "", token: "" };
+  const notificationDetails = await getUserNotificationDetails(fid);
 
   if (!notificationDetails) {
     return { state: "no_token" };

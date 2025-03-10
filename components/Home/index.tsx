@@ -2,13 +2,20 @@
 
 import { useSignIn } from "@/hooks/use-sign-in";
 import Link from "next/link";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Header } from "../header";
+import sdk from "@farcaster/frame-sdk";
 
 export default function Home() {
   const { signIn, isLoading, isSignedIn } = useSignIn();
-  const [testResult, setTestResult] = useState<string>("");
+
+  const handleAddFrame = () => {
+    try {
+      sdk.actions.addFrame();
+    } catch (error) {
+      console.error("Error adding frame:", error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-black text-white font-mono p-6 flex flex-col items-center w-full">
@@ -21,7 +28,7 @@ export default function Home() {
             {isSignedIn ? "You are signed in!" : "Sign in to get started"}
           </p>
 
-          {!isSignedIn ? (
+          {!isSignedIn && (
             <Button
               variant="outline"
               onClick={signIn}
@@ -30,14 +37,6 @@ export default function Home() {
             >
               {isLoading ? "Signing in..." : "Sign in"}
             </Button>
-          ) : (
-            <div className="space-y-4">
-              {testResult && (
-                <div className="mt-4 p-4 rounded-none border-2 border-white/20 bg-black text-white text-sm">
-                  {testResult}
-                </div>
-              )}
-            </div>
           )}
         </div>
 
@@ -66,6 +65,14 @@ export default function Home() {
                 ADMIN PANEL
               </Button>
             </Link>
+
+            <Button
+              variant="outline"
+              onClick={handleAddFrame}
+              className="w-full h-12 text-lg border-2 border-white/60 bg-transparent text-white hover:bg-white/20 transition-colors"
+            >
+              ADD FRAME
+            </Button>
           </div>
         )}
       </div>
