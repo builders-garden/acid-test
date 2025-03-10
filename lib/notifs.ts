@@ -25,7 +25,6 @@ export async function sendFrameNotification({
   title: string;
   body: string;
 }): Promise<SendFrameNotificationResult> {
-  // TODO: Get notification details
   const notificationDetails = await getUserNotificationDetails(fid);
 
   if (!notificationDetails) {

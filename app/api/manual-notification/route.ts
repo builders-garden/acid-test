@@ -1,10 +1,14 @@
-import { sendFrameNotification } from "@/lib/notifs";
+import {
+  sendDelayedNotification,
+  sendDelayedNotificationToAll,
+} from "@/lib/qstash";
 import { z } from "zod";
 
 const requestSchema = z.object({
-  fid: z.number().min(1),
   title: z.string().min(1),
   text: z.string().min(1),
+  delay: z.number().int().min(0),
+  fid: z.number().int().optional(),
 });
 
 export async function POST(request: Request) {
@@ -15,12 +19,16 @@ export async function POST(request: Request) {
       status: 400,
     });
   }
-  const { fid, title, text } = parsedBody.data;
+  const { title, text, delay, fid } = parsedBody.data;
   try {
-    // TODO: this should send a notification to all the users, not just a single one
-    await sendFrameNotification({ fid: Number(fid), title, body: text });
+    if (fid) {
+      await sendDelayedNotification(fid, title, text, delay);
+    } else {
+      await sendDelayedNotificationToAll(title, text, delay);
+    }
 
-    console.log(`Notification sent: fid=${fid}, title=${title}`);
+    console.log(`Notification scheduled: title=${title}, delay=${delay}`);
+
     return new Response("Notification scheduled successfully", {
       status: 200,
     });

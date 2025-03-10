@@ -4,7 +4,7 @@ import { useState } from "react";
 import { BellIcon, ClockIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMiniAppContext } from "@/hooks/use-miniapp-context";
-import { sendFrameNotification } from "@/lib/notifs";
+import { Switch } from "@/components/ui/switch";
 
 interface NotificationFormProps {
   setModalOpen: (open: boolean) => void;
@@ -24,6 +24,8 @@ export default function NotificationForm({
     body: "",
     delay: 0,
   });
+
+  const [productionMode, setProductionMode] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -57,11 +59,14 @@ export default function NotificationForm({
 
     try {
       const body = {
-        fid: context.user.fid,
         title: formData.title,
         text: formData.body,
+        delay: formData.delay,
+        // Only include fid in test mode (when productionMode is false)
+        ...(productionMode ? {} : { fid: context.user.fid }),
       };
-      const response = await fetch("/api/notifications", {
+
+      const response = await fetch("/api/manual-notification", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -74,7 +79,11 @@ export default function NotificationForm({
       }
 
       setModalStatus("success");
-      setModalMessage("Notification scheduled successfully");
+      setModalMessage(
+        `Notification scheduled successfully in ${
+          productionMode ? "production" : "test"
+        } mode`
+      );
 
       // Clear form
       setFormData({
@@ -94,6 +103,29 @@ export default function NotificationForm({
       onSubmit={handleSubmit}
       className="w-full space-y-4"
     >
+      <div className="flex flex-col gap-2 items-start justify-between p-2 border-2 border-white/60 bg-black text-white">
+        <div className="flex w-full justify-between">
+          <span className="font-medium">
+            Mode: {productionMode ? "Production" : "Test"}
+          </span>
+
+          <div className="flex items-center gap-2">
+            <span>Test</span>
+            <Switch
+              checked={productionMode}
+              onCheckedChange={setProductionMode}
+              className="data-[state=checked]:bg-red-500"
+            />
+            <span>Prod</span>
+          </div>
+        </div>
+        <span className="text-xs text-white/70">
+          {productionMode
+            ? "Notification will be sent to ALL users"
+            : "Notification will be sent only to your FID"}
+        </span>
+      </div>
+
       <div>
         <label
           htmlFor="title"
@@ -153,9 +185,13 @@ export default function NotificationForm({
       <Button
         type="submit"
         variant="secondary"
-        className="w-full"
+        className={`w-full ${
+          productionMode ? "bg-red-500 hover:bg-red-600" : ""
+        }`}
       >
-        Schedule Notification
+        {productionMode
+          ? "Schedule PRODUCTION Notification"
+          : "Schedule Test Notification"}
       </Button>
     </form>
   );
