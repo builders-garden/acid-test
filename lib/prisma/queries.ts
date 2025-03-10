@@ -46,3 +46,17 @@ export const deleteUserNotificationDetails = async (fid: number) => {
     },
   });
 };
+
+export const getUserNotificationDetails = async (
+  fid: number
+): Promise<FrameNotificationDetails | null> => {
+  const user = await getUser(fid);
+
+  if (!user) {
+    return null;
+  }
+
+  return user.notificationDetails
+    ? (JSON.parse(user.notificationDetails) as FrameNotificationDetails)
+    : null;
+};

@@ -2,24 +2,20 @@ import { sendFrameNotification } from "@/lib/notifs";
 import { z } from "zod";
 
 const requestSchema = z.object({
-  fid: z.string().min(1),
+  fid: z.number().min(1),
   title: z.string().min(1),
   text: z.string().min(1),
 });
 
 export async function POST(request: Request) {
   const body = await request.json();
-
   const parsedBody = requestSchema.safeParse(body);
-
   if (!parsedBody.success) {
     return new Response("Invalid request data", {
       status: 400,
     });
   }
-
   const { fid, title, text } = parsedBody.data;
-
   try {
     // TODO: this should send a notification to all the users, not just a single one
     await sendFrameNotification({ fid: Number(fid), title, body: text });

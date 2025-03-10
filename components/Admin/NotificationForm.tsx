@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { BellIcon, ClockIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useMiniAppContext } from "@/hooks/use-miniapp-context";
+import { sendFrameNotification } from "@/lib/notifs";
 
 interface NotificationFormProps {
   setModalOpen: (open: boolean) => void;
@@ -15,6 +17,8 @@ export default function NotificationForm({
   setModalStatus,
   setModalMessage,
 }: NotificationFormProps) {
+  const { type: contextType, context } = useMiniAppContext();
+
   const [formData, setFormData] = useState({
     title: "",
     body: "",
@@ -43,14 +47,26 @@ export default function NotificationForm({
     setModalStatus("loading");
     setModalMessage("Sending notification...");
 
+    if (contextType !== "farcaster" || !context?.user?.fid) {
+      setModalStatus("error");
+      setModalMessage(
+        "No FID found. Please make sure you're logged into Warpcast."
+      );
+      return;
+    }
+
     try {
-      // API endpoint for notifications would go here
+      const body = {
+        fid: context.user.fid,
+        title: formData.title,
+        text: formData.body,
+      };
       const response = await fetch("/api/notifications", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
