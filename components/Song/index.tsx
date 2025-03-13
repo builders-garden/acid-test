@@ -3,11 +3,11 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Play, Pause } from "lucide-react";
+import { Play, Pause, EyeOff } from "lucide-react";
 import Image from "next/image";
 import { MintModal } from "@/components/mint-modal";
 import { useAccount, useReadContract } from "wagmi";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
 import { SongMetadata } from "@/types";
@@ -62,6 +62,12 @@ const initialCollectors: Collector[] = [
   ...generateDummyCollectors(97),
 ];
 
+interface RedactedSong {
+  tokenId: number;
+  redactedUntil: number;
+  title?: string;
+}
+
 export default function Song() {
   const [mintQuantity, setMintQuantity] = useState(1);
   const [isMintModalOpen, setIsMintModalOpen] = useState(false);
@@ -77,6 +83,8 @@ export default function Song() {
   const [rotation, setRotation] = useState(0);
   const rotationRef = useRef(0);
   const animationRef = useRef<number | null>(null);
+  const [isRedacted, setIsRedacted] = useState(false);
+  const [redactedUntil, setRedactedUntil] = useState<number>(0);
 
   // Use the global audio player context
   const {
@@ -94,6 +102,7 @@ export default function Song() {
 
   // Extract token ID from the URL path
   const pathname = usePathname();
+  const router = useRouter();
   const tokenId = useMemo(() => {
     // Extract the last segment from the pathname
     const pathSegments = pathname.split("/");
@@ -278,6 +287,73 @@ export default function Song() {
     sortedList.splice(41, 0, userCollector); // Insert "You" at position 42
     return sortedList;
   }, []);
+
+  useEffect(() => {
+    // Check if the song is redacted
+    const checkIfRedacted = async () => {
+      try {
+        const response = await fetch(`/api/redacted-songs/${tokenId}`);
+        if (response.ok) {
+          const song: RedactedSong = await response.json();
+          const now = Math.floor(Date.now() / 1000);
+
+          // If the song is redacted and the redaction period hasn't ended
+          if (song && now < song.redactedUntil) {
+            setIsRedacted(true);
+            setRedactedUntil(song.redactedUntil);
+
+            // Redirect back to songs list if trying to access a redacted song
+            router.push("/songs");
+          } else {
+            setIsRedacted(false);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking if song is redacted:", error);
+      }
+    };
+
+    checkIfRedacted();
+  }, [tokenId, router]);
+
+  // If the song is redacted, the component won't render since we redirect
+  // But as a fallback, render a redacted message
+  if (isRedacted) {
+    return (
+      <div className="min-h-screen bg-black text-white font-mono p-6 flex flex-col items-center w-full">
+        <Header />
+
+        <div className="w-full max-w-md aspect-square bg-black border-2 border-white/20 rounded-lg mb-6 relative overflow-hidden flex items-center justify-center">
+          <EyeOff
+            size={64}
+            className="text-white/30"
+          />
+        </div>
+
+        <div className="w-full max-w-md text-center mb-8">
+          <h2 className="text-xl font-bold">REDACTED</h2>
+          <div className="text-sm text-white/60">
+            Details will be revealed soon
+          </div>
+
+          <div className="mt-6 p-4 border border-white/20 rounded">
+            <div className="text-sm text-white/80">Revealing in:</div>
+            <div className="text-2xl mt-2">
+              {formatCountdown(redactedUntil - Math.floor(Date.now() / 1000))}
+            </div>
+          </div>
+        </div>
+
+        <Button
+          variant="outline"
+          className="w-full max-w-md h-12 text-lg border-2"
+          onClick={() => router.push("/songs")}
+        >
+          BACK TO SONGS
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white font-mono p-6 flex flex-col items-center w-full">

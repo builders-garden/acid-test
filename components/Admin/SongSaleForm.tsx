@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FileIcon, CalendarIcon, DollarSignIcon } from "lucide-react";
+import { FileIcon, DollarSignIcon } from "lucide-react";
 import { parseUnits } from "viem";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface SongSaleFormProps {
   setModalOpen: (open: boolean) => void;
@@ -35,6 +36,8 @@ export default function SongSaleForm({
     price: number;
     audioFile: File | null;
     coverImage: File | null;
+    isRedacted: boolean;
+    redactedUntil: number;
   }>({
     title: "",
     startDate: 0,
@@ -42,15 +45,19 @@ export default function SongSaleForm({
     price: 0,
     audioFile: null,
     coverImage: null,
+    isRedacted: false,
+    redactedUntil: 0,
   });
 
   const [displayValues, setDisplayValues] = useState({
     price: "",
     startDate: "",
     endDate: "",
+    redactedUntil: "",
   });
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isCreateConfirmed) {
@@ -89,7 +96,11 @@ export default function SongSaleForm({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
-    if (name === "startDate" || name === "endDate") {
+    if (
+      name === "startDate" ||
+      name === "endDate" ||
+      name === "redactedUntil"
+    ) {
       setDisplayValues((prev) => ({ ...prev, [name]: value }));
 
       // Convert Eastern Time to UTC
@@ -101,6 +112,19 @@ export default function SongSaleForm({
         const utcDate = new Date(easternDate.toISOString());
         const timestamp = Math.floor(utcDate.getTime() / 1000);
         setFormData((prev) => ({ ...prev, [name]: timestamp }));
+
+        // Validate redactedUntil is before startDate if both exist
+        if (name === "redactedUntil" || name === "startDate") {
+          if (formData.startDate && formData.redactedUntil) {
+            if (formData.redactedUntil > formData.startDate) {
+              setValidationError(
+                "Redacted until date must be before start date"
+              );
+            } else {
+              setValidationError(null);
+            }
+          }
+        }
       }
     } else if (name === "price") {
       // Prevent negative values
@@ -117,6 +141,16 @@ export default function SongSaleForm({
       }
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleCheckboxChange = (checked: boolean) => {
+    setFormData((prev) => ({ ...prev, isRedacted: checked }));
+
+    // Reset redactedUntil if isRedacted is unchecked
+    if (!checked) {
+      setFormData((prev) => ({ ...prev, redactedUntil: 0 }));
+      setDisplayValues((prev) => ({ ...prev, redactedUntil: "" }));
     }
   };
 
@@ -138,6 +172,31 @@ export default function SongSaleForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate redacted until date if song is redacted
+    if (formData.isRedacted) {
+      const now = Math.floor(Date.now() / 1000);
+
+      if (formData.redactedUntil === 0) {
+        setValidationError(
+          "Please set a date when the song will be unredacted"
+        );
+        return;
+      }
+
+      if (formData.redactedUntil <= now) {
+        setValidationError("Redacted until date must be in the future");
+        return;
+      }
+
+      if (formData.redactedUntil >= formData.startDate) {
+        setValidationError(
+          "Redacted until date must be before the release date"
+        );
+        return;
+      }
+    }
+
     setModalOpen(true);
     setModalStatus("loading");
     setModalMessage("Uploading files to IPFS");
@@ -182,6 +241,33 @@ export default function SongSaleForm({
       const uploadResult = await uploadResponse.json();
       setModalStatus("success");
       setModalMessage("Upload successful!");
+
+      // If the song is redacted, save it to the database
+      if (formData.isRedacted) {
+        try {
+          const redactedData = {
+            tokenId: uploadResult.metadataCID,
+            title: formData.title,
+            redactedUntil: formData.redactedUntil,
+            startDate: formData.startDate,
+          };
+
+          // Save redacted song to database
+          const dbResponse = await fetch("/api/redacted-songs", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(redactedData),
+          });
+
+          if (!dbResponse.ok) {
+            console.error("Failed to save redacted song to database");
+          }
+        } catch (error) {
+          console.error("Error saving redacted song:", error);
+        }
+      }
 
       // Wait for 2 seconds before writing to the contract
       setTimeout(async () => {
@@ -245,7 +331,6 @@ export default function SongSaleForm({
             required
             className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white [color-scheme:dark]"
           />
-          <CalendarIcon className="absolute top-2.5 right-2.5 h-4 w-4 text-white/60" />
         </div>
       </div>
 
@@ -265,7 +350,6 @@ export default function SongSaleForm({
             required
             className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white [color-scheme:dark]"
           />
-          <CalendarIcon className="absolute top-2.5 right-2.5 h-4 w-4 text-white/60" />
         </div>
       </div>
 
@@ -340,9 +424,53 @@ export default function SongSaleForm({
         )}
       </div>
 
+      <div>
+        <div className="flex items-center space-x-2 mb-2">
+          <Checkbox
+            id="isRedacted"
+            checked={formData.isRedacted}
+            onCheckedChange={handleCheckboxChange}
+          />
+          <label
+            htmlFor="isRedacted"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            Redacted Release
+          </label>
+        </div>
+        <p className="text-xs text-white/60">
+          Hide song details until a specific date
+        </p>
+      </div>
+
+      {formData.isRedacted && (
+        <div>
+          <label
+            htmlFor="redactedUntil"
+            className="block mb-1 text-sm text-white/80"
+          >
+            Redacted Until (Eastern Time)
+          </label>
+          <div className="relative">
+            <input
+              type="datetime-local"
+              name="redactedUntil"
+              value={displayValues.redactedUntil}
+              onChange={handleChange}
+              required={formData.isRedacted}
+              className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white [color-scheme:dark]"
+            />
+          </div>
+          {validationError && (
+            <p className="text-red-500 text-sm mt-1">{validationError}</p>
+          )}
+        </div>
+      )}
+
       <Button
         type="submit"
         className="w-full h-12 text-lg border-2 bg-white text-black hover:bg-white/90 hover:text-black"
+        disabled={!!validationError}
       >
         Confirm
       </Button>
