@@ -6,6 +6,7 @@ import { parseUnits } from "viem";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { Button } from "@/components/ui/button";
+import { upload } from "@vercel/blob/client";
 
 interface SongSaleFormProps {
   setModalOpen: (open: boolean) => void;
@@ -140,13 +141,13 @@ export default function SongSaleForm({
     e.preventDefault();
     setModalOpen(true);
     setModalStatus("loading");
-    setModalMessage("Uploading files to IPFS");
-
-    console.log("form data: ", formData);
+    setModalMessage("Uploading files to storage");
 
     // Validate required files
     if (!formData.audioFile || !formData.coverImage) {
       console.error("Audio file and cover image are required");
+      setModalStatus("error");
+      setModalMessage("Audio file and cover image are required");
       return;
     }
 
@@ -158,18 +159,43 @@ export default function SongSaleForm({
     }
 
     try {
-      // Create form data for server-side upload
-      const uploadFormData = new FormData();
-      uploadFormData.set("type", "combined");
-      uploadFormData.set("audioFile", formData.audioFile);
-      uploadFormData.set("imageFile", formData.coverImage);
-      uploadFormData.set("title", formData.title);
-      uploadFormData.set("description", "Acid test hit");
+      // Upload audio file to Vercel Blob
+      setModalMessage("Uploading audio file...");
+      const audioBlob = await upload(
+        `audio-${Date.now()}-${formData.audioFile.name}`,
+        formData.audioFile,
+        {
+          access: "public",
+          handleUploadUrl: "/api/blob-upload",
+        }
+      );
 
-      // Send combined upload request to the server
+      // Upload cover image to Vercel Blob
+      setModalMessage("Uploading cover image...");
+      const imageBlob = await upload(
+        `image-${Date.now()}-${formData.coverImage.name}`,
+        formData.coverImage,
+        {
+          access: "public",
+          handleUploadUrl: "/api/blob-upload",
+        }
+      );
+
+      setModalMessage("Files uploaded. Pinning to IPFS...");
+
+      // Send the Blob URLs to Pinata API
       const uploadResponse = await fetch("/api/pinata", {
         method: "POST",
-        body: uploadFormData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "combined",
+          audioFileUrl: audioBlob.url,
+          imageFileUrl: imageBlob.url,
+          title: formData.title,
+          description: "Acid test hit",
+        }),
       });
 
       if (!uploadResponse.ok) {
@@ -180,6 +206,8 @@ export default function SongSaleForm({
       }
 
       const uploadResult = await uploadResponse.json();
+      console.log("Upload result:", JSON.stringify(uploadResult, null, 2));
+      console.log("Metadata URL:", uploadResult.metadataUrl);
       setModalStatus("success");
       setModalMessage("Upload successful!");
 
@@ -202,8 +230,9 @@ export default function SongSaleForm({
         });
       }, 2000);
     } catch (error) {
+      console.error("Upload error:", error);
       setModalStatus("error");
-      setModalMessage("Error during upload process");
+      setModalMessage(`Error during upload process: ${error}`);
     }
   };
 
