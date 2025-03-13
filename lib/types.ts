@@ -8,4 +8,14 @@ export interface DbUser {
   createdAt: Date;
 }
 
+
+export interface DbSong {
+  id: number; 
+  title: string;
+  startDate: string | null;
+  endDate: string | null;
+  createdAt: Date; 
+}
+
 export type InsertDbUser = Omit<DbUser, "createdAt">;
+export type InsertDbSOng = Omit<DbSong, "createdAt">;

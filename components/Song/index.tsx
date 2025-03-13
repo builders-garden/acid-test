@@ -13,6 +13,7 @@ import { CONTRACT_ADDRESS } from "@/lib/constants";
 import { SongMetadata } from "@/types";
 import { Header } from "../header";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
+import SongCollectionStatus from "@/components/SongCollectionStatus";
 
 interface Collector {
   address: string;
@@ -77,6 +78,7 @@ export default function Song() {
   const [rotation, setRotation] = useState(0);
   const rotationRef = useRef(0);
   const animationRef = useRef<number | null>(null);
+  const [isCollected, setIsCollected] = useState(false);
 
   // Use the global audio player context
   const {
@@ -94,15 +96,7 @@ export default function Song() {
 
   // Extract token ID from the URL path
   const pathname = usePathname();
-  const tokenId = useMemo(() => {
-    // Extract the last segment from the pathname
-    const pathSegments = pathname.split("/");
-    const lastSegment = pathSegments[pathSegments.length - 1];
-
-    // Try to parse as integer, default to 1 if not a valid number
-    const parsedId = parseInt(lastSegment);
-    return isNaN(parsedId) ? 1 : parsedId;
-  }, [pathname]);
+  const tokenId = pathname ? parseInt(pathname.split('/').pop() || '0') : 0;
 
   const getTokenInfoResult = useReadContract({
     abi: AcidTestABI,
@@ -279,6 +273,40 @@ export default function Song() {
     return sortedList;
   }, []);
 
+  useEffect(() => {
+    // Fetch song data including collection status
+    const fetchSongData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Fetch song details from your API (includes collection status)
+        const response = await fetch(`/api/songs/${tokenId}`);
+        const data = await response.json();
+        
+        if (data) {
+          setMetadata({
+            name: data.title,
+            description: data.artist,
+            image: data.albumArt,
+            animation_url: data.audioUrl,
+          });
+          
+          // Set the collection status
+          setIsCollected(data.isCollected);
+        }
+        
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching song data:", error);
+        setIsLoading(false);
+      }
+    };
+    
+    if (tokenId) {
+      fetchSongData();
+    }
+  }, [tokenId]);
+
   return (
     <div className="min-h-screen bg-black text-white font-mono p-6 flex flex-col items-center w-full">
       <Header />
@@ -367,6 +395,14 @@ export default function Song() {
             {metadata.description}
           </div>
         )}
+        
+        {/* Collection Status Button */}
+        <div className="mt-4">
+          <SongCollectionStatus 
+            songId={tokenId} 
+            initialIsCollected={isCollected} 
+          />
+        </div>
       </div>
 
       {/* Mint Status and Controls - Dynamically adjust based on status */}
@@ -496,6 +532,7 @@ export default function Song() {
         onClose={() => setIsMintModalOpen(false)}
         mintQuantity={mintQuantity}
         setMintQuantity={setMintQuantity}
+        songName={metadata!.name}
         paymentMethod={paymentMethod}
         setPaymentMethod={setPaymentMethod}
         userAddress={address}

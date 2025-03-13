@@ -127,3 +127,29 @@ export const sendDelayedNotificationToAll = async (
     }`
   );
 };
+
+export const sendDelayedNotificationBasedOnOwnership = async (
+  title: string,
+  text: string,
+  tokenId: string,
+  delay?: number | `${bigint}s` | `${bigint}m` | `${bigint}h` | `${bigint}d`
+) => {
+  if (process.env.NEXT_PUBLIC_URL === "http://localhost:3000") {
+    return;
+  }
+  const res = await qstashPublishJSON({
+    url: `${process.env.NEXT_PUBLIC_URL}/api/qstash/send-notification/ownership`,
+    body: {
+      title,
+      text,
+      tokenId,
+    },
+    delay,
+  });
+
+  console.log(
+    `[QSTASH-${new Date().toISOString()}] - sent delayed notification to QStash with id: ${
+      res?.messageId
+    }`
+  );
+};

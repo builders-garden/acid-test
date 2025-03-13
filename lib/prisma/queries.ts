@@ -60,3 +60,34 @@ export const getUserNotificationDetails = async (
     ? (JSON.parse(user.notificationDetails) as FrameNotificationDetails)
     : null;
 };
+
+export const getSong = async (id: number) => {
+  return await prisma.song.findUnique({
+    where: { id },
+    include: {
+      collectors: {
+        include: {
+          user: true,
+        },
+      },
+    },
+  });
+};
+
+export const createSong = async (song: InsertDbSong): Promise<DbSong> => {
+  return await prisma.song.create({
+    data: song,
+  });
+};
+
+export const isInCollection = async (userId: number, songId: number) => {
+  const collection = await prisma.collection.findUnique({
+    where: {
+      userId_songId: {
+        userId,
+        songId,
+      },
+    },
+  });
+  return !!collection;
+};

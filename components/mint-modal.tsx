@@ -14,11 +14,14 @@ import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { toast } from "sonner";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
 import { useWaitForTransactionReceipt } from "wagmi";
+import { useMiniAppContext } from "@/hooks/use-miniapp-context";
+import { sendDelayedNotification } from "@/lib/qstash";
 
 interface MintModalProps {
   isOpen: boolean;
   onClose: () => void;
   mintQuantity: number;
+  songName: string;
   setMintQuantity: (quantity: number) => void;
   paymentMethod: "ETH" | "USDC";
   setPaymentMethod: (method: "ETH" | "USDC") => void;
@@ -27,6 +30,10 @@ interface MintModalProps {
   usdPrice: number;
   ethUsd: number;
 }
+
+const { type: contextType, context } = useMiniAppContext();
+
+
 
 enum MintState {
   Initial = 0,
@@ -39,6 +46,7 @@ export function MintModal({
   onClose,
   mintQuantity,
   setMintQuantity,
+  songName,
   paymentMethod,
   setPaymentMethod,
   userAddress,
@@ -145,11 +153,31 @@ export function MintModal({
   useEffect(() => {
     if (txResult && txResult.status === "success") {
       setMintState(MintState.Success);
+      
+      const sendNotification = async () => {
+        if (contextType === "farcaster" && context?.user?.fid) {
+          try {
+            await sendDelayedNotification(
+              context?.user?.fid, 
+              `You just collected ${mintQuantity} ${mintQuantity > 1 ? "editions" : "edition"} of ${songName}!`, 
+              "You currently hold the 15th spot on the collectors leaderboard. Thank you",
+              0
+            )
+          } catch (error) {
+            console.error("Error sending notification:", error);
+            toast("Error sending notification");
+          }
+        }
+      };
+      
+      // Call the async function
+      sendNotification();
+      
     } else if (txResult && txResult.status === "error") {
       toast("Minting failed");
       setMintState(MintState.Initial);
     }
-  }, [txResult]);
+  }, [txResult, mintQuantity]);
 
   return (
     <AnimatePresence>

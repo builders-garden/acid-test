@@ -6,6 +6,8 @@ import { parseUnits } from "viem";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { Button } from "@/components/ui/button";
+import { sendDelayedNotificationToAll } from "@/lib/qstash";
+import { useReadContract } from "wagmi";  
 
 interface SongSaleFormProps {
   setModalOpen: (open: boolean) => void;
@@ -18,6 +20,29 @@ export default function SongSaleForm({
   setModalStatus,
   setModalMessage,
 }: SongSaleFormProps) {
+  
+  const[tokenCounter, setTokenCounter] = useState<number>(0);
+  let contractAddress;
+  if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
+    contractAddress = process.env.NEXT_PUBLIC_SMART_CONTRACT_TEST_ADDRESS;
+  } else {
+    contractAddress = process.env.NEXT_PUBLIC_SMART_CONTRACT_ADDRESS;
+  }
+
+  const getIdCounter = useReadContract({
+    abi: AcidTestABI,
+    address: contractAddress as `0x${string}`,
+    functionName: "idCounter",
+    args: [],
+  });
+
+  useEffect(() => {
+    if (getIdCounter.data) {
+      setTokenCounter(Number(getIdCounter.data));
+    }
+  }, [getIdCounter.data]);
+
+  
   const {
     data: createTxHash,
     isPending: isCreatePending,
@@ -55,7 +80,41 @@ export default function SongSaleForm({
   useEffect(() => {
     if (isCreateConfirmed) {
       setModalStatus("success");
-      setModalMessage("Transaction successful");
+      setModalMessage("Transaction successful");    
+      const setNotifications = async () => {
+        try {
+
+          const song = await createSong({
+            id: 1, // Replace with the actual ID or generate it dynamically
+            title: formData.title,
+            artist: formData.artist, // Assuming you have artist in formData
+            albumArt: formData.albumArt, // Assuming you have albumArt in formData
+            audioUrl: formData.audioUrl, // Assuming you have audioUrl in formData
+          });
+
+          const response = await fetch('/api/setup-notifications', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              title: formData.title,
+              startDate: formData.startDate,
+              endDate: formData.endDate.toString(),
+              price: formData.price.toString(),
+              tokenId: (Number(tokenCounter) + 1).toString()
+            }),
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Failed to setup notifications:", errorData);
+          }
+        } catch (error) {
+          console.error("Error calling notification API:", error);
+        }
+      }
+      setNotifications();
     }
     if (createError) {
       setModalStatus("error");
@@ -150,13 +209,6 @@ export default function SongSaleForm({
       return;
     }
 
-    let contractAddress;
-    if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
-      contractAddress = process.env.NEXT_PUBLIC_SMART_CONTRACT_TEST_ADDRESS;
-    } else {
-      contractAddress = process.env.NEXT_PUBLIC_SMART_CONTRACT_ADDRESS;
-    }
-
     try {
       // Create form data for server-side upload
       const uploadFormData = new FormData();
@@ -201,11 +253,13 @@ export default function SongSaleForm({
           ],
         });
       }, 2000);
+      
     } catch (error) {
       setModalStatus("error");
       setModalMessage("Error during upload process");
     }
   };
+
 
   return (
     <form

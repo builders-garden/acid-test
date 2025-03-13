@@ -6,5 +6,6 @@ CREATE TABLE "users" (
     "avatarUrl" TEXT,
     "walletAddress" TEXT,
     "notificationDetails" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "purchases" INTEGER[]
 );
