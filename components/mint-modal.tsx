@@ -153,7 +153,7 @@ export function MintModal({
   useEffect(() => {
     if (txResult && txResult.status === "success") {
       setMintState(MintState.Success);
-      
+
       const sendNotification = async () => {
         if (contextType === "farcaster" && context?.user?.fid) {
           try {
@@ -170,9 +170,43 @@ export function MintModal({
         }
       };
       
-      // Call the async function
+      const createCollection = async () => {
+        let fid;
+        if (contextType === "farcaster") {
+          if (context && context.user.fid) {
+            fid = context.user.fid;
+          }
+        }
+        try {
+          const response = await fetch('/api/dbops', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userId: fid, // Assuming `context.user.id` contains the user ID
+              songId: tokenId, // Assuming `tokenCounter` is the ID of the song
+            }),
+          });
+    
+         
+          if (!response.ok) {
+            const errorData = await response.json(); // Parse error response
+            throw new Error(errorData.error || 'Failed to create collection');
+          }
+    
+         
+          const result = await response.json();
+          console.log('Created collection: ', result.data);
+        } catch (error: unknown) {
+          console.error('Error creating collection: ', error instanceof Error ? error.message : error);
+          toast('Error creating collection');
+        }
+      };
+
       sendNotification();
-      
+      createCollection();
+  
     } else if (txResult && txResult.status === "error") {
       toast("Minting failed");
       setMintState(MintState.Initial);

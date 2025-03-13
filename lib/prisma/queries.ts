@@ -1,5 +1,5 @@
 import { FrameNotificationDetails } from "@farcaster/frame-sdk";
-import { DbUser, InsertDbUser, DbSong, InsertDbSong } from "../types";
+import { DbUser, InsertDbUser, DbSong, InsertDbSong, DbCollection, InsertDbCollection } from "../types";
 import { prisma } from "./client";
 
 export const getUser = async (fid: number) => {
@@ -76,7 +76,12 @@ export const getSong = async (id: number) => {
 
 export const createSong = async (song: InsertDbSong): Promise<DbSong> => {
   return await prisma.song.create({
-    data: song,
+    data: {
+      id: song.id,
+      title: song.title,
+      startDate: song.startDate ?? "",
+      endDate: song.endDate ?? "",
+    },
   });
 };
 
@@ -92,28 +97,45 @@ export const isInCollection = async (userId: number, songId: number) => {
   return !!collection;
 };
 
-
-export const createCollection = async (userId: number, songId: number): Promise<boolean> => {
-  try {
-    // Check if the relation already exists
-    const existingCollection = await isInCollection(userId, songId);
-    
-    if (existingCollection) {
-      return false; // User already owns this song
-    }
-    
-    // Create the new collection entry
-    await prisma.collection.create({
-      data: {
+export const getCollection = async (userId: number, songId: number) => {
+  const collection = await prisma.collection.findUnique({
+    where: {
+      userId_songId: {
         userId,
         songId,
-        // collectedAt will default to now() as defined in your schema
       },
-    });
-    
-    return true; // Successfully created the collection
-  } catch (error) {
-    console.error("Error creating collection:", error);
-    return false; // Failed to create collection
+    },
+  });
+  
+  return collection;
+}
+
+export const createCollection = async (
+  collection: {
+    userId: number;
+    songId: number;
+    collectedAt?: Date;
   }
+): Promise<DbCollection> => {
+ 
+  const existingCollection = await isInCollection(collection.userId, collection.songId);
+  
+  if (existingCollection) {
+    const res = await getCollection(collection.userId, collection.songId);
+    
+    if (!res) {
+      throw new Error("Collection exists but couldn't be retrieved");
+    }
+    
+    return res;
+  }
+  
+  // Create the new collection entry
+  return await prisma.collection.create({
+    data: {
+      userId: collection.userId,
+      songId: collection.songId,
+      collectedAt: collection.collectedAt ?? new Date(),
+    },
+  });
 };

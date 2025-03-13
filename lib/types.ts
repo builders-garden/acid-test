@@ -17,5 +17,15 @@ export interface DbSong {
   createdAt: Date; 
 }
 
+
+export interface DbCollection {
+  userId: number;
+  songId: number;
+  collectedAt: Date;
+  user?: DbUser;
+  song?: DbSong;    
+}
+
 export type InsertDbUser = Omit<DbUser, "createdAt">;
 export type InsertDbSong = Omit<DbSong, "createdAt">;
+export type InsertDbCollection = Omit <DbCollection, "createdAt">;

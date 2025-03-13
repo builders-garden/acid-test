@@ -85,15 +85,27 @@ export default function SongSaleForm({
       const setNotifications = async () => {
         try {
 
-          const song = await createSong({
-            id: tokenCounter, 
-            title: formData.title,
-            startDate: formData.startDate.toString(), 
-            endDate: formData.endDate.toString(), 
+          // Make a POST request to the API endpoint
+          const dbopsResponse = await fetch('/api/dbops', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              tokenId: tokenCounter,
+              title: formData.title,
+              startDate: formData.startDate.toString(),
+              endDate: formData.endDate.toString(),
+            }),
           });
-          console.log("Uploaded song: ", song)
-          
-          const response = await fetch('/api/setup-notifications', {
+        
+          // Check if the request was successful
+          if (!dbopsResponse.ok) {
+            const errorData = await dbopsResponse.json(); // Parse error response
+            throw new Error(errorData.error || 'Failed to upload song');
+          }
+        
+          const setupNotisResponse = await fetch('/api/setup-notifications', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -107,8 +119,8 @@ export default function SongSaleForm({
             }),
           });
           
-          if (!response.ok) {
-            const errorData = await response.json();
+          if (!setupNotisResponse.ok) {
+            const errorData = await setupNotisResponse.json();
             console.error("Failed to setup notifications:", errorData);
           }
         } catch (error) {
