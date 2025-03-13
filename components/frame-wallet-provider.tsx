@@ -1,13 +1,12 @@
-import { CHAIN } from "@/lib/constants";
 import { frameConnector } from "@/lib/frame-connector";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createConfig, http, WagmiProvider } from "wagmi";
-import { ChainHandler } from "./chain-handler";
+import { baseSepolia } from "wagmi/chains";
 
 export const config = createConfig({
-  chains: [CHAIN],
+  chains: [baseSepolia],
   transports: {
-    [CHAIN.id]: http(),
+    [baseSepolia.id]: http(),
   },
   connectors: [frameConnector()],
 });
@@ -21,10 +20,7 @@ export default function FrameWalletProvider({
 }) {
   return (
     <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <ChainHandler />
-        {children}
-      </QueryClientProvider>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </WagmiProvider>
   );
 }
