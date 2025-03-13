@@ -8,6 +8,7 @@ import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { Button } from "@/components/ui/button";
 import { sendDelayedNotificationToAll } from "@/lib/qstash";
 import { useReadContract } from "wagmi";  
+import { createSong } from "@/lib/prisma/queries";
 
 interface SongSaleFormProps {
   setModalOpen: (open: boolean) => void;
@@ -85,13 +86,13 @@ export default function SongSaleForm({
         try {
 
           const song = await createSong({
-            id: 1, // Replace with the actual ID or generate it dynamically
+            id: tokenCounter, 
             title: formData.title,
-            artist: formData.artist, // Assuming you have artist in formData
-            albumArt: formData.albumArt, // Assuming you have albumArt in formData
-            audioUrl: formData.audioUrl, // Assuming you have audioUrl in formData
+            startDate: formData.startDate.toString(), 
+            endDate: formData.endDate.toString(), 
           });
-
+          console.log("Uploaded song: ", song)
+          
           const response = await fetch('/api/setup-notifications', {
             method: 'POST',
             headers: {

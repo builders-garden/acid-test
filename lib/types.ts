@@ -18,4 +18,4 @@ export interface DbSong {
 }
 
 export type InsertDbUser = Omit<DbUser, "createdAt">;
-export type InsertDbSOng = Omit<DbSong, "createdAt">;
+export type InsertDbSong = Omit<DbSong, "createdAt">;

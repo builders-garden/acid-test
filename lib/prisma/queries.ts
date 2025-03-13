@@ -1,5 +1,5 @@
 import { FrameNotificationDetails } from "@farcaster/frame-sdk";
-import { DbUser, InsertDbUser } from "../types";
+import { DbUser, InsertDbUser, DbSong, InsertDbSong } from "../types";
 import { prisma } from "./client";
 
 export const getUser = async (fid: number) => {
@@ -90,4 +90,30 @@ export const isInCollection = async (userId: number, songId: number) => {
     },
   });
   return !!collection;
+};
+
+
+export const createCollection = async (userId: number, songId: number): Promise<boolean> => {
+  try {
+    // Check if the relation already exists
+    const existingCollection = await isInCollection(userId, songId);
+    
+    if (existingCollection) {
+      return false; // User already owns this song
+    }
+    
+    // Create the new collection entry
+    await prisma.collection.create({
+      data: {
+        userId,
+        songId,
+        // collectedAt will default to now() as defined in your schema
+      },
+    });
+    
+    return true; // Successfully created the collection
+  } catch (error) {
+    console.error("Error creating collection:", error);
+    return false; // Failed to create collection
+  }
 };
