@@ -6,9 +6,8 @@ import { parseUnits } from "viem";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { Button } from "@/components/ui/button";
-import { sendDelayedNotificationToAll } from "@/lib/qstash";
-import { useReadContract } from "wagmi";  
-import { createSong } from "@/lib/prisma/queries";
+import { useReadContract } from "wagmi";
+import { upload } from "@vercel/blob/client";
 
 interface SongSaleFormProps {
   setModalOpen: (open: boolean) => void;
@@ -21,8 +20,7 @@ export default function SongSaleForm({
   setModalStatus,
   setModalMessage,
 }: SongSaleFormProps) {
-  
-  const[tokenCounter, setTokenCounter] = useState<number>(0);
+  const [tokenCounter, setTokenCounter] = useState<number>(0);
   let contractAddress;
   if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
     contractAddress = process.env.NEXT_PUBLIC_SMART_CONTRACT_TEST_ADDRESS;
@@ -43,7 +41,6 @@ export default function SongSaleForm({
     }
   }, [getIdCounter.data]);
 
-  
   const {
     data: createTxHash,
     isPending: isCreatePending,
@@ -81,15 +78,14 @@ export default function SongSaleForm({
   useEffect(() => {
     if (isCreateConfirmed) {
       setModalStatus("success");
-      setModalMessage("Transaction successful");    
+      setModalMessage("Transaction successful");
       const setNotifications = async () => {
         try {
-
           // Make a POST request to the API endpoint
-          const dbopsResponse = await fetch('/api/dbops', {
-            method: 'POST',
+          const dbopsResponse = await fetch("/api/dbops", {
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({
               tokenId: tokenCounter,
@@ -98,27 +94,27 @@ export default function SongSaleForm({
               endDate: formData.endDate.toString(),
             }),
           });
-        
+
           // Check if the request was successful
           if (!dbopsResponse.ok) {
             const errorData = await dbopsResponse.json(); // Parse error response
-            throw new Error(errorData.error || 'Failed to upload song');
+            throw new Error(errorData.error || "Failed to upload song");
           }
-        
-          const setupNotisResponse = await fetch('/api/setup-notifications', {
-            method: 'POST',
+
+          const setupNotisResponse = await fetch("/api/setup-notifications", {
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({
               title: formData.title,
               startDate: formData.startDate,
               endDate: formData.endDate.toString(),
               price: formData.price.toString(),
-              tokenId: (Number(tokenCounter) + 1).toString()
+              tokenId: (Number(tokenCounter) + 1).toString(),
             }),
           });
-          
+
           if (!setupNotisResponse.ok) {
             const errorData = await setupNotisResponse.json();
             console.error("Failed to setup notifications:", errorData);
@@ -126,7 +122,7 @@ export default function SongSaleForm({
         } catch (error) {
           console.error("Error calling notification API:", error);
         }
-      }
+      };
       setNotifications();
     }
     if (createError) {
@@ -212,29 +208,54 @@ export default function SongSaleForm({
     e.preventDefault();
     setModalOpen(true);
     setModalStatus("loading");
-    setModalMessage("Uploading files to IPFS");
-
-    console.log("form data: ", formData);
+    setModalMessage("Uploading files to storage");
 
     // Validate required files
     if (!formData.audioFile || !formData.coverImage) {
       console.error("Audio file and cover image are required");
+      setModalStatus("error");
+      setModalMessage("Audio file and cover image are required");
       return;
     }
 
     try {
-      // Create form data for server-side upload
-      const uploadFormData = new FormData();
-      uploadFormData.set("type", "combined");
-      uploadFormData.set("audioFile", formData.audioFile);
-      uploadFormData.set("imageFile", formData.coverImage);
-      uploadFormData.set("title", formData.title);
-      uploadFormData.set("description", "Acid test hit");
+      // Upload audio file to Vercel Blob
+      setModalMessage("Uploading audio file...");
+      const audioBlob = await upload(
+        `audio-${Date.now()}-${formData.audioFile.name}`,
+        formData.audioFile,
+        {
+          access: "public",
+          handleUploadUrl: "/api/blob-upload",
+        }
+      );
 
-      // Send combined upload request to the server
+      // Upload cover image to Vercel Blob
+      setModalMessage("Uploading cover image...");
+      const imageBlob = await upload(
+        `image-${Date.now()}-${formData.coverImage.name}`,
+        formData.coverImage,
+        {
+          access: "public",
+          handleUploadUrl: "/api/blob-upload",
+        }
+      );
+
+      setModalMessage("Files uploaded. Pinning to IPFS...");
+
+      // Send the Blob URLs to Pinata API
       const uploadResponse = await fetch("/api/pinata", {
         method: "POST",
-        body: uploadFormData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "combined",
+          audioFileUrl: audioBlob.url,
+          imageFileUrl: imageBlob.url,
+          title: formData.title,
+          description: "Acid test hit",
+        }),
       });
 
       if (!uploadResponse.ok) {
@@ -245,6 +266,8 @@ export default function SongSaleForm({
       }
 
       const uploadResult = await uploadResponse.json();
+      console.log("Upload result:", JSON.stringify(uploadResult, null, 2));
+      console.log("Metadata URL:", uploadResult.metadataUrl);
       setModalStatus("success");
       setModalMessage("Upload successful!");
 
@@ -266,13 +289,12 @@ export default function SongSaleForm({
           ],
         });
       }, 2000);
-      
     } catch (error) {
+      console.error("Upload error:", error);
       setModalStatus("error");
-      setModalMessage("Error during upload process");
+      setModalMessage(`Error during upload process: ${error}`);
     }
   };
-
 
   return (
     <form
