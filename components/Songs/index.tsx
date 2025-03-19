@@ -10,6 +10,7 @@ import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
 import { SongMetadata } from "@/types";
 import { Header } from "../header";
+import { formatSongId } from "@/lib/utils";
 
 interface TokenInfo {
   salesStartDate: number;
@@ -19,28 +20,24 @@ interface TokenInfo {
 }
 
 interface RedactedSong {
-  tokenId: number;
-  redactedUntil: number;
-  title?: string;
+  id: number;
+  createdAt: number;
 }
 
 interface ReleaseBlock {
+  index: number;
   id: string;
   title: string;
   status: "live" | "end" | "coming" | "redacted";
   countdown: number;
   image: string;
   salesStartDate: number;
-  redactedUntil?: number;
 }
 
 export default function SongsPage() {
   const [releases, setReleases] = useState<ReleaseBlock[]>([]);
   const [metadataLoading, setMetadataLoading] = useState(true);
   const [redactedSongs, setRedactedSongs] = useState<RedactedSong[]>([]);
-
-  console.log("releases", releases);
-  console.log("redactedSongs", redactedSongs);
 
   const formatCountdown = (seconds: number) => {
     if (seconds <= 0) return "00:00:00";
@@ -93,46 +90,23 @@ export default function SongsPage() {
 
   useEffect(() => {
     if (getTokenInfosResult.data) {
-      const contractReleases =
+      const allContractReleases =
         getTokenInfosResult.data as ReadonlyArray<TokenInfo>;
-
-      console.log("contractReleases", contractReleases);
+      const contractReleases = allContractReleases.filter(
+        (release) => release.uri !== ""
+      );
 
       const fetchReleasesData = async () => {
         setMetadataLoading(true);
         try {
           const releasesData = await Promise.all(
             contractReleases.map(async (release, i) => {
-              console.log("release", release);
-              if (release.uri === "") {
-                return null;
-              }
-
-              const tokenId = i + 1;
+              const songId = i + 1;
+              const songCid = release.uri.split("/").pop() || "";
               const now = Math.floor(Date.now() / 1000);
 
-              // Check if this song is redacted
-              const redactedSong = redactedSongs.find(
-                (song) => song.tokenId === tokenId
-              );
-              const isRedacted =
-                redactedSong && now < redactedSong.redactedUntil;
-
-              // If song is redacted, use minimal information
-              if (isRedacted) {
-                return {
-                  id: String(tokenId),
-                  title: "Redacted Release",
-                  status: "redacted" as const,
-                  countdown: redactedSong.redactedUntil - now,
-                  image: "",
-                  salesStartDate: release.salesStartDate,
-                  redactedUntil: redactedSong.redactedUntil,
-                };
-              }
-
-              // Regular song processing
-              let title = `Release ${tokenId}`;
+              // Regular song processing for all contract songs
+              let title = formatSongId(songId);
               let image = "";
 
               try {
@@ -144,7 +118,7 @@ export default function SongsPage() {
                 }
               } catch (error) {
                 console.error(
-                  `Error fetching metadata for release ${tokenId}:`,
+                  `Error fetching metadata for release ${songCid}:`,
                   error
                 );
               }
@@ -163,19 +137,33 @@ export default function SongsPage() {
               }
 
               return {
-                id: String(tokenId),
+                index: songId,
+                id: formatSongId(songId),
                 title,
                 status,
                 countdown: release.salesExpirationDate - now,
                 image,
                 salesStartDate: release.salesStartDate,
-              };
+              } as ReleaseBlock;
             })
           );
 
           const filteredReleases = releasesData.filter(
             (item): item is NonNullable<typeof item> => item !== null
           );
+
+          // Add redacted song placeholders to the releases list
+          redactedSongs.forEach((redactedSong, i) => {
+            filteredReleases.push({
+              id: formatSongId(contractReleases.length + i + 1),
+              title: "REDACTED",
+              status: "redacted" as const,
+              countdown: 0, // No countdown for simple redacted placeholders
+              image: "",
+              salesStartDate: 0,
+              index: i,
+            });
+          });
 
           // Sort releases: live first, coming second, redacted third, ended last
           // Within each group, sort by salesStartDate (newest first)
@@ -225,7 +213,7 @@ export default function SongsPage() {
     if (release.status === "live") {
       return (
         <Link
-          href={`/songs/${release.id.toLowerCase()}`}
+          href={`/songs/${release.index}`}
           key={release.id}
           className="w-full"
         >
@@ -253,7 +241,7 @@ export default function SongsPage() {
                   <h2 className="text-sm font-bold truncate">
                     {release.title}
                   </h2>
-                  <p className="text-sm text-white/60">Release {release.id}</p>
+                  <p className="text-sm text-white/60">{release.id}</p>
                 </div>
                 <div className="flex items-center justify-between mt-4">
                   <div className="flex items-center gap-2">
@@ -275,7 +263,7 @@ export default function SongsPage() {
       return (
         <div
           key={release.id}
-          className="w-full border-2 border-white/20 rounded-lg p-4 bg-black/60 cursor-not-allowed"
+          className="w-full border-2 border-white/20 opacity-70 rounded-lg p-4 bg-black/60 cursor-not-allowed"
         >
           <div className="flex items-start gap-4 relative">
             <div className="w-20 h-20 bg-black border-2 border-white/10 rounded-lg relative flex-shrink-0 my-1 overflow-hidden">
@@ -286,22 +274,14 @@ export default function SongsPage() {
             <div className="flex flex-1 flex-col min-w-0">
               <div className="space-y-1">
                 <h2 className="text-sm font-bold truncate">REDACTED</h2>
-                <p className="text-sm text-white/60">Release {release.id}</p>
+                <p className="text-sm text-white/60">{release.id}</p>
               </div>
-              <div className="flex items-center justify-between mt-4">
-                <div className="flex items-center gap-2">
-                  <EyeOff
-                    size={14}
-                    className="text-white/60"
-                  />
-                  <span className="text-sm text-white/60">Details hidden</span>
-                </div>
-                <div className="font-mono text-sm">
-                  {release.redactedUntil &&
-                    formatCountdown(
-                      release.redactedUntil - Math.floor(Date.now() / 1000)
-                    )}
-                </div>
+              <div className="flex items-center gap-2 mt-4 text-white/40">
+                <Clock
+                  size={14}
+                  className="animate-pulse"
+                />
+                <p className="text-sm italic">coming soon...</p>
               </div>
             </div>
           </div>
@@ -309,58 +289,49 @@ export default function SongsPage() {
       );
     } else if (release.status === "coming") {
       return (
-        <Link
-          href={`/songs/${release.id.toLowerCase()}`}
-          key={release.id}
-          className="w-full"
-        >
-          {/* Existing Coming Soon Block UI */}
-          <div className="border-2 border-white/20 rounded-lg p-4 opacity-70 relative overflow-hidden hover:bg-white/5 transition-colors w-full">
-            <div
-              className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 animate-pulse"
-              style={{ opacity: 0.3 }}
-            ></div>
+        <div className="border-2 border-white/20 rounded-lg p-4 opacity-70 relative overflow-hidden w-full cursor-not-allowed">
+          <div
+            className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 animate-pulse"
+            style={{ opacity: 0.3 }}
+          />
 
-            <div className="flex items-start gap-4 relative z-10">
-              <div className="w-20 h-20 bg-black border-2 border-white/20 rounded-lg relative flex-shrink-0 my-1 overflow-hidden">
-                {release.image ? (
-                  <Image
-                    src={release.image}
-                    alt={release.title}
-                    fill
-                    className="object-cover opacity-60"
-                  />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-12 h-12 rounded-full border-2 border-white/20 flex items-center justify-center">
-                      <div className="w-2 h-2 rounded-full bg-white/20" />
-                    </div>
+          <div className="flex items-start gap-4 relative z-10">
+            <div className="w-20 h-20 bg-black border-2 border-white/20 rounded-lg relative flex-shrink-0 my-1 overflow-hidden">
+              {release.image ? (
+                <Image
+                  src={release.image}
+                  alt={release.title}
+                  fill
+                  className="object-cover opacity-60"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full border-2 border-white/20 flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-white/20" />
                   </div>
-                )}
+                </div>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="space-y-1">
+                <h2 className="text-sm font-bold truncate">{release.title}</h2>
+                <p className="text-sm text-white/40">{release.id}</p>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="space-y-1">
-                  <h2 className="text-sm font-bold truncate">
-                    {release.title}
-                  </h2>
-                  <p className="text-sm text-white/40">Release {release.id}</p>
-                </div>
-                <div className="flex items-center gap-2 mt-4 text-white/60">
-                  <Clock
-                    size={14}
-                    className="animate-pulse"
-                  />
-                  <p className="text-sm italic">coming soon...</p>
-                </div>
+              <div className="flex items-center gap-2 mt-4 text-white/60">
+                <Clock
+                  size={14}
+                  className="animate-pulse"
+                />
+                <p className="text-sm italic">coming soon...</p>
               </div>
             </div>
           </div>
-        </Link>
+        </div>
       );
     } else {
       return (
         <Link
-          href={`/songs/${release.id.toLowerCase()}`}
+          href={`/songs/${release.index}`}
           key={release.id}
           className="w-full"
         >
@@ -388,7 +359,7 @@ export default function SongsPage() {
                   <h2 className="text-sm font-bold truncate">
                     {release.title}
                   </h2>
-                  <p className="text-sm text-white/40">Release {release.id}</p>
+                  <p className="text-sm text-white/40">{release.id}</p>
                 </div>
                 <p className="text-sm text-white/40 italic mt-4">mint ended</p>
               </div>

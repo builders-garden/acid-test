@@ -1,25 +1,22 @@
 import { prisma } from "@/lib/prisma/client";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    // Query the Song table for redacted songs (where isRedactedUntil is not null)
-    const songs = await prisma.song.findMany({
-      where: {
-        isRedactedUntil: {
-          not: null,
-        },
+    // Get all redacted songs
+    const redactedSongs = await prisma.redactedSong.findMany({
+      orderBy: {
+        createdAt: "asc",
       },
     });
 
-    // Transform the data to match the expected format from the frontend
-    const redactedSongs = songs.map((song) => ({
-      tokenId: parseInt(song.cid), // Assuming cid stores the tokenId as a string
-      redactedUntil: Math.floor(song.isRedactedUntil!.getTime() / 1000), // Convert Date to Unix timestamp
-      title: song.cid, // Using cid as title placeholder
+    // Transform to a simpler format for the frontend
+    const formattedSongs = redactedSongs.map((song) => ({
+      id: song.id,
+      createdAt: Math.floor(song.createdAt.getTime() / 1000),
     }));
 
-    return NextResponse.json(redactedSongs);
+    return NextResponse.json(formattedSongs);
   } catch (error) {
     console.error("Error fetching redacted songs:", error);
     return NextResponse.json(
@@ -31,44 +28,20 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST() {
   try {
-    const data = await request.json();
-    const { tokenId, title, redactedUntil, startDate } = data;
-
-    // Validate the data
-    if (!redactedUntil || !startDate) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
-
-    // Convert Unix timestamp to Date object
-    const redactedUntilDate = new Date(redactedUntil * 1000);
-
-    // Create or update the redacted song
-    const song = await prisma.song.upsert({
-      where: { cid: String(tokenId) },
-      update: {
-        isRedactedUntil: redactedUntilDate,
-      },
-      create: {
-        cid: String(tokenId),
-        isRedactedUntil: redactedUntilDate,
-      },
+    const redactedSong = await prisma.redactedSong.create({
+      data: {}, // No data needed - just uses defaults
     });
 
-    // Return the data in the format expected by the frontend
     return NextResponse.json({
-      tokenId: parseInt(song.cid),
-      redactedUntil: Math.floor(song.isRedactedUntil!.getTime() / 1000),
-      title: title || "Redacted Release",
+      id: redactedSong.id,
+      createdAt: Math.floor(redactedSong.createdAt.getTime() / 1000),
     });
   } catch (error) {
-    console.error("Error creating redacted song:", error);
+    console.error("Error creating redacted song placeholder:", error);
     return NextResponse.json(
-      { error: "Failed to create redacted song" },
+      { error: "Failed to create redacted song placeholder" },
       { status: 500 }
     );
   } finally {

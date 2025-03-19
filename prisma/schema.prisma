@@ -20,10 +20,9 @@ model User {
   @@map("users")
 }
 
-model Song {
-  cid             String    @id
-  isRedactedUntil DateTime?
-  createdAt       DateTime  @default(now())
+model RedactedSong {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
 
-  @@map("songs")
+  @@map("redacted_songs")
 }

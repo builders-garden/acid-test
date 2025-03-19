@@ -37,8 +37,8 @@ export default function SongSaleForm({
     price: number;
     audioFile: File | null;
     coverImage: File | null;
-    isRedacted: boolean;
-    redactedUntil: number;
+    isNewRedactedSong: boolean;
+    isUnveilingSong: boolean;
   }>({
     title: "",
     startDate: 0,
@@ -46,8 +46,8 @@ export default function SongSaleForm({
     price: 0,
     audioFile: null,
     coverImage: null,
-    isRedacted: false,
-    redactedUntil: 0,
+    isNewRedactedSong: false,
+    isUnveilingSong: false,
   });
 
   const [displayValues, setDisplayValues] = useState({
@@ -113,19 +113,6 @@ export default function SongSaleForm({
         const utcDate = new Date(easternDate.toISOString());
         const timestamp = Math.floor(utcDate.getTime() / 1000);
         setFormData((prev) => ({ ...prev, [name]: timestamp }));
-
-        // Validate redactedUntil is before startDate if both exist
-        if (name === "redactedUntil" || name === "startDate") {
-          if (formData.startDate && formData.redactedUntil) {
-            if (formData.redactedUntil > formData.startDate) {
-              setValidationError(
-                "Redacted until date must be before start date"
-              );
-            } else {
-              setValidationError(null);
-            }
-          }
-        }
       }
     } else if (name === "price") {
       // Prevent negative values
@@ -171,35 +158,57 @@ export default function SongSaleForm({
     }
   };
 
+  const handleRedactedCheckboxChange = (name: string, checked: boolean) => {
+    setFormData((prev) => ({ ...prev, [name]: checked }));
+
+    // If creating a new redacted song, disable unveiling option
+    if (name === "isNewRedactedSong" && checked) {
+      setFormData((prev) => ({ ...prev, isUnveilingSong: false }));
+    }
+
+    // If unveiling a song, disable creating a new redacted option
+    if (name === "isUnveilingSong" && checked) {
+      setFormData((prev) => ({ ...prev, isNewRedactedSong: false }));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate redacted until date if song is redacted
-    if (formData.isRedacted) {
-      const now = Math.floor(Date.now() / 1000);
+    setModalOpen(true);
+    setModalStatus("loading");
 
-      if (formData.redactedUntil === 0) {
-        setValidationError(
-          "Please set a date when the song will be unredacted"
-        );
+    // Handle creating a new redacted song placeholder
+    if (formData.isNewRedactedSong) {
+      try {
+        const response = await fetch("/api/redacted-songs", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          setModalStatus("error");
+          setModalMessage(
+            errorData.error || "Failed to create redacted song placeholder"
+          );
+          return;
+        }
+
+        setModalStatus("success");
+        setModalMessage("Redacted song placeholder created successfully!");
         return;
-      }
-
-      if (formData.redactedUntil <= now) {
-        setValidationError("Redacted until date must be in the future");
-        return;
-      }
-
-      if (formData.redactedUntil >= formData.startDate) {
-        setValidationError(
-          "Redacted until date must be before the release date"
-        );
+      } catch (error) {
+        console.error("Error creating redacted song placeholder:", error);
+        setModalStatus("error");
+        setModalMessage(`Error: ${error}`);
         return;
       }
     }
 
-    setModalOpen(true);
-    setModalStatus("loading");
+    // Continue with the normal song upload process
     setModalMessage("Uploading files to storage");
 
     // Validate required files
@@ -270,30 +279,28 @@ export default function SongSaleForm({
       setModalStatus("success");
       setModalMessage("Upload successful!");
 
-      // If the song is redacted, save it to the database
-      if (formData.isRedacted) {
+      // If unveiling a song, call the unveil API
+      if (formData.isUnveilingSong) {
         try {
-          const redactedData = {
-            tokenId: uploadResult.metadataCID,
-            title: formData.title,
-            redactedUntil: formData.redactedUntil,
-            startDate: formData.startDate,
-          };
-
-          // Save redacted song to database
-          const dbResponse = await fetch("/api/redacted-songs", {
+          const unveilResponse = await fetch("/api/redacted-songs/unveil", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify(redactedData),
           });
 
-          if (!dbResponse.ok) {
-            console.error("Failed to save redacted song to database");
+          if (!unveilResponse.ok) {
+            console.warn(
+              "Failed to unveil redacted song, but continuing with upload"
+            );
+          } else {
+            console.log("Successfully unveiled a redacted song");
           }
         } catch (error) {
-          console.error("Error saving redacted song:", error);
+          console.warn(
+            "Error unveiling redacted song, but continuing with upload:",
+            error
+          );
         }
       }
 
@@ -327,173 +334,181 @@ export default function SongSaleForm({
       onSubmit={handleSubmit}
       className="w-full space-y-4"
     >
-      <div>
-        <label
-          htmlFor="title"
-          className="block mb-1 text-sm text-white/80"
-        >
-          Title
-        </label>
-        <input
-          type="text"
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          required
-          className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white"
-        />
-      </div>
+      {/* Section for redacted songs at the top */}
+      <div className="border-2 border-white/20 p-4 mb-4 rounded-lg">
+        <h3 className="text-lg font-bold mb-3">Song Redaction</h3>
 
-      <div>
-        <label
-          htmlFor="startDate"
-          className="block mb-1 text-sm text-white/80"
-        >
-          Start Date (Eastern Time)
-        </label>
-        <div className="relative">
-          <input
-            type="datetime-local"
-            name="startDate"
-            value={displayValues.startDate}
-            onChange={handleChange}
-            required
-            className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white [color-scheme:dark]"
-          />
-        </div>
-      </div>
-
-      <div>
-        <label
-          htmlFor="endDate"
-          className="block mb-1 text-sm text-white/80"
-        >
-          End Date (Eastern Time)
-        </label>
-        <div className="relative">
-          <input
-            type="datetime-local"
-            name="endDate"
-            value={displayValues.endDate}
-            onChange={handleChange}
-            required
-            className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white [color-scheme:dark]"
-          />
-        </div>
-      </div>
-
-      <div>
-        <label
-          htmlFor="price"
-          className="block mb-1 text-sm text-white/80"
-        >
-          Price
-        </label>
-        <div className="relative">
-          <input
-            type="number"
-            name="price"
-            value={displayValues.price}
-            onChange={handleChange}
-            min="0"
-            step="0.000001"
-            required
-            className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white"
-          />
-          <DollarSignIcon className="absolute top-2.5 right-2.5 h-4 w-4 text-white/60" />
-        </div>
-      </div>
-
-      <div>
-        <label
-          htmlFor="audioFile"
-          className="block mb-1 text-sm text-white/80"
-        >
-          Audio File
-        </label>
-        <div className="relative">
-          <input
-            type="file"
-            name="audioFile"
-            onChange={handleFileChange}
-            accept=".wav,.aif,.aiff,.flac,.alac,.aac,.ogg,.mp3"
-            required
-            className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none file:mr-4 file:py-1 file:px-2 file:rounded-none file:border-0 file:bg-white/10 file:text-white"
-          />
-          <FileIcon className="absolute top-2.5 right-2.5 h-4 w-4 text-white/60" />
-        </div>
-      </div>
-
-      <div>
-        <label
-          htmlFor="coverImage"
-          className="block mb-1 text-sm text-white/80"
-        >
-          Cover Image
-        </label>
-        <div className="relative">
-          <input
-            type="file"
-            name="coverImage"
-            onChange={handleFileChange}
-            accept="image/*"
-            required
-            className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none file:mr-4 file:py-1 file:px-2 file:rounded-none file:border-0 file:bg-white/10 file:text-white"
-          />
-          <FileIcon className="absolute top-2.5 right-2.5 h-4 w-4 text-white/60" />
-        </div>
-        {imagePreview && (
-          <div className="mt-2 flex justify-center border-2 border-white/20 p-2">
-            <img
-              src={imagePreview}
-              alt="Cover preview"
-              className="max-w-[200px] max-h-[200px] object-contain"
-            />
-          </div>
-        )}
-      </div>
-
-      <div>
         <div className="flex items-center space-x-2 mb-2">
           <Checkbox
-            id="isRedacted"
-            checked={formData.isRedacted}
-            onCheckedChange={handleCheckboxChange}
+            id="isNewRedactedSong"
+            checked={formData.isNewRedactedSong}
+            onCheckedChange={(checked) =>
+              handleRedactedCheckboxChange(
+                "isNewRedactedSong",
+                checked === true
+              )
+            }
           />
           <label
-            htmlFor="isRedacted"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            htmlFor="isNewRedactedSong"
+            className="text-sm font-medium leading-none"
           >
-            Redacted Release
+            Create a new redacted song placeholder
+          </label>
+        </div>
+        <p className="text-xs text-white/60 mb-4">
+          Creates a placeholder for a future song release
+        </p>
+
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="isUnveilingSong"
+            checked={formData.isUnveilingSong}
+            onCheckedChange={(checked) =>
+              handleRedactedCheckboxChange("isUnveilingSong", checked === true)
+            }
+          />
+          <label
+            htmlFor="isUnveilingSong"
+            className="text-sm font-medium leading-none"
+          >
+            Unveil a redacted song
           </label>
         </div>
         <p className="text-xs text-white/60">
-          Hide song details until a specific date
+          This song will replace the oldest redacted placeholder
         </p>
       </div>
 
-      {formData.isRedacted && (
-        <div>
-          <label
-            htmlFor="redactedUntil"
-            className="block mb-1 text-sm text-white/80"
-          >
-            Redacted Until (Eastern Time)
-          </label>
-          <div className="relative">
+      {/* Hide the song details form if only creating a redacted placeholder */}
+      {!formData.isNewRedactedSong && (
+        <>
+          <div>
+            <label
+              htmlFor="title"
+              className="block mb-1 text-sm text-white/80"
+            >
+              Title
+            </label>
             <input
-              type="datetime-local"
-              name="redactedUntil"
-              value={displayValues.redactedUntil}
+              type="text"
+              name="title"
+              value={formData.title}
               onChange={handleChange}
-              required={formData.isRedacted}
-              className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white [color-scheme:dark]"
+              required={!formData.isNewRedactedSong}
+              className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white"
             />
           </div>
-          {validationError && (
-            <p className="text-red-500 text-sm mt-1">{validationError}</p>
-          )}
-        </div>
+
+          <div>
+            <label
+              htmlFor="startDate"
+              className="block mb-1 text-sm text-white/80"
+            >
+              Start Date (Eastern Time)
+            </label>
+            <div className="relative">
+              <input
+                type="datetime-local"
+                name="startDate"
+                value={displayValues.startDate}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white [color-scheme:dark]"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="endDate"
+              className="block mb-1 text-sm text-white/80"
+            >
+              End Date (Eastern Time)
+            </label>
+            <div className="relative">
+              <input
+                type="datetime-local"
+                name="endDate"
+                value={displayValues.endDate}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white [color-scheme:dark]"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="price"
+              className="block mb-1 text-sm text-white/80"
+            >
+              Price
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                name="price"
+                value={displayValues.price}
+                onChange={handleChange}
+                min="0"
+                step="0.000001"
+                required
+                className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white"
+              />
+              <DollarSignIcon className="absolute top-2.5 right-2.5 h-4 w-4 text-white/60" />
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="audioFile"
+              className="block mb-1 text-sm text-white/80"
+            >
+              Audio File
+            </label>
+            <div className="relative">
+              <input
+                type="file"
+                name="audioFile"
+                onChange={handleFileChange}
+                accept=".wav,.aif,.aiff,.flac,.alac,.aac,.ogg,.mp3"
+                required
+                className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none file:mr-4 file:py-1 file:px-2 file:rounded-none file:border-0 file:bg-white/10 file:text-white"
+              />
+              <FileIcon className="absolute top-2.5 right-2.5 h-4 w-4 text-white/60" />
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="coverImage"
+              className="block mb-1 text-sm text-white/80"
+            >
+              Cover Image
+            </label>
+            <div className="relative">
+              <input
+                type="file"
+                name="coverImage"
+                onChange={handleFileChange}
+                accept="image/*"
+                required
+                className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none file:mr-4 file:py-1 file:px-2 file:rounded-none file:border-0 file:bg-white/10 file:text-white"
+              />
+              <FileIcon className="absolute top-2.5 right-2.5 h-4 w-4 text-white/60" />
+            </div>
+            {imagePreview && (
+              <div className="mt-2 flex justify-center border-2 border-white/20 p-2">
+                <img
+                  src={imagePreview}
+                  alt="Cover preview"
+                  className="max-w-[200px] max-h-[200px] object-contain"
+                />
+              </div>
+            )}
+          </div>
+        </>
       )}
 
       <Button
@@ -501,7 +516,7 @@ export default function SongSaleForm({
         className="w-full h-12 text-lg border-2 bg-white text-black hover:bg-white/90 hover:text-black"
         disabled={!!validationError}
       >
-        Confirm
+        {formData.isNewRedactedSong ? "Create Redacted Placeholder" : "Confirm"}
       </Button>
     </form>
   );

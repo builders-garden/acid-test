@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Play, Pause, EyeOff } from "lucide-react";
+import { Play, Pause } from "lucide-react";
 import Image from "next/image";
 import { MintModal } from "@/components/mint-modal";
 import { useAccount, useReadContract } from "wagmi";
@@ -13,6 +13,7 @@ import { CONTRACT_ADDRESS } from "@/lib/constants";
 import { SongMetadata } from "@/types";
 import { Header } from "../header";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
+import { formatSongId } from "@/lib/utils";
 
 interface Collector {
   address: string;
@@ -62,12 +63,6 @@ const initialCollectors: Collector[] = [
   ...generateDummyCollectors(97),
 ];
 
-interface RedactedSong {
-  tokenId: number;
-  redactedUntil: number;
-  title?: string;
-}
-
 export default function Song() {
   const [mintQuantity, setMintQuantity] = useState(1);
   const [isMintModalOpen, setIsMintModalOpen] = useState(false);
@@ -75,7 +70,7 @@ export default function Song() {
   const [countdown, setCountdown] = useState(19330);
   const [metadata, setMetadata] = useState<SongMetadata | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [status, setStatus] = useState<"live" | "end" | "coming">("live");
+  const [status, setStatus] = useState<"live" | "end">("live");
   const [isDragging, setIsDragging] = useState(false);
   const [seekValue, setSeekValue] = useState(0);
   const [usdPrice, setUsdPrice] = useState(0);
@@ -83,8 +78,6 @@ export default function Song() {
   const [rotation, setRotation] = useState(0);
   const rotationRef = useRef(0);
   const animationRef = useRef<number | null>(null);
-  const [isRedacted, setIsRedacted] = useState(false);
-  const [redactedUntil, setRedactedUntil] = useState<number>(0);
 
   // Use the global audio player context
   const {
@@ -155,13 +148,17 @@ export default function Song() {
           getTokenInfoResult.data.salesExpirationDate
         );
 
-        let songStatus: "live" | "end" | "coming";
+        let songStatus: "live" | "end";
         if (now >= salesStartDate && now < salesExpirationDate) {
           songStatus = "live";
-        } else if (now >= salesExpirationDate) {
-          songStatus = "end";
         } else {
-          songStatus = "coming";
+          songStatus = "end";
+        }
+
+        // If the song hasn't started yet, redirect to songs page
+        if (now < salesStartDate) {
+          router.push("/songs");
+          return;
         }
 
         setStatus(songStatus);
@@ -184,7 +181,7 @@ export default function Song() {
     };
 
     fetchMetadata();
-  }, [getTokenInfoResult.data]);
+  }, [getTokenInfoResult.data, router]);
 
   // Countdown timer effect
   useEffect(() => {
@@ -288,73 +285,6 @@ export default function Song() {
     return sortedList;
   }, []);
 
-  useEffect(() => {
-    // Check if the song is redacted
-    const checkIfRedacted = async () => {
-      try {
-        const response = await fetch(`/api/redacted-songs/${tokenId}`);
-        if (response.ok) {
-          const song: RedactedSong = await response.json();
-          const now = Math.floor(Date.now() / 1000);
-
-          // If the song is redacted and the redaction period hasn't ended
-          if (song && now < song.redactedUntil) {
-            setIsRedacted(true);
-            setRedactedUntil(song.redactedUntil);
-
-            // Redirect back to songs list if trying to access a redacted song
-            router.push("/songs");
-          } else {
-            setIsRedacted(false);
-          }
-        }
-      } catch (error) {
-        console.error("Error checking if song is redacted:", error);
-      }
-    };
-
-    checkIfRedacted();
-  }, [tokenId, router]);
-
-  // If the song is redacted, the component won't render since we redirect
-  // But as a fallback, render a redacted message
-  if (isRedacted) {
-    return (
-      <div className="min-h-screen bg-black text-white font-mono p-6 flex flex-col items-center w-full">
-        <Header />
-
-        <div className="w-full max-w-md aspect-square bg-black border-2 border-white/20 rounded-lg mb-6 relative overflow-hidden flex items-center justify-center">
-          <EyeOff
-            size={64}
-            className="text-white/30"
-          />
-        </div>
-
-        <div className="w-full max-w-md text-center mb-8">
-          <h2 className="text-xl font-bold">REDACTED</h2>
-          <div className="text-sm text-white/60">
-            Details will be revealed soon
-          </div>
-
-          <div className="mt-6 p-4 border border-white/20 rounded">
-            <div className="text-sm text-white/80">Revealing in:</div>
-            <div className="text-2xl mt-2">
-              {formatCountdown(redactedUntil - Math.floor(Date.now() / 1000))}
-            </div>
-          </div>
-        </div>
-
-        <Button
-          variant="outline"
-          className="w-full max-w-md h-12 text-lg border-2"
-          onClick={() => router.push("/songs")}
-        >
-          BACK TO SONGS
-        </Button>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-black text-white font-mono p-6 flex flex-col items-center w-full">
       <Header />
@@ -436,13 +366,13 @@ export default function Song() {
 
       {/* Song Title and Release Number */}
       <div className="w-full max-w-md text-center mb-8">
-        <h2 className="text-xl font-bold">{metadata?.name || "PARADISE"}</h2>
-        <div className="text-sm text-white/60">AT001</div>
-        {metadata?.description && (
+        <h2 className="text-xl font-bold">{metadata?.name || "LOADING"}</h2>
+        <div className="text-sm text-white/60">{formatSongId(tokenId)}</div>
+        {/* {metadata?.description && (
           <div className="text-sm text-white/60 mt-2">
             {metadata.description}
           </div>
-        )}
+        )} */}
       </div>
 
       {/* Mint Status and Controls - Dynamically adjust based on status */}
@@ -453,11 +383,6 @@ export default function Song() {
               <>
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                 <span className="text-sm">Mint Open</span>
-              </>
-            ) : status === "coming" ? (
-              <>
-                <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
-                <span className="text-sm">Coming Soon</span>
               </>
             ) : (
               <>
@@ -481,7 +406,7 @@ export default function Song() {
           >
             MINT
           </Button>
-        ) : status === "end" ? (
+        ) : (
           <Button
             variant="outline"
             className="w-full h-12 text-lg border-2 border-white/60 bg-transparent text-white hover:bg-white/20"
@@ -494,77 +419,67 @@ export default function Song() {
           >
             VIEW ON OPENSEA
           </Button>
-        ) : (
-          <Button
-            variant="outline"
-            className="w-full h-12 text-lg border-2 bg-white/20 text-white/60 cursor-not-allowed"
-            disabled
-          >
-            COMING SOON
-          </Button>
         )}
       </div>
 
-      {/* Collectors - Only show for live or ended tracks */}
-      {status !== "coming" && (
-        <div className="w-full max-w-md">
-          <h2 className="text-lg mb-3 font-bold">COLLECTORS</h2>
-          <div className="space-y-2">
-            {/* Signed-in user's collector spot at the top */}
-            <div className="flex items-center justify-between border border-white/20 p-2 rounded bg-blue-500/10">
+      {/* Collectors */}
+      <div className="w-full max-w-md">
+        <h2 className="text-lg mb-3 font-bold">COLLECTORS</h2>
+        <div className="space-y-2">
+          {/* Signed-in user's collector spot at the top */}
+          <div className="flex items-center justify-between border border-white/20 p-2 rounded bg-blue-500/10">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-xs">
+                42
+              </div>
+              <img
+                src="https://ui-avatars.com/api/?name=Y&background=random&size=32"
+                alt="Your profile"
+                width={24}
+                height={24}
+                className="rounded-full"
+              />
+              <span>You</span>
+            </div>
+            <a
+              href={`https://opensea.io/assets/ethereum/0x123...456/${2505}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline"
+            >
+              2505
+            </a>
+          </div>
+          {sortedCollectors.map((collector, i) => (
+            <div
+              key={collector.address}
+              className="flex items-center justify-between p-2 rounded border border-white/20"
+            >
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-xs">
-                  42
+                <div className="w-6 h-6 rounded-full bg-black flex items-center justify-center text-xs">
+                  {i + 1}
                 </div>
                 <img
-                  src="https://ui-avatars.com/api/?name=Y&background=random&size=32"
-                  alt="Your profile"
+                  src={collector.profilePicture || "/images/default_pfp.png"}
+                  alt={`${collector.displayName} profile`}
                   width={24}
                   height={24}
                   className="rounded-full"
                 />
-                <span>You</span>
+                <span>{collector.displayName}</span>
               </div>
               <a
-                href={`https://opensea.io/assets/ethereum/0x123...456/${2505}`}
+                href={`https://opensea.io/assets/ethereum/0x123...456/${collector.quantity}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:underline"
               >
-                2505
+                {collector.quantity}
               </a>
             </div>
-            {sortedCollectors.map((collector, i) => (
-              <div
-                key={collector.address}
-                className="flex items-center justify-between p-2 rounded border border-white/20"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-black flex items-center justify-center text-xs">
-                    {i + 1}
-                  </div>
-                  <img
-                    src={collector.profilePicture || "/images/default_pfp.png"}
-                    alt={`${collector.displayName} profile`}
-                    width={24}
-                    height={24}
-                    className="rounded-full"
-                  />
-                  <span>{collector.displayName}</span>
-                </div>
-                <a
-                  href={`https://opensea.io/assets/ethereum/0x123...456/${collector.quantity}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:underline"
-                >
-                  {collector.quantity}
-                </a>
-              </div>
-            ))}
-          </div>
+          ))}
         </div>
-      )}
+      </div>
 
       {/* Mint Modal */}
       <MintModal
