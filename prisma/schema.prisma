@@ -9,7 +9,7 @@ datasource db {
 }
 
 model User {
-  fid                 Int          @id
+  fid                 Int          @id @default(autoincrement())
   username            String
   displayName         String
   avatarUrl           String?
@@ -22,7 +22,7 @@ model User {
 }
 
 model Song {
-  id         Int          @id
+  id         Int          @id @default(autoincrement())
   title      String
   startDate  String
   endDate    String
@@ -32,13 +32,12 @@ model Song {
   @@map("songs")
 }
 
-// Join table to establish many-to-many relationship
 model Collection {
-  user        User     @relation(fields: [userId], references: [fid])
   userId      Int
-  song        Song     @relation(fields: [songId], references: [id])
   songId      Int
   collectedAt DateTime @default(now())
+  song        Song     @relation(fields: [songId], references: [id])
+  user        User     @relation(fields: [userId], references: [fid])
 
   @@id([userId, songId])
   @@map("collections")

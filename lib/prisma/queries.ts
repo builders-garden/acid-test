@@ -1,5 +1,12 @@
 import { FrameNotificationDetails } from "@farcaster/frame-sdk";
-import { DbUser, InsertDbUser, DbSong, InsertDbSong, DbCollection, InsertDbCollection } from "../types";
+import {
+  DbUser,
+  InsertDbUser,
+  DbSong,
+  InsertDbSong,
+  DbCollection,
+  InsertDbCollection,
+} from "../types";
 import { prisma } from "./client";
 
 export const getUser = async (fid: number) => {
@@ -106,30 +113,42 @@ export const getCollection = async (userId: number, songId: number) => {
       },
     },
   });
-  
-  return collection;
-}
 
-export const createCollection = async (
-  collection: {
-    userId: number;
-    songId: number;
-    collectedAt?: Date;
-  }
-): Promise<DbCollection> => {
- 
-  const existingCollection = await isInCollection(collection.userId, collection.songId);
-  
+  return collection;
+};
+
+export const createCollection = async (collection: {
+  userId: number;
+  songId: number;
+  collectedAt?: Date;
+}): Promise<DbCollection> => {
+  // First check if the collection already exists
+  const existingCollection = await isInCollection(
+    collection.userId,
+    collection.songId
+  );
+
   if (existingCollection) {
     const res = await getCollection(collection.userId, collection.songId);
-    
+
     if (!res) {
       throw new Error("Collection exists but couldn't be retrieved");
     }
-    
+
     return res;
   }
-  
+
+  // Verify that both the user and song exist before creating the collection
+  const user = await getUser(collection.userId);
+  if (!user) {
+    throw new Error(`User with ID ${collection.userId} does not exist`);
+  }
+
+  const song = await getSong(collection.songId);
+  if (!song) {
+    throw new Error(`Song with ID ${collection.songId} does not exist`);
+  }
+
   // Create the new collection entry
   return await prisma.collection.create({
     data: {

@@ -473,19 +473,21 @@ export default function Song() {
       </div>
 
       {/* Mint Modal */}
-      <MintModal
-        isOpen={isMintModalOpen}
-        onClose={() => setIsMintModalOpen(false)}
-        mintQuantity={mintQuantity}
-        setMintQuantity={setMintQuantity}
-        songName={metadata!.name}
-        paymentMethod={paymentMethod}
-        setPaymentMethod={setPaymentMethod}
-        userAddress={address}
-        tokenId={tokenId}
-        usdPrice={usdPrice}
-        ethUsd={ethUsd}
-      />
+      {metadata && (
+        <MintModal
+          isOpen={isMintModalOpen}
+          onClose={() => setIsMintModalOpen(false)}
+          mintQuantity={mintQuantity}
+          setMintQuantity={setMintQuantity}
+          songName={metadata.name}
+          paymentMethod={paymentMethod}
+          setPaymentMethod={setPaymentMethod}
+          userAddress={address}
+          tokenId={tokenId}
+          usdPrice={usdPrice}
+          ethUsd={ethUsd}
+        />
+      )}
     </div>
   );
 }

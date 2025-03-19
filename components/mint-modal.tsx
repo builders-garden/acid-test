@@ -240,20 +240,36 @@ export function MintModal({
   }, [mintStatus]);
 
   useEffect(() => {
-    if (mintTxResult && mintTxResult.status === "success") {
+    if (
+      mintTxResult &&
+      mintTxResult.status === "success" &&
+      mintState !== MintState.Success
+    ) {
       setMintState(MintState.Success);
 
       const sendNotification = async () => {
         if (contextType === "farcaster" && context?.user?.fid) {
           try {
-            await sendDelayedNotification(
-              context?.user?.fid,
-              `You just collected ${mintQuantity} ${
+            const body = {
+              title: `You just collected ${mintQuantity} ${
                 mintQuantity > 1 ? "editions" : "edition"
               } of ${songName}!`,
-              "You currently hold the 15th spot on the collectors leaderboard. Thank you",
-              0
-            );
+              text: "You currently hold the 15th spot on the collectors leaderboard. Thank you", // TODO: Add custom message
+              delay: 0,
+              fid: context.user.fid,
+            };
+
+            const response = await fetch("/api/manual-notification", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(body),
+            });
+
+            if (!response.ok) {
+              throw new Error("Failed to send notification");
+            }
           } catch (error) {
             console.error("Error sending notification:", error);
             toast("Error sending notification");
