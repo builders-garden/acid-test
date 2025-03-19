@@ -9,37 +9,44 @@ datasource db {
 }
 
 model User {
-  fid                 Int           @id
+  fid                 Int          @id
   username            String
   displayName         String
   avatarUrl           String?
   walletAddress       String?
   notificationDetails String?
-  createdAt           DateTime      @default(now())
-  collections         Collection[]  
+  createdAt           DateTime     @default(now())
+  collections         Collection[]
 
   @@map("users")
 }
 
 model Song {
-  id          Int           @id
-  title       String
-  startDate   String  
-  endDate     String
-  createdAt   DateTime      @default(now())
-  collectors  Collection[]  
+  id         Int          @id
+  title      String
+  startDate  String
+  endDate    String
+  createdAt  DateTime     @default(now())
+  collectors Collection[]
 
   @@map("songs")
 }
 
 // Join table to establish many-to-many relationship
 model Collection {
-  user        User      @relation(fields: [userId], references: [fid])
+  user        User     @relation(fields: [userId], references: [fid])
   userId      Int
-  song        Song      @relation(fields: [songId], references: [id])
+  song        Song     @relation(fields: [songId], references: [id])
   songId      Int
-  collectedAt DateTime  @default(now())
+  collectedAt DateTime @default(now())
 
-  @@id([userId, songId])  
+  @@id([userId, songId])
   @@map("collections")
+}
+
+model RedactedSong {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  @@map("redacted_songs")
 }
