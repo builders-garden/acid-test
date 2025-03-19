@@ -26,11 +26,20 @@ export async function POST(request: Request) {
         body: text,
       });
       if (result.state === "error") {
-        return new Response("Failed to send notification", { status: 500 });
+        console.error(
+          `[QSTASH-${new Date().toISOString()}]`,
+          `Error sending notification to user ${user.fid}: ${result.error}`
+        );
       } else if (result.state === "no_token") {
-        return new Response("No notification token available", { status: 404 });
+        console.error(
+          `[QSTASH-${new Date().toISOString()}]`,
+          `No token found for user ${user.fid}`
+        );
       } else if (result.state === "rate_limit") {
-        return new Response("Rate limit exceeded", { status: 429 });
+        console.error(
+          `[QSTASH-${new Date().toISOString()}]`,
+          `Rate limit exceeded for user ${user.fid}`
+        );
       }
     }
 

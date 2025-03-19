@@ -6,14 +6,12 @@ export async function POST(request: NextRequest) {
   try {
     const requestJson = await request.json();
 
-    console.log("Request JSON:", requestJson);
-
     let data;
 
     // Check if the request is for creating a song
     if (
       requestJson.tokenId &&
-      requestJson.price &&
+      requestJson.title &&
       requestJson.startDate &&
       requestJson.endDate
     ) {

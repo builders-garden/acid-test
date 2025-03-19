@@ -115,7 +115,7 @@ export default function SongSaleForm({
             },
             body: JSON.stringify({
               title: formData.title,
-              startDate: formData.startDate,
+              startDate: formData.startDate.toString(),
               endDate: formData.endDate.toString(),
               price: formData.price.toString(),
               tokenId: (Number(tokenCounter) + 1).toString(),
