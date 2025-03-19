@@ -9,11 +9,12 @@ import {
   CircleDollarSign,
   Loader2,
 } from "lucide-react";
-import { useWriteContract } from "wagmi";
+import { useBalance, useReadContract, useWriteContract } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { toast } from "sonner";
-import { CONTRACT_ADDRESS } from "@/lib/constants";
+import { CONTRACT_ADDRESS, USDC_CONTRACT_ADDRESS } from "@/lib/constants";
 import { useWaitForTransactionReceipt } from "wagmi";
+import { erc20Abi } from "viem";
 
 interface MintModalProps {
   isOpen: boolean;
@@ -53,18 +54,76 @@ export function MintModal({
   const price = usdPrice / ethUsd;
   const safePrice = price + price * 0.01;
 
+  const { data: balanceData } = useBalance({ address: userAddress });
+
+  const { data: usdcBalance } = useReadContract({
+    abi: erc20Abi,
+    address: USDC_CONTRACT_ADDRESS,
+    functionName: "balanceOf",
+    args: [userAddress!],
+    query: {
+      enabled: userAddress !== undefined,
+    },
+  });
+
+  const { data: usdcAllowance, refetch: refetchAllowance } = useReadContract({
+    abi: erc20Abi,
+    address: USDC_CONTRACT_ADDRESS,
+    functionName: "allowance",
+    args: [userAddress!, CONTRACT_ADDRESS],
+    query: {
+      enabled: userAddress !== undefined,
+    },
+  });
+
+  const {
+    data: allowanceTxHash,
+    error: allowanceError,
+    writeContract: writeContractAllowance,
+    status: allowanceStatus,
+    reset: resetAllowance,
+  } = useWriteContract();
+
+  const allowanceTxResult = useWaitForTransactionReceipt({
+    hash: allowanceTxHash,
+  });
+
+  useEffect(() => {
+    if (allowanceTxResult.isSuccess) {
+      refetchAllowance();
+    }
+  }, [allowanceTxResult.isSuccess, refetchAllowance]);
+
+  const handleApprove = async () => {
+    try {
+      if (userAddress) {
+        writeContractAllowance({
+          address: USDC_CONTRACT_ADDRESS,
+          abi: erc20Abi,
+          functionName: "approve",
+          args: [CONTRACT_ADDRESS, BigInt(usdPrice * mintQuantity * 10 ** 6)],
+        });
+      }
+    } catch (error: unknown) {
+      console.error(error);
+    }
+  };
+
   const {
     data: mintTxHash,
-    isPending: isMintPending,
     error: mintError,
     writeContract: writeContractMint,
     status: mintStatus,
     reset: resetMint,
   } = useWriteContract();
 
-  const txResult = useWaitForTransactionReceipt({
+  const mintTxResult = useWaitForTransactionReceipt({
     hash: mintTxHash,
   });
+
+  useEffect(() => {
+    refetchAllowance();
+  }, [isOpen, refetchAllowance]);
 
   const handleMint = async (amount: number, isWETH: boolean) => {
     try {
@@ -74,7 +133,10 @@ export function MintModal({
           abi: AcidTestABI,
           functionName: "mint",
           args: [userAddress, BigInt(tokenId), BigInt(amount), isWETH],
-          value: BigInt(Math.ceil(safePrice * amount * 10 ** 18)),
+          value:
+            paymentMethod === "ETH"
+              ? BigInt(Math.ceil(safePrice * amount * 10 ** 18))
+              : BigInt(0),
         });
       }
     } catch (error: unknown) {
@@ -82,14 +144,43 @@ export function MintModal({
     }
   };
 
+  const hasEnoughEthBalance = () => {
+    if (!balanceData || !userAddress) return false;
+    const requiredEth = BigInt(Math.ceil(safePrice * mintQuantity * 10 ** 18));
+    return BigInt(balanceData.value) >= requiredEth;
+  };
+
+  const hasEnoughUsdcBalance = () => {
+    if (!usdcBalance || !userAddress) return false;
+    const requiredUsdc = BigInt(Math.ceil(usdPrice * mintQuantity * 10 ** 6));
+    return BigInt(usdcBalance) >= requiredUsdc;
+  };
+
+  const hasEnoughUsdcAllowance = () => {
+    if (!usdcAllowance || !userAddress) return false;
+    const requiredAllowance = BigInt(
+      Math.ceil(usdPrice * mintQuantity * 10 ** 6)
+    );
+    return BigInt(usdcAllowance) >= requiredAllowance;
+  };
+
   useEffect(() => {
     if (mintError) {
-      console.log(mintError);
+      console.error(mintError);
       if (!mintError.message.includes("The user rejected the request")) {
         toast(mintError.message);
       }
     }
   }, [mintError]);
+
+  useEffect(() => {
+    if (allowanceError) {
+      console.error(allowanceError);
+      if (!allowanceError.message.includes("The user rejected the request")) {
+        toast(allowanceError.message);
+      }
+    }
+  }, [allowanceError]);
 
   const handleSliderPointerDown = useCallback((e: React.PointerEvent) => {
     e.stopPropagation();
@@ -143,13 +234,17 @@ export function MintModal({
   }, [mintStatus]);
 
   useEffect(() => {
-    if (txResult && txResult.status === "success") {
+    if (mintTxResult && mintTxResult.status === "success") {
       setMintState(MintState.Success);
-    } else if (txResult && txResult.status === "error") {
+    } else if (
+      mintTxResult &&
+      mintTxResult.status === "error" &&
+      mintState !== MintState.Initial
+    ) {
       toast("Minting failed");
       setMintState(MintState.Initial);
     }
-  }, [txResult]);
+  }, [mintTxResult, mintState]);
 
   return (
     <AnimatePresence>
@@ -216,7 +311,7 @@ export function MintModal({
                         variant="outline"
                         className={`flex-1 flex items-center justify-center gap-2 py-6 bg-black hover:bg-black/90 ${
                           paymentMethod === "ETH"
-                            ? "border-2 border-white text-white"
+                            ? "border-2 border-white text-white hover:text-white"
                             : "border border-white/20 text-white/60 hover:text-white"
                         }`}
                         onClick={() => setPaymentMethod("ETH")}
@@ -228,7 +323,7 @@ export function MintModal({
                         variant="outline"
                         className={`flex-1 flex items-center justify-center gap-2 py-6 bg-black hover:bg-black/90 ${
                           paymentMethod === "USDC"
-                            ? "border-2 border-white text-white"
+                            ? "border-2 border-white text-white hover:text-white"
                             : "border border-white/20 text-white/60 hover:text-white"
                         }`}
                         onClick={() => setPaymentMethod("USDC")}
@@ -239,13 +334,49 @@ export function MintModal({
                     </div>
                   </div>
 
-                  <Button
-                    variant="outline"
-                    className="w-full py-6 text-lg border-2 bg-white text-black hover:bg-white/90 hover:text-black"
-                    onClick={() => handleMint(mintQuantity, false)}
-                  >
-                    MINT
-                  </Button>
+                  {paymentMethod === "ETH" ? (
+                    <Button
+                      variant="outline"
+                      className="w-full py-6 text-lg border-2 bg-white text-black hover:bg-white/90 hover:text-black disabled:bg-gray-500 disabled:text-white/60"
+                      onClick={() => handleMint(mintQuantity, false)}
+                      disabled={
+                        !hasEnoughEthBalance() ||
+                        mintStatus === "pending" ||
+                        (mintTxHash && mintTxResult.isPending)
+                      }
+                    >
+                      {!hasEnoughEthBalance()
+                        ? "INSUFFICIENT ETH BALANCE"
+                        : "MINT WITH ETH"}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      className="w-full py-6 text-lg border-2 bg-white text-black hover:bg-white/90 hover:text-black disabled:bg-gray-500 disabled:text-white/60"
+                      onClick={() => {
+                        if (!hasEnoughUsdcAllowance()) {
+                          handleApprove();
+                        } else {
+                          handleMint(mintQuantity, false);
+                        }
+                      }}
+                      disabled={
+                        !hasEnoughUsdcBalance() ||
+                        allowanceStatus === "pending" ||
+                        mintStatus === "pending" ||
+                        (allowanceTxHash && allowanceTxResult.isPending)
+                      }
+                    >
+                      {!hasEnoughUsdcBalance()
+                        ? "INSUFFICIENT USDC BALANCE"
+                        : !hasEnoughUsdcAllowance()
+                        ? "APPROVE USDC"
+                        : "MINT WITH USDC"}
+                      {allowanceStatus === "pending" && (
+                        <Loader2 className="ml-2 w-4 h-4 animate-spin" />
+                      )}
+                    </Button>
+                  )}
 
                   <div className="flex justify-between items-start text-sm">
                     <span className="text-white/60">Total Cost</span>
@@ -253,14 +384,16 @@ export function MintModal({
                       <div>
                         {paymentMethod === "ETH"
                           ? `${(safePrice * mintQuantity).toFixed(6)} ETH`
-                          : `${mintQuantity} USDC`}
+                          : `${(usdPrice * mintQuantity).toFixed(3)} USDC`}
                       </div>
                       <div className="text-white/60 text-xs">
                         {paymentMethod === "ETH"
                           ? `$${(safePrice * mintQuantity * ethUsd).toFixed(
                               2
                             )} USD`
-                          : `${(mintQuantity / ethUsd).toFixed(6)} ETH`}
+                          : `${((usdPrice * mintQuantity) / ethUsd).toFixed(
+                              6
+                            )} ETH`}
                       </div>
                     </div>
                   </div>
@@ -311,7 +444,7 @@ export function MintModal({
                     </p>
                     {mintTxHash && (
                       <a
-                        href={`https://sepolia.basescan.org/tx/${mintTxHash}`}
+                        href={`https://basescan.org/tx/${mintTxHash}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-400 hover:text-blue-300 underline text-sm flex items-center gap-1"

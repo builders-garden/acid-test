@@ -13,7 +13,7 @@ import { CONTRACT_ADDRESS } from "@/lib/constants";
 import { SongMetadata } from "@/types";
 import { Header } from "../header";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
-import { formatSongId } from "@/lib/utils";
+import { formatCountdown, formatSongId } from "@/lib/utils";
 
 interface Collector {
   address: string;
@@ -221,15 +221,6 @@ export default function Song() {
     rotationRef.current = (rotationRef.current + 0.5) % 360; // Slower rotation (0.5 degree per frame)
     setRotation(rotationRef.current);
     animationRef.current = requestAnimationFrame(animateSpin);
-  };
-
-  const formatCountdown = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const remainingSeconds = seconds % 60;
-    return `${hours.toString().padStart(2, "0")}:${minutes
-      .toString()
-      .padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   const formatTime = (time: number) => {
