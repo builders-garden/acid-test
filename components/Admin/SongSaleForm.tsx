@@ -95,7 +95,7 @@ export default function SongSaleForm({
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              tokenId: tokenCounter,
+              tokenId: tokenCounter + 1,
               title: formData.title,
               startDate: formData.startDate.toString(),
               endDate: formData.endDate.toString(),

@@ -17,6 +17,7 @@ import { useWaitForTransactionReceipt } from "wagmi";
 import { useMiniAppContext } from "@/hooks/use-miniapp-context";
 import { sendDelayedNotification } from "@/lib/qstash";
 import { erc20Abi } from "viem";
+import { formatSongId } from "@/lib/utils";
 
 interface MintModalProps {
   isOpen: boolean;
@@ -518,7 +519,7 @@ export function MintModal({
                     </div>
                     <p className="text-center text-lg">
                       You minted {mintQuantity} edition
-                      {mintQuantity > 1 ? "s" : ""} of AT001!
+                      {mintQuantity > 1 ? "s" : ""} of {formatSongId(tokenId)}
                     </p>
                     {mintTxHash && (
                       <a
