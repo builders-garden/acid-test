@@ -58,7 +58,23 @@ const config: Config = {
   				'3': 'hsl(var(--chart-3))',
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
-  			}
+  			},
+        // Brand colors
+        mint: {
+          DEFAULT: '#BEFDDA'
+        },
+        plum: {
+          DEFAULT: '#AD82CD'
+        },
+        camel: {
+          DEFAULT: '#D7D3CA'
+        },
+        'deep-grey': {
+          DEFAULT: '#606075'
+        },
+        brown: {
+          DEFAULT: '#3D3433'
+        }
   		}
   	}
   },

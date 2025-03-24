@@ -42,26 +42,13 @@ export default function SongsPage() {
   const formatCountdown = (seconds: number) => {
     if (seconds <= 0) return "00:00:00";
 
-    const days = Math.floor(seconds / 86400);
-    const hours = Math.floor((seconds % 86400) / 3600);
+    const totalHours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = seconds % 60;
 
-    if (days > 0) {
-      return `${days.toString().padStart(2, "0")}:${hours
-        .toString()
-        .padStart(2, "0")}:${minutes
-        .toString()
-        .padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
-    } else if (hours > 0) {
-      return `${hours.toString().padStart(2, "0")}:${minutes
-        .toString()
-        .padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
-    } else {
-      return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
-        .toString()
-        .padStart(2, "0")}`;
-    }
+    return `${totalHours.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   const getTokenInfosResult = useReadContract({
@@ -218,7 +205,7 @@ export default function SongsPage() {
           className="w-full"
         >
           {/* Existing Live Block UI */}
-          <div className="border-2 border-white/20 rounded-lg p-4 hover:bg-white/5 transition-colors w-full">
+          <div className="border-2 border-white/60 rounded-lg p-4 hover:bg-white/5 transition-colors w-full">
             <div className="flex items-start gap-4">
               <div className="w-20 h-20 bg-black border-2 border-white/40 rounded-lg relative flex-shrink-0 my-1 overflow-hidden">
                 {release.image ? (
@@ -236,22 +223,24 @@ export default function SongsPage() {
                   </div>
                 )}
               </div>
-              <div className="flex flex-1 flex-col min-w-0">
-                <div className="space-y-1">
-                  <h2 className="text-sm font-bold truncate">
-                    {release.title}
-                  </h2>
-                  <p className="text-sm text-white/60">{release.id}</p>
-                </div>
-                <div className="flex items-center justify-between mt-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-sm">Mint Open</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-[-2px] max-w-[70%]">
+                    <h2 className="text-xl text-mono truncate">
+                      {release.title.length > 13 
+                        ? `${release.title.slice(0, 13).toUpperCase()}..`
+                        : release.title.toUpperCase()}
+                    </h2>
+                    <p className="text-md text-white">{release.id}</p>
                   </div>
-                  <div className="font-mono text-sm">
+                  <div className="font-mono text-[11px] min-w-[60px] text-right">
                     {release.countdown !== undefined &&
                       formatCountdown(release.countdown)}
                   </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-mint animate-pulse" />
+                  <span className="text-sm">Mint Open</span>
                 </div>
               </div>
             </div>
@@ -336,32 +325,40 @@ export default function SongsPage() {
           className="w-full"
         >
           {/* Existing Ended Block UI */}
-          <div className="border-2 border-white/10 rounded-lg p-4 opacity-50 hover:bg-white/5 transition-colors w-full">
+          <div className="border-2 border-white/60 rounded-lg p-4 hover:bg-white/5 transition-colors w-full">
             <div className="flex items-start gap-4">
-              <div className="w-20 h-20 bg-black border-2 border-white/20 rounded-lg relative flex-shrink-0 my-1 overflow-hidden">
+              <div className="w-20 h-20 bg-black border-2 border-white/40 rounded-lg relative flex-shrink-0 my-1 overflow-hidden">
                 {release.image ? (
                   <Image
                     src={release.image}
                     alt={release.title}
                     fill
-                    className="object-cover opacity-50"
+                    className="object-cover"
                   />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-12 h-12 rounded-full border-2 border-white/20 flex items-center justify-center">
-                      <div className="w-2 h-2 rounded-full bg-white/20" />
+                    <div className="w-12 h-12 rounded-full border-2 border-white/40 flex items-center justify-center">
+                      <div className="w-2 h-2 rounded-full bg-white/40" />
                     </div>
                   </div>
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="space-y-1">
-                  <h2 className="text-sm font-bold truncate">
-                    {release.title}
-                  </h2>
-                  <p className="text-sm text-white/40">{release.id}</p>
+                <div className="flex justify-between items-start">
+                  <div className="">
+                    <h2 className="text-sm font-bold truncate">
+                      {release.title}
+                    </h2>
+                    <p className="text-sm text-white/60">{release.id}</p>
+                  </div>
+                  <div className="text-xs text-white/40">
+                    now on secondary
+                  </div>
                 </div>
-                <p className="text-sm text-white/40 italic mt-4">mint ended</p>
+                <div className="flex items-center gap-2 ">
+                  <div className="w-2 h-2 rounded-full bg-plum animate-pulse" />
+                  <span className="text-sm">Mint Close</span>
+                </div>
               </div>
             </div>
           </div>
