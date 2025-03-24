@@ -11,6 +11,7 @@ import { CONTRACT_ADDRESS } from "@/lib/constants";
 import { SongMetadata } from "@/types";
 import { Header } from "../header";
 import { formatSongId } from "@/lib/utils";
+import QuestionMark from "@/public/images/question_mark.png";
 
 interface TokenInfo {
   salesStartDate: number;
@@ -205,9 +206,9 @@ export default function SongsPage() {
           className="w-full"
         >
           {/* Existing Live Block UI */}
-          <div className="border-2 border-white/60 rounded-lg p-4 hover:bg-white/5 transition-colors w-full">
+          <div className="border-2 border-white rounded-lg p-4 hover:bg-white/5 transition-colors w-full">
             <div className="flex items-start gap-4">
-              <div className="w-20 h-20 bg-black border-2 border-white/40 rounded-lg relative flex-shrink-0 my-1 overflow-hidden">
+              <div className="w-20 h-20 bg-black border-2 border-white/60 rounded-xs relative flex-shrink-0  overflow-hidden">
                 {release.image ? (
                   <Image
                     src={release.image}
@@ -225,22 +226,22 @@ export default function SongsPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-start">
-                  <div className="space-y-[-2px] max-w-[70%]">
-                    <h2 className="text-xl text-mono truncate">
-                      {release.title.length > 13 
+                  <div className="space-y-1.5">
+                    <h2 className="text-xl text-mono leading-none">
+                      {release.title.length > 11
                         ? `${release.title.slice(0, 13).toUpperCase()}..`
                         : release.title.toUpperCase()}
                     </h2>
-                    <p className="text-md text-white">{release.id}</p>
+                    <p className="text-md text-white leading-none">{release.id}</p>
                   </div>
-                  <div className="font-mono text-[11px] min-w-[60px] text-right">
+                  <div className="font-mono mt-[3px] text-[11px] min-w-[60px] text-right">
                     {release.countdown !== undefined &&
                       formatCountdown(release.countdown)}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 mt-[5px]">
                   <div className="w-2 h-2 rounded-full bg-mint animate-pulse" />
-                  <span className="text-sm">Mint Open</span>
+                  <span className="text-sm leading-none">Mint Open</span>
                 </div>
               </div>
             </div>
@@ -255,22 +256,25 @@ export default function SongsPage() {
           className="w-full border-2 border-white/20 opacity-70 rounded-lg p-4 bg-black/60 cursor-not-allowed"
         >
           <div className="flex items-start gap-4 relative">
-            <div className="w-20 h-20 bg-black border-2 border-white/10 rounded-lg relative flex-shrink-0 my-1 overflow-hidden">
+            <div className="w-20 h-20 bg-black border-2 border-white/10 rounded-xs relative flex-shrink-0  overflow-hidden">
               <div className="absolute inset-0 flex items-center justify-center">
-                <EyeOff className="w-8 h-8 text-white/30" />
+              <Image
+                    src={QuestionMark}
+                    alt={"Redacted"}
+                    fill
+                    className="object-cover"
+                  />
+
               </div>
             </div>
             <div className="flex flex-1 flex-col min-w-0">
-              <div className="space-y-1">
-                <h2 className="text-sm font-bold truncate">REDACTED</h2>
-                <p className="text-sm text-white/60">{release.id}</p>
+              <div className="space-y-1.5">
+                <h2 className="text-xl text-mono leading-none bg-white/60 text-transparent select-none rounded-[1px] w-[45%]">_</h2>
+                <p className="text-md text-white/60 leading-none">{release.id}</p>
               </div>
-              <div className="flex items-center gap-2 mt-4 text-white/40">
-                <Clock
-                  size={14}
-                  className="animate-pulse"
-                />
-                <p className="text-sm italic">coming soon...</p>
+              <div className="flex items-center gap-2 mt-[5px] text-white/40">
+                <div className="w-2 h-2 rounded-full bg-white/40 animate-pulse" />
+                <p className="text-sm">Coming Soon</p>
               </div>
             </div>
           </div>
@@ -285,7 +289,7 @@ export default function SongsPage() {
           />
 
           <div className="flex items-start gap-4 relative z-10">
-            <div className="w-20 h-20 bg-black border-2 border-white/20 rounded-lg relative flex-shrink-0 my-1 overflow-hidden">
+            <div className="w-20 h-20 bg-black border-2 border-white/20 rounded-xs relative flex-shrink-0  overflow-hidden">
               {release.image ? (
                 <Image
                   src={release.image}
@@ -311,7 +315,7 @@ export default function SongsPage() {
                   size={14}
                   className="animate-pulse"
                 />
-                <p className="text-sm italic">coming soon...</p>
+                <p className="text-sm ">coming soon...</p>
               </div>
             </div>
           </div>
@@ -325,9 +329,9 @@ export default function SongsPage() {
           className="w-full"
         >
           {/* Existing Ended Block UI */}
-          <div className="border-2 border-white/60 rounded-lg p-4 hover:bg-white/5 transition-colors w-full">
+          <div className="border-2 border-white rounded-lg p-4 hover:bg-white/5 transition-colors w-full">
             <div className="flex items-start gap-4">
-              <div className="w-20 h-20 bg-black border-2 border-white/40 rounded-lg relative flex-shrink-0 my-1 overflow-hidden">
+              <div className="w-20 h-20 bg-black border-2 border-white/40 rounded-xs relative flex-shrink-0 overflow-hidden">
                 {release.image ? (
                   <Image
                     src={release.image}
@@ -345,19 +349,21 @@ export default function SongsPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-start">
-                  <div className="">
-                    <h2 className="text-sm font-bold truncate">
-                      {release.title}
+                  <div className="space-y-1.5">
+                    <h2 className="text-xl text-mono leading-none">
+                      {release.title.length > 11
+                        ? `${release.title.slice(0, 11).toUpperCase()}..`
+                        : release.title.toUpperCase()}
                     </h2>
-                    <p className="text-sm text-white/60">{release.id}</p>
+                    <p className="text-md text-white leading-none">{release.id}</p>
                   </div>
-                  <div className="text-xs text-white/40">
+                  <div className="font-mono mt-1 text-[8px] min-w-[60px] text-right">
                     now on secondary
                   </div>
                 </div>
-                <div className="flex items-center gap-2 ">
+                <div className="flex items-center gap-2 mt-2">
                   <div className="w-2 h-2 rounded-full bg-plum animate-pulse" />
-                  <span className="text-sm">Mint Close</span>
+                  <span className="text-sm leading-none">Mint Close</span>
                 </div>
               </div>
             </div>
@@ -380,7 +386,7 @@ export default function SongsPage() {
                 className="border-2 border-white/20 rounded-lg p-4 h-[124px] w-full"
               >
                 <div className="flex items-start gap-4">
-                  <Skeleton className="w-20 h-20 bg-white/10 rounded-lg relative flex-shrink-0 my-1" />
+                  <Skeleton className="w-20 h-20 bg-white/10 rounded-lg relative flex-shrink-0 " />
                   <div className="flex-1 min-w-0">
                     <Skeleton className="h-4 bg-white/10 rounded w-2/3 mb-2" />
                     <Skeleton className="h-3 bg-white/10 rounded w-1/4 mb-4" />
