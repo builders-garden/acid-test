@@ -18,14 +18,14 @@ export default function Home() {
   };
 
   return (
-    <div className="relative min-h-screen bg-black text-white font-mono p-6 flex flex-col items-center w-full overflow-hidden">
-      <div 
+    <div className="relative min-h-screen bg-black text-white font-mono p-4 flex flex-col items-center w-full overflow-hidden">
+      <div
         className="absolute inset-0"
         style={{
           backgroundImage: `url('/images/presave_bg.svg')`,
-          backgroundSize: '85%',
-          backgroundPosition: 'center top -17px',
-          backgroundRepeat: 'no-repeat'
+          backgroundSize: "85%",
+          backgroundPosition: "center top -17px",
+          backgroundRepeat: "no-repeat",
         }}
       />
 

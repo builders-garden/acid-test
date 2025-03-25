@@ -21,7 +21,9 @@ export default function SongSaleForm({
   setModalStatus,
   setModalMessage,
 }: SongSaleFormProps) {
-  const [tokenCounter, setTokenCounter] = useState<number>(0);
+  const [tokenCounter, setTokenCounter] = useState<number | undefined>(
+    undefined
+  );
   let contractAddress;
   if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
     contractAddress = process.env.NEXT_PUBLIC_SMART_CONTRACT_TEST_ADDRESS;
@@ -34,6 +36,9 @@ export default function SongSaleForm({
     address: contractAddress as `0x${string}`,
     functionName: "idCounter",
     args: [],
+    query: {
+      enabled: tokenCounter === undefined,
+    },
   });
 
   useEffect(() => {
@@ -83,7 +88,7 @@ export default function SongSaleForm({
   const [validationError, setValidationError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isCreateConfirmed) {
+    if (isCreateConfirmed && tokenCounter) {
       setModalStatus("success");
       setModalMessage("Transaction successful");
       const setNotifications = async () => {
@@ -118,7 +123,7 @@ export default function SongSaleForm({
               startDate: formData.startDate.toString(),
               endDate: formData.endDate.toString(),
               price: formData.price.toString(),
-              tokenId: (Number(tokenCounter) + 1).toString(),
+              tokenId: (tokenCounter + 1).toString(),
             }),
           });
 

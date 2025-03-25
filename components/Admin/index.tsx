@@ -27,7 +27,7 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white font-mono p-6 flex flex-col items-center w-full">
+    <div className="min-h-screen bg-black text-white font-mono p-4 flex flex-col items-center w-full">
       <Header />
 
       <div className="w-full max-w-md space-y-6 mt-4">

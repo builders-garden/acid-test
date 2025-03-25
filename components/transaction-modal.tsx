@@ -1,18 +1,23 @@
-import React, { useEffect } from 'react';
-import { Loader, CheckCircle, XCircle } from 'lucide-react';
+import React, { useEffect } from "react";
+import { Loader, CheckCircle, XCircle } from "lucide-react";
 
 interface TransactionModalProps {
   isOpen: boolean;
-  status: 'loading' | 'success' | 'error';
+  status: "loading" | "success" | "error";
   message: string;
   onClose: () => void;
 }
 
-const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, status, message, onClose }) => {
+const TransactionModal: React.FC<TransactionModalProps> = ({
+  isOpen,
+  status,
+  message,
+  onClose,
+}) => {
   useEffect(() => {
     let timer: NodeJS.Timeout;
 
-    if (status === 'success' || status === 'error') {
+    if (status === "success" || status === "error") {
       timer = setTimeout(() => {
         onClose();
       }, 2500); // Auto close after 2.5 seconds
@@ -28,21 +33,21 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, status, mes
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70">
       <div className="bg-black rounded-lg p-6 w-80 text-center text-white">
-        {status === 'loading' && (
+        {status === "loading" && (
           <div>
             <Loader className="animate-spin h-8 w-8 mx-auto" />
             <h2 className="text-yellow-600">Awaiting</h2>
             <p>{message}</p>
           </div>
         )}
-        {status === 'success' && (
+        {status === "success" && (
           <div>
             <CheckCircle className="h-8 w-8 text-green-600 mx-auto" />
             <h2 className="text-green-600">Success!</h2>
             <p>{message}</p>
           </div>
         )}
-        {status === 'error' && (
+        {status === "error" && (
           <div>
             <XCircle className="h-8 w-8 text-red-600 mx-auto" />
             <h2 className="text-red-600">Error!</h2>
@@ -54,4 +59,4 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, status, mes
   );
 };
 
-export default TransactionModal; 
+export default TransactionModal;

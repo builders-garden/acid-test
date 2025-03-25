@@ -1,19 +1,21 @@
-'use client'
+"use client";
 import { Header } from "../header";
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-black text-white font-mono p-6 flex flex-col items-center w-full">
+    <div className="min-h-screen bg-black text-white font-mono p-4 flex flex-col items-center w-full">
       <Header />
 
       <div className="w-full max-w-md space-y-8">
         {/* Main Description */}
         <div className="space-y-6">
           <p className="text-md leading-relaxed">
-            ACIDTEST is an electronic music and interactive cryptocurrency project built on Farcaster.
+            ACIDTEST is an electronic music and interactive cryptocurrency
+            project built on Farcaster.
           </p>
           <p className="text-md leading-relaxed">
-            Everytime an ACIDTEST song is minted, 50% of the revenue goes to buying back $ACID on the open market.
+            Everytime an ACIDTEST song is minted, 50% of the revenue goes to
+            buying back $ACID on the open market.
           </p>
         </div>
 
@@ -31,8 +33,9 @@ export default function AboutPage() {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <span className="text-white/60">CA:</span>
-              <span className="text-sm">0x123456789012345678901234567890123...</span>
-   
+              <span className="text-sm">
+                0x123456789012345678901234567890123...
+              </span>
             </div>
 
             <div className="grid grid-cols-3 gap-4">
@@ -57,24 +60,65 @@ export default function AboutPage() {
           <h2 className="text-xl font-mono mb-4">OFFICIAL LINKS</h2>
           <div className="grid grid-cols-2 gap-y-4">
             <div className="space-y-4">
-              <a href="#" className="block text-white hover:text-white/80">ACIDPAPER</a>
+              <a
+                href="#"
+                className="block text-white hover:text-white/80"
+              >
+                ACIDPAPER
+              </a>
               <div className="flex items-center gap-2">
                 <span className="text-white hover:text-white/80">DOCS</span>
-                <span className="text-xs text-black bg-[#606075] px-1">COMING SOON</span>
+                <span className="text-xs text-black bg-[#606075] px-1">
+                  COMING SOON
+                </span>
               </div>
-              <a href="#" className="block text-white hover:text-white/80">OPENSEA</a>
+              <a
+                href="#"
+                className="block text-white hover:text-white/80"
+              >
+                OPENSEA
+              </a>
               <div className="flex items-center gap-2">
-                <a href="#" className="text-white hover:text-white/80">BASESCAN</a>
-                <span className="text-xs text-black bg-[#606075] px-1 ">ACIDTEST NFTS</span>
+                <a
+                  href="#"
+                  className="text-white hover:text-white/80"
+                >
+                  BASESCAN
+                </a>
+                <span className="text-xs text-black bg-[#606075] px-1 ">
+                  ACIDTEST NFTS
+                </span>
               </div>
             </div>
             <div className="space-y-4">
-              <a href="#" className="block text-white hover:text-white/80">TWITTER</a>
-              <a href="#" className="block text-white hover:text-white/80">DEXSCREENER</a>
-              <a href="#" className="block text-white hover:text-white/80">CLANKER</a>
+              <a
+                href="#"
+                className="block text-white hover:text-white/80"
+              >
+                TWITTER
+              </a>
+              <a
+                href="#"
+                className="block text-white hover:text-white/80"
+              >
+                DEXSCREENER
+              </a>
+              <a
+                href="#"
+                className="block text-white hover:text-white/80"
+              >
+                CLANKER
+              </a>
               <div className="flex items-center gap-2">
-                <a href="#" className="text-white hover:text-white/80">BASESCAN</a>
-                <span className="text-xs text-black px-1 bg-[#606075]">$ACID</span>
+                <a
+                  href="#"
+                  className="text-white hover:text-white/80"
+                >
+                  BASESCAN
+                </a>
+                <span className="text-xs text-black px-1 bg-[#606075]">
+                  $ACID
+                </span>
               </div>
             </div>
           </div>

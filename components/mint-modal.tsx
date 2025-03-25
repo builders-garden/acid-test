@@ -20,7 +20,6 @@ import { sendDelayedNotification } from "@/lib/qstash";
 import { erc20Abi } from "viem";
 import { formatSongId } from "@/lib/utils";
 
-
 interface MintModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -411,7 +410,7 @@ export function MintModal({
                         }`}
                         onClick={() => setPaymentMethod("USDC")}
                       >
-                       {/*  <CircleDollarSign className="w-5 h-5" /> */}
+                        {/*  <CircleDollarSign className="w-5 h-5" /> */}
                         USDC
                       </Button>
                     </div>
@@ -433,8 +432,7 @@ export function MintModal({
                     </Button>
                   ) : (
                     <Button
-                      variant="outline"
-                      className="w-full py-6 text-lg border-2 bg-white text-black hover:bg-white/90 hover:text-black disabled:bg-gray-500 disabled:text-white/60"
+                      className="w-full h-8py-6 text-lg bg-mint text-black hover:bg-plum hover:text-black disabled:bg-gray-500 disabled:text-white/60"
                       onClick={() => {
                         if (!hasEnoughUsdcAllowance()) {
                           handleApprove();
@@ -521,7 +519,6 @@ export function MintModal({
                           fill
                           className="object-cover rounded-md"
                         />
-                        
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="w-3/4 h-3/4 rounded-full border-2 border-white/40 flex items-center justify-center">

@@ -153,11 +153,11 @@ export default function SongsPage() {
             });
           });
 
-          // Sort releases: live first, coming second, redacted third, ended last
+          // Sort releases: live first, coming second, ended third, redacted last
           // Within each group, sort by salesStartDate (newest first)
           const sortedReleases = filteredReleases.sort((a, b) => {
             // First sort by status priority
-            const statusPriority = { live: 0, coming: 1, redacted: 2, end: 3 };
+            const statusPriority = { live: 0, coming: 1, end: 2, redacted: 3 };
             const statusDiff =
               statusPriority[a.status] - statusPriority[b.status];
 
@@ -206,9 +206,9 @@ export default function SongsPage() {
           className="w-full"
         >
           {/* Existing Live Block UI */}
-          <div className="border-2 border-white rounded-lg p-4 hover:bg-[#463B3A66] transition-colors w-full">
+          <div className="border border-white/50 rounded-[8px] p-4 hover:bg-[#463B3A66] transition-colors w-full">
             <div className="flex items-start gap-4">
-              <div className="w-20 h-20 bg-black border-2 border-white/60 rounded-xs relative flex-shrink-0  overflow-hidden">
+              <div className="w-20 h-20 bg-black border border-white/60 rounded relative flex-shrink-0 overflow-hidden">
                 {release.image ? (
                   <Image
                     src={release.image}
@@ -218,7 +218,7 @@ export default function SongsPage() {
                   />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-12 h-12 rounded-full border-2 border-white/40 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full border border-white/40 flex items-center justify-center">
                       <div className="w-2 h-2 rounded-full bg-white/40" />
                     </div>
                   </div>
@@ -226,22 +226,26 @@ export default function SongsPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-start">
-                  <div className="space-y-1.5">
-                    <h2 className="text-xl text-mono leading-none">
+                  <div className="flex flex-col justify-start gap-2">
+                    <h2 className="text-[18px] text-mono leading-none">
                       {release.title.length > 11
                         ? `${release.title.slice(0, 13).toUpperCase()}..`
                         : release.title.toUpperCase()}
                     </h2>
-                    <p className="text-md text-white leading-none">{release.id}</p>
+                    <p className="text-[14px] text-white leading-none">
+                      {release.id}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-mint animate-pulse" />
+                      <span className="text-[14px] leading-none">
+                        Mint Open
+                      </span>
+                    </div>
                   </div>
-                  <div className="font-mono mt-[3px] text-[11px] min-w-[60px] text-right">
+                  <div className="font-mono text-[10px] min-w-[60px] text-right">
                     {release.countdown !== undefined &&
                       formatCountdown(release.countdown)}
                   </div>
-                </div>
-                <div className="flex items-center gap-2 mt-[5px]">
-                  <div className="w-2 h-2 rounded-full bg-mint animate-pulse" />
-                  <span className="text-sm leading-none">Mint Open</span>
                 </div>
               </div>
             </div>
@@ -253,28 +257,29 @@ export default function SongsPage() {
       return (
         <div
           key={release.id}
-          className="w-full border-2 border-white/20 opacity-70 rounded-lg p-4 bg-black/60 cursor-not-allowed hover:bg-[#463B3A66] transition-colors"
+          className="w-full border border-white/20 opacity-50 rounded-lg p-4 bg-black/60 cursor-not-allowed hover:bg-[#463B3A66] transition-colors"
         >
           <div className="flex items-start gap-4 relative">
-            <div className="w-20 h-20 bg-black border-2 border-white/10 rounded-xs relative flex-shrink-0  overflow-hidden">
+            <div className="w-20 h-20 bg-black border border-white/10 rounded relative flex-shrink-0  overflow-hidden">
               <div className="absolute inset-0 flex items-center justify-center">
-              <Image
-                    src={QuestionMark}
-                    alt={"Redacted"}
-                    fill
-                    className="object-cover"
-                  />
-
+                <Image
+                  src={QuestionMark}
+                  alt={"Redacted"}
+                  fill
+                  className="object-cover"
+                />
               </div>
             </div>
-            <div className="flex flex-1 flex-col min-w-0">
-              <div className="space-y-1.5">
-                <h2 className="text-xl text-mono leading-none bg-white/60 text-transparent select-none rounded-[1px] w-[45%]">_</h2>
-                <p className="text-md text-white/60 leading-none">{release.id}</p>
-              </div>
-              <div className="flex items-center gap-2 mt-[5px] text-white/40">
+            <div className="flex flex-col justify-start gap-2">
+              <h2 className="text-xl text-mono leading-none bg-white/60 text-transparent select-none rounded-[1px] w-[100%]">
+                _
+              </h2>
+              <p className="text-[14px] text-white leading-none">
+                {release.id}
+              </p>
+              <div className="flex items-center gap-2 text-white/40">
                 <div className="w-2 h-2 rounded-full bg-white/40 animate-pulse" />
-                <p className="text-sm">Coming Soon</p>
+                <span className="text-[14px] leading-none">Coming Soon</span>
               </div>
             </div>
           </div>
@@ -282,40 +287,34 @@ export default function SongsPage() {
       );
     } else if (release.status === "coming") {
       return (
-        <div className="border-2 border-white/20 rounded-lg p-4 opacity-70 relative overflow-hidden w-full cursor-not-allowed hover:bg-[#463B3A66] transition-colors">
-          <div
-            className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 animate-pulse"
-            style={{ opacity: 0.3 }}
-          />
-
-          <div className="flex items-start gap-4 relative z-10">
-            <div className="w-20 h-20 bg-black border-2 border-white/20 rounded-xs relative flex-shrink-0  overflow-hidden">
+        <div className="border border-white/50 rounded-[8px] p-4 hover:bg-[#463B3A66] transition-colors w-full">
+          <div className="flex items-start gap-4">
+            <div className="w-20 h-20 bg-black border border-white/20 rounded relative overflow-hidden">
               {release.image ? (
                 <Image
                   src={release.image}
                   alt={release.title}
                   fill
-                  className="object-cover opacity-60"
+                  className="object-cover"
                 />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-12 h-12 rounded-full border-2 border-white/20 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center">
                     <div className="w-2 h-2 rounded-full bg-white/20" />
                   </div>
                 </div>
               )}
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="space-y-1">
-                <h2 className="text-sm font-bold truncate">{release.title}</h2>
-                <p className="text-sm text-white/40">{release.id}</p>
-              </div>
-              <div className="flex items-center gap-2 mt-4 text-white/60">
-                <Clock
-                  size={14}
-                  className="animate-pulse"
-                />
-                <p className="text-sm ">coming soon...</p>
+            <div className="flex flex-col justify-start gap-2">
+              <h2 className="text-[18px] text-mono leading-none">
+                {release.title}
+              </h2>
+              <p className="text-[14px] text-white/40 leading-none">
+                {release.id}
+              </p>
+              <div className="flex items-center gap-2 text-white/60">
+                <div className="w-2 h-2 rounded-full bg-white/40" />
+                <p className="text-[14px] leading-none">Coming Soon</p>
               </div>
             </div>
           </div>
@@ -329,9 +328,9 @@ export default function SongsPage() {
           className="w-full"
         >
           {/* Existing Ended Block UI */}
-          <div className="border-2 border-white rounded-lg p-4 hover:bg-[#463B3A66] transition-colors w-full">
+          <div className="border border-white/50 rounded-[8px] p-4 hover:bg-[#463B3A66] transition-colors w-full">
             <div className="flex items-start gap-4">
-              <div className="w-20 h-20 bg-black border-2 border-white/40 rounded-xs relative flex-shrink-0 overflow-hidden">
+              <div className="w-20 h-20 bg-black border border-white/40 rounded relative flex-shrink-0 overflow-hidden">
                 {release.image ? (
                   <Image
                     src={release.image}
@@ -341,7 +340,7 @@ export default function SongsPage() {
                   />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-12 h-12 rounded-full border-2 border-white/40 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full border border-white/40 flex items-center justify-center">
                       <div className="w-2 h-2 rounded-full bg-white/40" />
                     </div>
                   </div>
@@ -349,21 +348,23 @@ export default function SongsPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-start">
-                  <div className="space-y-1.5">
-                    <h2 className="text-xl text-mono leading-none">
+                  <div className="flex flex-col justify-start gap-2">
+                    <h2 className="text-[18px] text-mono leading-none">
                       {release.title.length > 11
                         ? `${release.title.slice(0, 11).toUpperCase()}..`
                         : release.title.toUpperCase()}
                     </h2>
-                    <p className="text-md text-white leading-none">{release.id}</p>
+                    <p className="text-[14px] text-white/40 leading-none">
+                      {release.id}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-plum animate-pulse" />
+                      <p className="text-[14px] leading-none">Mint Closed</p>
+                    </div>
                   </div>
-                  <div className="font-mono mt-1 text-[8px] min-w-[60px] text-right">
+                  <div className="font-mono text-[10px] min-w-[60px] text-right text-[#606075]">
                     now on secondary
                   </div>
-                </div>
-                <div className="flex items-center gap-2 mt-2">
-                  <div className="w-2 h-2 rounded-full bg-plum animate-pulse" />
-                  <span className="text-sm leading-none">Mint Close</span>
                 </div>
               </div>
             </div>
@@ -374,7 +375,7 @@ export default function SongsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white font-mono p-6 flex flex-col items-center w-full">
+    <div className="min-h-screen bg-black text-white font-mono p-4 flex flex-col items-center w-full">
       <Header />
 
       {/* Release Blocks */}
@@ -383,7 +384,7 @@ export default function SongsPage() {
           ? Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={`loading-${i}`}
-                className="border-2 border-white/20 rounded-lg p-4 h-[124px] w-full"
+                className="border border-white/20 rounded-lg p-4 h-[124px] w-full"
               >
                 <div className="flex items-start gap-4">
                   <Skeleton className="w-20 h-20 bg-white/10 rounded-lg relative flex-shrink-0 " />

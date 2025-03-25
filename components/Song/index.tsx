@@ -277,7 +277,7 @@ export default function Song() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black text-white font-mono p-6 flex flex-col items-center w-full">
+    <div className="min-h-screen bg-black text-white font-mono p-4 flex flex-col items-center w-full">
       <Header />
 
       {/* CD Visualization */}
