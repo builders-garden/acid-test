@@ -367,11 +367,9 @@ export function MintModal({
             <div className="h-[400px] flex items-center justify-center">
               {mintState === MintState.Initial && (
                 <div className="p-8 space-y-8 max-w-sm w-full">
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-white/60">
-                        # of editions
-                      </span>
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="flex justify-between items-center w-full">
+                      <span className="text-sm"># of editions</span>
                       <span className="text-sm">{mintQuantity}</span>
                     </div>
                     <Slider
@@ -387,7 +385,7 @@ export function MintModal({
                   </div>
 
                   <div className="space-y-2">
-                    <span className="text-sm text-white/60">checkout with</span>
+                    <span className="text-sm text-white">checkout with</span>
                     <div className="flex justify-center items-center gap-4">
                       <Button
                         variant="outline"
@@ -459,7 +457,7 @@ export function MintModal({
                   )}
 
                   <div className="flex justify-between items-start text-sm">
-                    <span className="text-white/60">Total Cost</span>
+                    <span className="text-white">Total Cost</span>
                     <div className="text-right">
                       <div>
                         {paymentMethod === "ETH"
@@ -510,7 +508,7 @@ export function MintModal({
 
               {mintState === MintState.Success && (
                 <div className="p-8 max-w-sm w-full">
-                  <div className="flex flex-col items-center gap-4">
+                  <div className="flex flex-col items-center gap-8">
                     <div className="w-32 h-32 bg-black border border-white/90 border-2 rounded-sm relative">
                       {image ? (
                         <Image
@@ -527,11 +525,11 @@ export function MintModal({
                         </div>
                       )}
                     </div>
-                    <p className="text-center text-lg">
+                    <p className="text-center text-[14px]">
                       You minted {mintQuantity} edition
                       {mintQuantity > 1 ? "s" : ""} of {formatSongId(tokenId)}
                     </p>
-                    {mintTxHash && (
+                    {/* {mintTxHash && (
                       <a
                         href={`https://basescan.org/tx/${mintTxHash}`}
                         target="_blank"
@@ -540,7 +538,7 @@ export function MintModal({
                       >
                         View on Basescan
                       </a>
-                    )}
+                    )} */}
                     <Button
                       className="w-full h-10 py-4 text-lg bg-mint text-black hover:bg-plum hover:text-black"
                       onClick={handleClose}

@@ -257,7 +257,7 @@ export default function SongsPage() {
       return (
         <div
           key={release.id}
-          className="w-full border border-white/20 opacity-50 rounded-lg p-4 bg-black/60 cursor-not-allowed hover:bg-[#463B3A66] transition-colors"
+          className="w-full border border-white/20 opacity-50 rounded-lg p-4 bg-black/60"
         >
           <div className="flex items-start gap-4 relative">
             <div className="w-20 h-20 bg-black border border-white/10 rounded relative flex-shrink-0  overflow-hidden">
@@ -287,7 +287,7 @@ export default function SongsPage() {
       );
     } else if (release.status === "coming") {
       return (
-        <div className="border border-white/50 rounded-[8px] p-4 hover:bg-[#463B3A66] transition-colors w-full">
+        <div className="border border-white/50 rounded-[8px] p-4 w-full">
           <div className="flex items-start gap-4">
             <div className="w-20 h-20 bg-black border border-white/20 rounded relative overflow-hidden">
               {release.image ? (

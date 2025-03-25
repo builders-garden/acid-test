@@ -32,7 +32,7 @@ export default function Home() {
       <div className="relative z-20 w-full">
         <Header />
 
-        <div className="w-full max-w-md flex flex-col items-center space-y-6 mt-8">
+        <div className="w-full max-w-md flex flex-col items-center space-y-6 mt-8 p-4 py-6 rounded-xl backdrop-blur-sm">
           <div className="text-center space-y-4 w-full">
             <h1 className="text-xl font-bold">Welcome</h1>
             <p className="text-sm text-white/60">
@@ -41,10 +41,9 @@ export default function Home() {
 
             {!isSignedIn && (
               <Button
-                variant="outline"
                 onClick={signIn}
                 disabled={isLoading}
-                className="w-full h-12 text-lg border-2 bg-white text-black hover:bg-white/90 hover:text-black transition-colors"
+                className="w-full h-12 text-lg bg-mint text-black hover:bg-plum hover:text-black transition-colors"
               >
                 {isLoading ? "Signing in..." : "Sign in"}
               </Button>
@@ -57,10 +56,7 @@ export default function Home() {
                 href="/songs"
                 className="w-full"
               >
-                <Button
-                  variant="outline"
-                  className="w-full h-12 text-lg border-2 bg-white text-black hover:bg-white/90 hover:text-black transition-colors"
-                >
+                <Button className="w-full h-12 text-lg bg-mint text-black hover:bg-plum hover:text-black transition-colors">
                   SONGS
                 </Button>
               </Link>
@@ -69,18 +65,14 @@ export default function Home() {
                 href="/admin"
                 className="w-full"
               >
-                <Button
-                  variant="outline"
-                  className="w-full h-12 text-lg border-2 border-white/60 bg-transparent text-white hover:bg-white/20 transition-colors"
-                >
+                <Button className="w-full h-12 text-lg bg-mint text-black hover:bg-plum transition-colors">
                   ADMIN PANEL
                 </Button>
               </Link>
 
               <Button
-                variant="outline"
                 onClick={handleAddFrame}
-                className="w-full h-12 text-lg border-2 border-white/60 bg-transparent text-white hover:bg-white/20 transition-colors"
+                className="w-full h-12 text-lg bg-mint text-black hover:bg-plum transition-colors"
               >
                 ADD FRAME
               </Button>

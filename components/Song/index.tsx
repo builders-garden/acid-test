@@ -281,37 +281,22 @@ export default function Song() {
       <Header />
 
       {/* CD Visualization */}
-      <div className="w-full max-w-lg aspect-square bg-black border-2 border-white/20 rounded-lg mb-6 relative overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div
-            className={`w-[95%] h-[95%] overflow-hidden relative rounded-md`}
-          >
-            {metadata?.image && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div
-                  className="w-full h-full relative overflow-hidden"
-                  style={{ borderRadius: "0.75rem" }}
-                >
-                  <div className="w-full h-full rounded-lg overflow-hidden">
-                    {metadata?.image && (
-                      <Image
-                        src={metadata.image}
-                        alt="Song artwork"
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 90vw, (max-width: 1200px) 50vw, 33vw"
-                      />
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
+      <div className="w-full max-w-lg aspect-square bg-black border border-white/80 rounded-lg mb-6 relative overflow-hidden">
+        {metadata?.image && (
+          <div className="absolute inset-0">
+            <Image
+              src={metadata.image}
+              alt="Song artwork"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 90vw, (max-width: 1200px) 50vw, 33vw"
+            />
           </div>
-        </div>
+        )}
 
         {/* Play/Pause button */}
         <Button
-          className={`absolute bottom-2 right-2 w-12 h-12 ${
+          className={`absolute bottom-4 right-4 w-14 h-14 ${
             !isPlaying
               ? "bg-mint text-black hover:hover:bg-plum"
               : "bg-plum text-black hover:bg-plum/90"
@@ -322,9 +307,9 @@ export default function Song() {
           {isLoading ? (
             <div className="animate-spin h-8 w-8 border-2 border-black rounded-full border-t-transparent" />
           ) : isCurrentSong && isPlaying ? (
-            <Pause className="w-[40px] h-[40px] scale-[1.5] fill-current" />
+            <Pause className="w-8 h-8 fill-current" />
           ) : (
-            <Play className="w-[40px] h-[40px] scale-[1.5] fill-current" />
+            <Play className="w-8 h-8 fill-current" />
           )}
         </Button>
       </div>
@@ -341,7 +326,7 @@ export default function Song() {
             className="cursor-pointer"
             disabled={!isCurrentSong}
           />
-          <div className="flex justify-between text-xs text-white/60">
+          <div className="flex justify-between text-xs text-white">
             <span>{isCurrentSong ? formatTime(displayTime) : "0:00"}</span>
             <span>{isCurrentSong ? formatTime(displayDuration) : "0:00"}</span>
           </div>

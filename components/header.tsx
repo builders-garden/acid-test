@@ -26,7 +26,7 @@ export const Header = () => {
             size="icon"
             className={`w-9 h-9 rounded-md border-[0.5px] border-white/60 ${
               isSongsPage
-                ? "bg-plum hover:bg-[#AD82CD4D]"
+                ? "bg-plum hover:bg-plum"
                 : "bg-black hover:bg-[#AD82CD4D]"
             }`}
           >
@@ -43,7 +43,7 @@ export const Header = () => {
             size="icon"
             className={`w-9 h-9 rounded-md border-[0.5px] border-white/60 ${
               isAboutPage
-                ? "bg-plum hover:bg-[#AD82CD4D]"
+                ? "bg-plum hover:bg-plum"
                 : "bg-black hover:bg-[#AD82CD4D]"
             }`}
           >
@@ -60,7 +60,7 @@ export const Header = () => {
             size="icon"
             className={`w-9 h-9 rounded-md border-[0.5px] border-white/60 ${
               isHomePage
-                ? "bg-plum hover:bg-[#AD82CD4D]"
+                ? "bg-plum hover:bg-plum"
                 : "bg-black hover:bg-[#AD82CD4D]"
             }`}
           >
