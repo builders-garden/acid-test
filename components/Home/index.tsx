@@ -18,63 +18,75 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white font-mono p-6 flex flex-col items-center w-full">
-      <Header />
+    <div className="relative min-h-screen bg-black text-white font-mono p-6 flex flex-col items-center w-full overflow-hidden">
+      <div 
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `url('/images/presave_bg.svg')`,
+          backgroundSize: '85%',
+          backgroundPosition: 'center top -17px',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
 
-      <div className="w-full max-w-md flex flex-col items-center space-y-6 mt-8">
-        <div className="text-center space-y-4 w-full">
-          <h1 className="text-xl font-bold">Welcome</h1>
-          <p className="text-sm text-white/60">
-            {isSignedIn ? "You are signed in!" : "Sign in to get started"}
-          </p>
+      <div className="relative z-20 w-full">
+        <Header />
 
-          {!isSignedIn && (
-            <Button
-              variant="outline"
-              onClick={signIn}
-              disabled={isLoading}
-              className="w-full h-12 text-lg border-2 bg-white text-black hover:bg-white/90 hover:text-black transition-colors"
-            >
-              {isLoading ? "Signing in..." : "Sign in"}
-            </Button>
-          )}
-        </div>
+        <div className="w-full max-w-md flex flex-col items-center space-y-6 mt-8">
+          <div className="text-center space-y-4 w-full">
+            <h1 className="text-xl font-bold">Welcome</h1>
+            <p className="text-sm text-white/60">
+              {isSignedIn ? "You are signed in!" : "Sign in to get started"}
+            </p>
 
-        {isSignedIn && (
-          <div className="flex flex-col space-y-4 w-full">
-            <Link
-              href="/songs"
-              className="w-full"
-            >
+            {!isSignedIn && (
               <Button
                 variant="outline"
+                onClick={signIn}
+                disabled={isLoading}
                 className="w-full h-12 text-lg border-2 bg-white text-black hover:bg-white/90 hover:text-black transition-colors"
               >
-                SONGS
+                {isLoading ? "Signing in..." : "Sign in"}
               </Button>
-            </Link>
+            )}
+          </div>
 
-            <Link
-              href="/admin"
-              className="w-full"
-            >
+          {isSignedIn && (
+            <div className="flex flex-col space-y-4 w-full">
+              <Link
+                href="/songs"
+                className="w-full"
+              >
+                <Button
+                  variant="outline"
+                  className="w-full h-12 text-lg border-2 bg-white text-black hover:bg-white/90 hover:text-black transition-colors"
+                >
+                  SONGS
+                </Button>
+              </Link>
+
+              <Link
+                href="/admin"
+                className="w-full"
+              >
+                <Button
+                  variant="outline"
+                  className="w-full h-12 text-lg border-2 border-white/60 bg-transparent text-white hover:bg-white/20 transition-colors"
+                >
+                  ADMIN PANEL
+                </Button>
+              </Link>
+
               <Button
                 variant="outline"
+                onClick={handleAddFrame}
                 className="w-full h-12 text-lg border-2 border-white/60 bg-transparent text-white hover:bg-white/20 transition-colors"
               >
-                ADMIN PANEL
+                ADD FRAME
               </Button>
-            </Link>
-
-            <Button
-              variant="outline"
-              onClick={handleAddFrame}
-              className="w-full h-12 text-lg border-2 border-white/60 bg-transparent text-white hover:bg-white/20 transition-colors"
-            >
-              ADD FRAME
-            </Button>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

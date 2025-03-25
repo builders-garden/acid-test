@@ -1,53 +1,84 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+'use client'
+import { Header } from "../header";
 
 export default function AboutPage() {
   return (
-    <div className="mx-auto min-h-screen bg-black text-white font-mono p-6 w-full">
-      <div className="mb-6">
-        <Link href="/songs/latest">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-        </Link>
-      </div>
+    <div className="min-h-screen bg-black text-white font-mono p-6 flex flex-col items-center w-full">
+      <Header />
 
-      <div className="space-y-6">
-        <section>
-          <h1 className="text-2xl font-bold mb-4">About Acid Test</h1>
-          <p className="text-white/80 leading-relaxed">
-            Acid Test is a music brand releasing exclusive tracks onchain
-            through limited edition NFTs. Each release is available for 5 hours
-            at $1 per NFT.
+      <div className="w-full max-w-md space-y-8">
+        {/* Main Description */}
+        <div className="space-y-6">
+          <p className="text-md leading-relaxed">
+            ACIDTEST is an electronic music and interactive cryptocurrency project built on Farcaster.
           </p>
-        </section>
+          <p className="text-md leading-relaxed">
+            Everytime an ACIDTEST song is minted, 50% of the revenue goes to buying back $ACID on the open market.
+          </p>
+        </div>
 
-        <section>
-          <h2 className="text-xl font-bold mb-4">Links</h2>
-          <div className="space-y-2">
-            <a
-              href="https://opensea.io/collection/acid-test"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block text-white/80 hover:text-white"
-            >
-              OpenSea
-            </a>
-            <a
-              href="https://twitter.com/acidtest"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block text-white/80 hover:text-white"
-            >
-              Twitter
-            </a>
+        {/* Token Info Box */}
+        <div className="border-2 border-white/20 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-xl">$ACID</span>
+            <div className="flex gap-2 ml-auto">
+              <div className="w-6 h-6 bg-white/10 rounded-md"></div>
+              <div className="w-6 h-6 bg-white/10 rounded-md"></div>
+              <div className="w-6 h-6 bg-white/10 rounded-md"></div>
+            </div>
           </div>
-        </section>
+
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="text-white/60">CA:</span>
+              <span className="text-sm">0x123456789012345678901234567890123...</span>
+   
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <div className="text-white/60 text-sm">MKT CAP</div>
+                <div className="text-lg">$2.8M</div>
+              </div>
+              <div>
+                <div className="text-white/60 text-sm">24H VOL</div>
+                <div className="text-lg">$308K</div>
+              </div>
+              <div>
+                <div className="text-white/60 text-sm">LIQ</div>
+                <div className="text-lg">$227K</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Official Links */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-mono mb-4">OFFICIAL LINKS</h2>
+          <div className="grid grid-cols-2 gap-y-4">
+            <div className="space-y-4">
+              <a href="#" className="block text-white hover:text-white/80">ACIDPAPER</a>
+              <div className="flex items-center gap-2">
+                <span className="text-white hover:text-white/80">DOCS</span>
+                <span className="text-xs text-black bg-[#606075] px-1">COMING SOON</span>
+              </div>
+              <a href="#" className="block text-white hover:text-white/80">OPENSEA</a>
+              <div className="flex items-center gap-2">
+                <a href="#" className="text-white hover:text-white/80">BASESCAN</a>
+                <span className="text-xs text-black bg-[#606075] px-1 ">ACIDTEST NFTS</span>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <a href="#" className="block text-white hover:text-white/80">TWITTER</a>
+              <a href="#" className="block text-white hover:text-white/80">DEXSCREENER</a>
+              <a href="#" className="block text-white hover:text-white/80">CLANKER</a>
+              <div className="flex items-center gap-2">
+                <a href="#" className="text-white hover:text-white/80">BASESCAN</a>
+                <span className="text-xs text-black px-1 bg-[#606075]">$ACID</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

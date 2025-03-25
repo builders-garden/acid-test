@@ -281,50 +281,41 @@ export default function Song() {
       <Header />
 
       {/* CD Visualization */}
-      <div className="w-full max-w-md aspect-square bg-black border-2 border-white/20 rounded-lg mb-6 relative overflow-hidden">
-        {/* Black background */}
-        <div className="absolute inset-0 bg-zinc-800 opacity-50"></div>
-
-        {/* Circular mask with rotating artwork */}
+      <div className="w-full max-w-lg aspect-square bg-black border-2 border-white/20 rounded-lg mb-6 relative overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center">
           <div
-            className={`w-[90%] h-[90%] rounded-full overflow-hidden relative`}
+            className={`w-[95%] h-[95%] overflow-hidden relative rounded-md`}
           >
             {metadata?.image && (
-              <div
-                className="absolute inset-0"
-                style={{
-                  transform: `rotate(${
-                    isCurrentSong && isPlaying ? rotation : 0
-                  }deg)`,
-                  transition: !isPlaying ? "transform 0.1s ease" : "none", // Smooth transition only when pausing
-                }}
-              >
-                <Image
-                  src={metadata.image}
-                  alt="Song artwork"
-                  fill
-                  className="object-cover"
-                />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div
+                  className="w-full h-full relative overflow-hidden"
+                  style={{ borderRadius: "0.75rem" }}
+                >
+                  <div className="w-full h-full rounded-lg overflow-hidden">
+                    {metadata?.image && (
+                      <Image
+                        src={metadata.image}
+                        alt="Song artwork"
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 90vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    )}
+                  </div>
+                </div>
               </div>
             )}
-
-            {/* CD center hole */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-4 h-4 rounded-full bg-black z-10 border-[1px] border-white/40" />
-            </div>
           </div>
-        </div>
-
-        {/* CD ring overlay */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-5/6 h-5/6 rounded-full border-2 border-white/40 flex items-center justify-center" />
         </div>
 
         {/* Play/Pause button */}
         <Button
-          variant="outline"
-          className="absolute bottom-2 right-2 w-12 h-12 border-2 bg-white text-black hover:bg-white/90 hover:text-black flex items-center justify-center p-0"
+          className={`absolute bottom-2 right-2 w-12 h-12 ${
+            !isPlaying
+              ? "bg-mint text-black hover:hover:bg-plum"
+              : "bg-plum text-black hover:bg-plum/90"
+          } flex items-center justify-center p-0`}
           onClick={handlePlayPause}
           disabled={isLoading}
         >
@@ -339,26 +330,28 @@ export default function Song() {
       </div>
 
       {/* Audio Controls */}
-      <div className="w-full max-w-md space-y-2 mb-6">
-        <Slider
-          value={[isCurrentSong ? displayTime : 0]}
-          max={isCurrentSong ? displayDuration || 100 : 100}
-          step={0.1}
-          onValueChange={handleSliderValueChange}
-          onValueCommit={handleSliderCommit}
-          className="cursor-pointer"
-          disabled={!isCurrentSong}
-        />
-        <div className="flex justify-between text-xs text-white/60">
-          <span>{isCurrentSong ? formatTime(displayTime) : "0:00"}</span>
-          <span>{isCurrentSong ? formatTime(displayDuration) : "0:00"}</span>
+      {isPlaying && (
+        <div className="w-full max-w-md space-y-2 mb-6">
+          <Slider
+            value={[isCurrentSong ? displayTime : 0]}
+            max={isCurrentSong ? displayDuration || 100 : 100}
+            step={0.1}
+            onValueChange={handleSliderValueChange}
+            onValueCommit={handleSliderCommit}
+            className="cursor-pointer"
+            disabled={!isCurrentSong}
+          />
+          <div className="flex justify-between text-xs text-white/60">
+            <span>{isCurrentSong ? formatTime(displayTime) : "0:00"}</span>
+            <span>{isCurrentSong ? formatTime(displayDuration) : "0:00"}</span>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Song Title and Release Number */}
       <div className="w-full max-w-md text-center mb-8">
         <h2 className="text-xl font-bold">{metadata?.name || "LOADING"}</h2>
-        <div className="text-sm text-white/60">{formatSongId(tokenId)}</div>
+        <div className="text-md text-white">{formatSongId(tokenId)}</div>
         {/* {metadata?.description && (
           <div className="text-sm text-white/60 mt-2">
             {metadata.description}
@@ -372,7 +365,7 @@ export default function Song() {
           <div className="flex items-center gap-2">
             {status === "live" ? (
               <>
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-mint animate-pulse" />
                 <span className="text-sm">Mint Open</span>
               </>
             ) : (
@@ -391,8 +384,7 @@ export default function Song() {
 
         {status === "live" ? (
           <Button
-            variant="outline"
-            className="w-full h-12 text-lg border-2 bg-white text-black hover:bg-white/90 hover:text-black"
+            className="w-full h-10 text-lg bg-mint  text-black hover:bg-plum hover:text-black"
             onClick={() => setIsMintModalOpen(true)}
           >
             MINT
@@ -418,9 +410,9 @@ export default function Song() {
         <h2 className="text-lg mb-3 font-bold">COLLECTORS</h2>
         <div className="space-y-2">
           {/* Signed-in user's collector spot at the top */}
-          <div className="flex items-center justify-between border border-white/20 p-2 rounded bg-blue-500/10">
+          <div className="flex items-center justify-between border border-white/90 p-2 rounded bg-[#FFFFFF33]/20">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-xs">
+              <div className="w-6 h-6 rounded-full border  flex items-center justify-center text-xs">
                 42
               </div>
               <img
@@ -444,10 +436,10 @@ export default function Song() {
           {sortedCollectors.map((collector, i) => (
             <div
               key={collector.address}
-              className="flex items-center justify-between p-2 rounded border border-white/20"
+              className="flex items-center justify-between p-2 rounded border border-white/100"
             >
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-black flex items-center justify-center text-xs">
+                <div className="w-6 h-6 rounded-full border  flex items-center justify-center text-xs">
                   {i + 1}
                 </div>
                 <img
@@ -486,6 +478,7 @@ export default function Song() {
           tokenId={tokenId}
           usdPrice={usdPrice}
           ethUsd={ethUsd}
+          image={metadata?.image}
         />
       )}
     </div>
