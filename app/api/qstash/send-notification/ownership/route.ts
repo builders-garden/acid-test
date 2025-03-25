@@ -8,6 +8,8 @@ const requestSchema = z.object({
   tokenId: z.number().int().positive()  // Add tokenId validation
 });
 
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export async function POST(request: Request) {
   const body = await request.json();
   const parsedBody = requestSchema.safeParse(body);
@@ -43,12 +45,22 @@ export async function POST(request: Request) {
       });
       
       if (result.state === "error") {
-        return new Response("Failed to send notification", { status: 500 });
+        console.error(
+          `[QSTASH-${new Date().toISOString()}]`,
+          `Error sending notification to user ${user.fid}: ${result.error}`
+        );
       } else if (result.state === "no_token") {
-        return new Response("No notification token available", { status: 404 });
+        console.error(
+          `[QSTASH-${new Date().toISOString()}]`,
+          `No token found for user ${user.fid}`
+        );
       } else if (result.state === "rate_limit") {
-        return new Response("Rate limit exceeded", { status: 429 });
+        console.error(
+          `[QSTASH-${new Date().toISOString()}]`,
+          `Rate limit exceeded for user ${user.fid}`
+        );
       }
+      await sleep(15); // 15ms delay between each notification
     }
 
     console.log(`Notification sent to ${users.length} users: title=${title}`);

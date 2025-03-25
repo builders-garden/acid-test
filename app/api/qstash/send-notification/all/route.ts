@@ -7,6 +7,8 @@ const requestSchema = z.object({
   text: z.string().min(1),
 });
 
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export async function POST(request: Request) {
   const body = await request.json();
   const parsedBody = requestSchema.safeParse(body);
@@ -41,6 +43,7 @@ export async function POST(request: Request) {
           `Rate limit exceeded for user ${user.fid}`
         );
       }
+      await sleep(15); // 15ms delay between each notification
     }
 
     console.log(`Notification sent: title=${title}`);
