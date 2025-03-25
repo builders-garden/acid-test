@@ -206,7 +206,7 @@ export default function SongsPage() {
           className="w-full"
         >
           {/* Existing Live Block UI */}
-          <div className="border-2 border-white rounded-lg p-4 hover:bg-white/5 transition-colors w-full">
+          <div className="border-2 border-white rounded-lg p-4 hover:bg-[#463B3A66] transition-colors w-full">
             <div className="flex items-start gap-4">
               <div className="w-20 h-20 bg-black border-2 border-white/60 rounded-xs relative flex-shrink-0  overflow-hidden">
                 {release.image ? (
@@ -253,7 +253,7 @@ export default function SongsPage() {
       return (
         <div
           key={release.id}
-          className="w-full border-2 border-white/20 opacity-70 rounded-lg p-4 bg-black/60 cursor-not-allowed"
+          className="w-full border-2 border-white/20 opacity-70 rounded-lg p-4 bg-black/60 cursor-not-allowed hover:bg-[#463B3A66] transition-colors"
         >
           <div className="flex items-start gap-4 relative">
             <div className="w-20 h-20 bg-black border-2 border-white/10 rounded-xs relative flex-shrink-0  overflow-hidden">
@@ -282,7 +282,7 @@ export default function SongsPage() {
       );
     } else if (release.status === "coming") {
       return (
-        <div className="border-2 border-white/20 rounded-lg p-4 opacity-70 relative overflow-hidden w-full cursor-not-allowed">
+        <div className="border-2 border-white/20 rounded-lg p-4 opacity-70 relative overflow-hidden w-full cursor-not-allowed hover:bg-[#463B3A66] transition-colors">
           <div
             className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 animate-pulse"
             style={{ opacity: 0.3 }}
@@ -329,7 +329,7 @@ export default function SongsPage() {
           className="w-full"
         >
           {/* Existing Ended Block UI */}
-          <div className="border-2 border-white rounded-lg p-4 hover:bg-white/5 transition-colors w-full">
+          <div className="border-2 border-white rounded-lg p-4 hover:bg-[#463B3A66] transition-colors w-full">
             <div className="flex items-start gap-4">
               <div className="w-20 h-20 bg-black border-2 border-white/40 rounded-xs relative flex-shrink-0 overflow-hidden">
                 {release.image ? (

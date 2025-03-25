@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import Image from "next/image";
 import {
   EclipseIcon as Ethereum,
   CircleDollarSign,
@@ -16,6 +17,7 @@ import { CONTRACT_ADDRESS, USDC_CONTRACT_ADDRESS } from "@/lib/constants";
 import { useWaitForTransactionReceipt } from "wagmi";
 import { erc20Abi } from "viem";
 
+
 interface MintModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -27,6 +29,7 @@ interface MintModalProps {
   tokenId: number;
   usdPrice: number;
   ethUsd: number;
+  image?: string;
 }
 
 enum MintState {
@@ -46,6 +49,7 @@ export function MintModal({
   tokenId,
   usdPrice,
   ethUsd,
+  image,
 }: MintModalProps) {
   const [isSliderInteracting, setIsSliderInteracting] = useState(false);
   const [mintState, setMintState] = useState<MintState>(MintState.Initial);
@@ -316,7 +320,7 @@ export function MintModal({
                         }`}
                         onClick={() => setPaymentMethod("ETH")}
                       >
-                        <Ethereum className="w-5 h-5" />
+                        {/* <Ethereum className="w-5 h-5" /> */}
                         ETH
                       </Button>
                       <Button
@@ -328,7 +332,7 @@ export function MintModal({
                         }`}
                         onClick={() => setPaymentMethod("USDC")}
                       >
-                        <CircleDollarSign className="w-5 h-5" />
+                       {/*  <CircleDollarSign className="w-5 h-5" /> */}
                         USDC
                       </Button>
                     </div>
@@ -336,8 +340,7 @@ export function MintModal({
 
                   {paymentMethod === "ETH" ? (
                     <Button
-                      variant="outline"
-                      className="w-full py-6 text-lg border-2 bg-white text-black hover:bg-white/90 hover:text-black disabled:bg-gray-500 disabled:text-white/60"
+                      className="w-full h-8py-6 text-lg bg-mint text-black hover:bg-plum hover:text-black disabled:bg-gray-500 disabled:text-white/60"
                       onClick={() => handleMint(mintQuantity, false)}
                       disabled={
                         !hasEnoughEthBalance() ||
@@ -431,12 +434,22 @@ export function MintModal({
               {mintState === MintState.Success && (
                 <div className="p-8 max-w-sm w-full">
                   <div className="flex flex-col items-center gap-4">
-                    <div className="w-32 h-32 bg-black border-2 border-white/20 rounded-full relative">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-3/4 h-3/4 rounded-full border-2 border-white/40 flex items-center justify-center">
-                          <div className="w-2 h-2 rounded-full bg-white/40" />
+                    <div className="w-32 h-32 bg-black border border-white/90 border-2 rounded-sm relative">
+                      {image ? (
+                        <Image
+                          src={image}
+                          alt="Song artwork"
+                          fill
+                          className="object-cover rounded-md"
+                        />
+                        
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-3/4 h-3/4 rounded-full border-2 border-white/40 flex items-center justify-center">
+                            <div className="w-2 h-2 rounded-full bg-white/40" />
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                     <p className="text-center text-lg">
                       You minted {mintQuantity} edition
@@ -450,41 +463,10 @@ export function MintModal({
                         className="text-blue-400 hover:text-blue-300 underline text-sm flex items-center gap-1"
                       >
                         View on Basescan
-                        <svg
-                          width="12"
-                          height="12"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="inline"
-                        >
-                          <path
-                            d="M18 13V19C18 19.5304 17.7893 20.0391 17.4142 20.4142C17.0391 20.7893 16.5304 21 16 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V8C3 7.46957 3.21071 6.96086 3.58579 6.58579C3.96086 6.21071 4.46957 6 5 6H11"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                          <path
-                            d="M15 3H21V9"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                          <path
-                            d="M10 14L21 3"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
                       </a>
                     )}
                     <Button
-                      variant="outline"
-                      className="w-full py-6 text-lg border-2 bg-white text-black hover:bg-white/90 hover:text-black"
+                      className="w-full h-10 py-4 text-lg bg-mint text-black hover:bg-plum hover:text-black"
                       onClick={handleClose}
                     >
                       Done

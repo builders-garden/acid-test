@@ -1,5 +1,4 @@
 "use client";
-
 import { ContextType, useMiniAppContext } from "@/hooks/use-miniapp-context";
 
 export default function Home() {
@@ -15,6 +14,7 @@ export default function Home() {
   };
 
   return (
+    <>
     <div className="flex min-h-screen flex-col items-center justify-center p-4">
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold">Presave</h1>
@@ -29,5 +29,7 @@ export default function Home() {
         </button>
       </div>
     </div>
+    </>
+
   );
 }
