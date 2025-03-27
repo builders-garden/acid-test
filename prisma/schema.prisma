@@ -33,11 +33,11 @@ model Song {
 }
 
 model Collection {
-  userId      Int
-  songId      Int
-  collectedAt DateTime @default(now())
-  song        Song     @relation(fields: [songId], references: [id])
-  user        User     @relation(fields: [userId], references: [fid])
+  userId Int
+  songId Int
+  amount Int
+  song   Song @relation(fields: [songId], references: [id])
+  user   User @relation(fields: [userId], references: [fid])
 
   @@id([userId, songId])
   @@map("collections")

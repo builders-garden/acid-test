@@ -291,7 +291,7 @@ export function MintModal({
           }
         }
         try {
-          const response = await fetch("/api/dbops", {
+          const response = await fetch("/api/collection", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -299,6 +299,7 @@ export function MintModal({
             body: JSON.stringify({
               userId: fid, // Assuming `context.user.id` contains the user ID
               songId: tokenId, // Assuming `tokenCounter` is the ID of the song
+              amount: mintQuantity,
             }),
           });
 

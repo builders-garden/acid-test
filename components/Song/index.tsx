@@ -14,54 +14,21 @@ import { SongMetadata } from "@/types";
 import { Header } from "../header";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
 import { formatCountdown, formatSongId } from "@/lib/utils";
+import { useCollectors } from "@/hooks/use-get-collectors";
+import { useMiniAppContext } from "@/hooks/use-miniapp-context";
 
+// Update the interface to match what's being returned from useCollectors
 interface Collector {
-  address: string;
-  quantity: number;
-  displayName: string;
-  profilePicture: string;
+  userId: number;
+  amount: number;
+  user?: {
+    fid: number;
+    username: string;
+    username: string;
+    avatarUrl: string | null;
+    walletAddress: string | null;
+  };
 }
-
-const generateDummyCollectors = (count: number): Collector[] => {
-  let currentQuantity = 3500; // Start with a high number
-  return Array.from({ length: count }, (_, i) => {
-    currentQuantity -= Math.floor(Math.random() * 50) + 1; // Decrease by 1-50 each time
-    const collectorNumber = i + 4;
-    return {
-      address: `0x${Math.random().toString(16).slice(2, 10)}...${Math.random()
-        .toString(16)
-        .slice(2, 6)}`,
-      displayName: `collector${collectorNumber}`,
-      quantity: currentQuantity,
-      profilePicture: `https://ui-avatars.com/api/?name=${collectorNumber}&background=random&size=32`,
-    };
-  });
-};
-
-const initialCollectors: Collector[] = [
-  {
-    address: "0x1234...5678",
-    displayName: "nicholas",
-    quantity: 3600,
-    profilePicture:
-      "https://ui-avatars.com/api/?name=N&background=random&size=32",
-  },
-  {
-    address: "0x8765...4321",
-    displayName: "dwr.eth",
-    quantity: 3550,
-    profilePicture:
-      "https://ui-avatars.com/api/?name=D&background=random&size=32",
-  },
-  {
-    address: "0x9876...5432",
-    displayName: "chaim.eth",
-    quantity: 3500,
-    profilePicture:
-      "https://ui-avatars.com/api/?name=C&background=random&size=32",
-  },
-  ...generateDummyCollectors(97),
-];
 
 export default function Song() {
   const [mintQuantity, setMintQuantity] = useState(1);
@@ -90,7 +57,7 @@ export default function Song() {
     duration,
     seek,
   } = useAudioPlayer();
-
+  const { type: contextType, context } = useMiniAppContext();
   const { address } = useAccount();
 
   // Extract token ID from the URL path
@@ -105,6 +72,15 @@ export default function Song() {
     const parsedId = parseInt(lastSegment);
     return isNaN(parsedId) ? 1 : parsedId;
   }, [pathname]);
+
+  const { collectors, isLoading: collectorsLoading } = useCollectors(tokenId);
+  const [userFid, setUserFid] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (contextType === "farcaster" && context?.user?.fid) {
+      setUserFid(context.user.fid);
+    }
+  }, [context, contextType]);
 
   const getTokenInfoResult = useReadContract({
     abi: AcidTestABI,
@@ -257,24 +233,24 @@ export default function Song() {
   const displayTime = isDragging ? seekValue : isCurrentSong ? currentTime : 0;
   const displayDuration = isCurrentSong ? duration : 0;
 
+  // Replace the sortedCollectors useMemo with one that uses the real collectors data
   const sortedCollectors = useMemo(() => {
-    const userCollector: Collector = {
-      address: "0xYOUR...ADDRESS",
-      displayName: "You",
-      quantity: 2505,
-      profilePicture:
-        "https://ui-avatars.com/api/?name=Y&background=random&size=32",
-    };
-    const sortedList = [...initialCollectors, userCollector].sort(
-      (a, b) => b.quantity - a.quantity
-    );
-    const userIndex = sortedList.findIndex((c) => c.displayName === "You");
-    if (userIndex !== -1) {
-      sortedList.splice(userIndex, 1);
+    if (collectorsLoading || !collectors) {
+      return [];
     }
-    sortedList.splice(41, 0, userCollector); // Insert "You" at position 42
-    return sortedList;
-  }, []);
+
+    // Sort collectors by amount
+    return [...collectors].sort((a, b) => b.amount - a.amount);
+  }, [collectors, collectorsLoading]);
+
+  // Get the user's position in the list using FID directly
+  const userPosition = useMemo(() => {
+    if (!userFid || !collectors) return null;
+
+    // Find the user's position directly by FID
+    const index = sortedCollectors.findIndex((c) => c.user?.fid === userFid);
+    return index !== -1 ? index + 1 : null;
+  }, [userFid, sortedCollectors, collectors]);
 
   return (
     <div className="min-h-screen bg-black text-white font-mono p-4 flex flex-col items-center w-full">
@@ -394,58 +370,85 @@ export default function Song() {
       <div className="w-full max-w-md">
         <h2 className="text-lg mb-3 font-bold">COLLECTORS</h2>
         <div className="space-y-2">
-          {/* Signed-in user's collector spot at the top */}
-          <div className="flex items-center justify-between border border-white/90 p-2 rounded bg-[#FFFFFF33]/20">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full border  flex items-center justify-center text-xs">
-                42
-              </div>
-              <img
-                src="https://ui-avatars.com/api/?name=Y&background=random&size=32"
-                alt="Your profile"
-                width={24}
-                height={24}
-                className="rounded-full"
-              />
-              <span>You</span>
-            </div>
-            <a
-              href={`https://opensea.io/assets/ethereum/0x123...456/${2505}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:underline"
-            >
-              2505
-            </a>
-          </div>
-          {sortedCollectors.map((collector, i) => (
-            <div
-              key={collector.address}
-              className="flex items-center justify-between p-2 rounded border border-white/100"
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full border  flex items-center justify-center text-xs">
-                  {i + 1}
+          {/* Show loading state when collectors are being fetched */}
+          {collectorsLoading ? (
+            <div className="text-center py-4">Loading collectors...</div>
+          ) : (
+            <>
+              {/* Signed-in user's collector spot if they're in the list and have FID */}
+              {userFid && userPosition && (
+                <div className="flex items-center justify-between border border-white/90 p-2 rounded bg-[#FFFFFF33]/20">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full border flex items-center justify-center text-xs">
+                      {userPosition}
+                    </div>
+                    <Image
+                      src={
+                        collectors?.find((c) => c.user?.fid === userFid)?.user
+                          ?.avatarUrl ||
+                        `https://ui-avatars.com/api/?name=You&background=random&size=32`
+                      }
+                      alt="Your profile"
+                      width={24}
+                      height={24}
+                      className="rounded-full"
+                    />
+                    <span>You</span>
+                  </div>
+                  <span className="hover:underline">
+                    {collectors?.find((c) => c.user?.fid === userFid)?.amount ||
+                      0}
+                  </span>
                 </div>
-                <img
-                  src={collector.profilePicture || "/images/default_pfp.png"}
-                  alt={`${collector.displayName} profile`}
-                  width={24}
-                  height={24}
-                  className="rounded-full"
-                />
-                <span>{collector.displayName}</span>
-              </div>
-              <a
-                href={`https://opensea.io/assets/ethereum/0x123...456/${collector.quantity}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:underline"
-              >
-                {collector.quantity}
-              </a>
-            </div>
-          ))}
+              )}
+
+              {/* Display all collectors - also update the condition to use FID */}
+              {sortedCollectors.map((collector, i) => {
+                return (
+                  <div
+                    key={collector.userId}
+                    className="flex items-center justify-between p-2 rounded border border-white/100"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full border flex items-center justify-center text-xs">
+                        {i + 1}
+                      </div>
+                      <Image
+                        src={
+                          collector.user?.avatarUrl ||
+                          `https://ui-avatars.com/api/?name=${
+                            collector.user?.username || "User"
+                          }&background=random&size=32`
+                        }
+                        alt={`${collector.user?.username || "User"} profile`}
+                        width={24}
+                        height={24}
+                        className="rounded-full"
+                      />
+                      <span>
+                        {collector.user?.username ||
+                          collector.user?.username ||
+                          `User ${collector.userId}`}
+                      </span>
+                    </div>
+                    <a
+                      href={`https://opensea.io/assets/base/${CONTRACT_ADDRESS}/${tokenId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline"
+                    >
+                      {collector.amount}
+                    </a>
+                  </div>
+                );
+              })}
+
+              {/* Show message if no collectors */}
+              {sortedCollectors.length === 0 && (
+                <div className="text-center py-4">No collectors yet</div>
+              )}
+            </>
+          )}
         </div>
       </div>
 
