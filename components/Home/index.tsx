@@ -6,16 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Header } from "../header";
 import sdk from "@farcaster/frame-sdk";
 
+export const handleAddFrame = () => {
+  try {
+    sdk.actions.addFrame();
+  } catch (error) {
+    console.error("Error adding frame:", error);
+  }
+};
+
 export default function Home() {
   const { signIn, isLoading, isSignedIn } = useSignIn();
-
-  const handleAddFrame = () => {
-    try {
-      sdk.actions.addFrame();
-    } catch (error) {
-      console.error("Error adding frame:", error);
-    }
-  };
 
   return (
     <div className="relative min-h-screen bg-black text-white font-mono p-4 flex flex-col items-center w-full overflow-hidden">

@@ -1,18 +1,18 @@
 {
   "accountAssociation": {
     "header": "eyJmaWQiOjU2OTgsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHg5Qzk1QjM1M2MxMDM5RTQzNUM5MTE1NzM3MjBhNGU2MmY4ZTBhYmNhIn0",
-    "payload": "eyJkb21haW4iOiJhY2lkLXRlc3QudmVyY2VsLmFwcCJ9",
-    "signature": "MHhjNTRjOWEyZjdjNmY5YjZkOTIwMzQzOWY2YTJlMWRjY2Y5N2I0MTdmNzhmOGEyZDc1MmQ4NDVjNDc1MmI1OWQ4NjdmODE2NzJkZDdhY2U0MzcxODUwN2E4YWYwMjA1YmVlN2U5ZGQwYTFiYzA3YzQwNGM2YzdjYzZmMzMwOGUzNzFj"
+    "payload": "eyJkb21haW4iOiIyNmRhLTIxMy0xODctMjMtMTQubmdyb2stZnJlZS5hcHAifQ",
+    "signature": "MHhjYTMwNjQ5MTUxYTRiNjM2NGEyOTI1ZDZkMTI2YWM4ZTY3NGRhZDhjZjJjM2YwMDExZjQ4YmE5NDczZmZhNmU1MjU3ZDAxNDAyMmFmODUxOGU3N2NiMTUwOGI2NWFjN2VlNjMyMzVkM2U1YTgwY2M0YjE5ZGE5OWIxODNkOTQxYzFi"
   },
   "frame": {
     "version": "1",
     "name": "Example Frame",
-    "iconUrl": "https://acid-test.vercel.app/icon.png",
-    "homeUrl": "https://acid-test.vercel.app",
-    "imageUrl": "https://acid-test.vercel.app/image.png",
+    "iconUrl": "https://26da-213-187-23-14.ngrok-free.app/icon.png",
+    "homeUrl": "https://26da-213-187-23-14.ngrok-free.app",
+    "imageUrl": "https://26da-213-187-23-14.ngrok-free.app/image.png",
     "buttonTitle": "Check this out",
-    "splashImageUrl": "https://acid-test.vercel.app/splash.png",
+    "splashImageUrl": "https://26da-213-187-23-14.ngrok-free.app/splash.png",
     "splashBackgroundColor": "#eeccff",
-    "webhookUrl": "https://acid-test.vercel.app/api/webhook"
+    "webhookUrl": "https://26da-213-187-23-14.ngrok-free.app/api/webhook"
   }
 }

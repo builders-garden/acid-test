@@ -63,16 +63,6 @@ export function FrameProvider({ children }: FrameProviderProps) {
     if (sdk && !isSDKLoaded) {
       load().then(() => {
         setIsSDKLoaded(true);
-        if (
-          !context?.client.added &&
-          !env.NEXT_PUBLIC_URL?.includes("localhost")
-        ) {
-          try {
-            sdk.actions.addFrame();
-          } catch (err) {
-            console.error("Failed to add frame:", err);
-          }
-        }
       });
     }
   }, [isSDKLoaded]);

@@ -19,6 +19,7 @@ import { useMiniAppContext } from "@/hooks/use-miniapp-context";
 import { sendDelayedNotification } from "@/lib/qstash";
 import { erc20Abi } from "viem";
 import { formatSongId } from "@/lib/utils";
+import { handleAddFrame } from "./Home";
 
 interface MintModalProps {
   isOpen: boolean;
@@ -230,6 +231,7 @@ export function MintModal({
     setMintState(MintState.Initial);
     resetMint();
     onClose();
+    handleAddFrame();
   };
 
   useEffect(() => {
