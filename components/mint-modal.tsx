@@ -33,6 +33,7 @@ interface MintModalProps {
   tokenId: number;
   usdPrice: number;
   ethUsd: number;
+  refetch: () => void;
   image?: string;
 }
 
@@ -54,6 +55,7 @@ export function MintModal({
   tokenId,
   usdPrice,
   ethUsd,
+  refetch,
   image,
 }: MintModalProps) {
   const [isSliderInteracting, setIsSliderInteracting] = useState(false);
@@ -308,8 +310,7 @@ export function MintModal({
             throw new Error(errorData.error || "Failed to create collection");
           }
 
-          const result = await response.json();
-          console.log("Created collection: ", result.data);
+          refetch();
         } catch (error: unknown) {
           console.error(
             "Error creating collection: ",
