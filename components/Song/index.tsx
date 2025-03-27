@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Play, Pause } from "lucide-react";
@@ -17,19 +17,6 @@ import { formatCountdown, formatSongId } from "@/lib/utils";
 import { useCollectors } from "@/hooks/use-get-collectors";
 import { useMiniAppContext } from "@/hooks/use-miniapp-context";
 
-// Update the interface to match what's being returned from useCollectors
-interface Collector {
-  userId: number;
-  amount: number;
-  user?: {
-    fid: number;
-    username: string;
-    username: string;
-    avatarUrl: string | null;
-    walletAddress: string | null;
-  };
-}
-
 export default function Song() {
   const [mintQuantity, setMintQuantity] = useState(1);
   const [isMintModalOpen, setIsMintModalOpen] = useState(false);
@@ -42,9 +29,6 @@ export default function Song() {
   const [seekValue, setSeekValue] = useState(0);
   const [usdPrice, setUsdPrice] = useState(0);
   const [ethUsd, setEthUsd] = useState(2325);
-  const [rotation, setRotation] = useState(0);
-  const rotationRef = useRef(0);
-  const animationRef = useRef<number | null>(null);
 
   // Use the global audio player context
   const {
@@ -174,31 +158,6 @@ export default function Song() {
     return () => clearInterval(timer);
   }, []);
 
-  // Handle CD spinning animation based on global playback state
-  useEffect(() => {
-    const isCurrentSong = currentSong.tokenId === tokenId;
-
-    if (isPlaying && isCurrentSong) {
-      animationRef.current = requestAnimationFrame(animateSpin);
-    } else if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-      animationRef.current = null;
-    }
-
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, [isPlaying, currentSong.tokenId, tokenId]);
-
-  // Function to handle CD spinning animation
-  const animateSpin = () => {
-    rotationRef.current = (rotationRef.current + 0.5) % 360; // Slower rotation (0.5 degree per frame)
-    setRotation(rotationRef.current);
-    animationRef.current = requestAnimationFrame(animateSpin);
-  };
-
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
@@ -311,13 +270,8 @@ export default function Song() {
 
       {/* Song Title and Release Number */}
       <div className="w-full max-w-md text-center mb-8">
-        <h2 className="text-xl font-bold">{metadata?.name || "LOADING"}</h2>
-        <div className="text-md text-white">{formatSongId(tokenId)}</div>
-        {/* {metadata?.description && (
-          <div className="text-sm text-white/60 mt-2">
-            {metadata.description}
-          </div>
-        )} */}
+        <h2 className="text-[18px] font-bold">{metadata?.name || "LOADING"}</h2>
+        <div className="text-[14px] text-white">{formatSongId(tokenId)}</div>
       </div>
 
       {/* Mint Status and Controls - Dynamically adjust based on status */}
@@ -356,7 +310,7 @@ export default function Song() {
             className="w-full h-12 text-lg border-2 border-white/60 bg-transparent text-white hover:bg-white/20"
             onClick={() =>
               window.open(
-                `https://opensea.io/collection/acid-test-${tokenId}`,
+                `https://opensea.io/assets/base/${CONTRACT_ADDRESS}/${tokenId}`,
                 "_blank"
               )
             }
