@@ -6,8 +6,12 @@ import dynamic from "next/dynamic";
 import { FrameProvider } from "@/components/farcaster-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
+import localFont from "next/font/local";
 
-const inter = Inter({ subsets: ["latin"] });
+const suisseIntlMono = localFont({
+  src: "../public/fonts/SuisseIntlMono-Regular-WebS.ttf",
+  variable: "--font-suisse-intl-mono",
+});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -27,7 +31,7 @@ export default function RootLayout({
   );
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${suisseIntlMono.variable} font-mono`}>
         <ErudaProvider>
           <FrameProvider>
             <MiniKitProvider>

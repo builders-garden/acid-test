@@ -17,6 +17,7 @@
     "@farcaster/frame-wagmi-connector": "^0.0.16",
     "@frames.js/debugger": "^0.4.3",
     "@libsql/client": "^0.14.0",
+    "@next/font": "^14.2.15",
     "@prisma/adapter-libsql": "^6.4.1",
     "@prisma/client": "^6.4.1",
     "@radix-ui/react-checkbox": "^1.1.4",
