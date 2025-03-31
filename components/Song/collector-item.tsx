@@ -1,7 +1,7 @@
 import Image from "next/image";
-import Link from "next/link";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
 import { DbCollection } from "@/lib/types";
+import sdk from "@farcaster/frame-sdk";
 
 type CollectorItemProps = {
   collector: DbCollection;
@@ -18,6 +18,12 @@ export const CollectorItem = ({
   isUser = false,
   onClickUser = () => {},
 }: CollectorItemProps) => {
+  const handleOpenUrl = async () => {
+    await sdk.actions.openUrl(
+      `https://opensea.io/assets/base/${CONTRACT_ADDRESS}/${tokenId}`
+    );
+  };
+
   return (
     <div
       className={`flex items-center justify-between p-2 rounded border ${
@@ -55,14 +61,12 @@ export const CollectorItem = ({
             : collector.user?.username || `User ${collector.userId}`}
         </span>
       </div>
-      <Link
-        href={`https://opensea.io/assets/base/${CONTRACT_ADDRESS}/${tokenId}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={`cursor-pointer ${isUser ? "hover:underline" : ""}`}
+      <span
+        className="cursor-pointer"
+        onClick={handleOpenUrl}
       >
         {collector.amount}
-      </Link>
+      </span>
     </div>
   );
 };

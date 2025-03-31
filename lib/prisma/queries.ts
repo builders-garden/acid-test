@@ -54,18 +54,26 @@ export const deleteUserNotificationDetails = async (fid: number) => {
   });
 };
 
-export const getUserNotificationDetails = async (
-  fid: number
-): Promise<FrameNotificationDetails | null> => {
-  const user = await getUser(fid);
+export const getUsersNotificationDetails = async (
+  fid: number[]
+): Promise<FrameNotificationDetails[]> => {
+  const users = await prisma.user.findMany({
+    where: {
+      fid: {
+        in: fid,
+      },
+    },
+  });
 
-  if (!user) {
-    return null;
-  }
-
-  return user.notificationDetails
-    ? (JSON.parse(user.notificationDetails) as FrameNotificationDetails)
-    : null;
+  const notificationDetails = users
+    .map((user) => {
+      if (!user.notificationDetails) {
+        return null;
+      }
+      return JSON.parse(user.notificationDetails) as FrameNotificationDetails;
+    })
+    .filter((details) => details !== null);
+  return notificationDetails as FrameNotificationDetails[];
 };
 
 export const getSong = async (id: number) => {

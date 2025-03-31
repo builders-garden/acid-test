@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
           await setUserNotificationDetails(fid, event.notificationDetails);
         }
         await sendFrameNotification({
-          fid,
+          fids: [fid],
           title: "Welcome to Acid Test 💿",
           body: "Explore new tracks and mint your favorite ones now!",
         });
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
       // TODO: Set user notification details
       await setUserNotificationDetails(fid, event.notificationDetails);
       await sendFrameNotification({
-        fid,
+        fids: [fid],
         title: "Ding ding ding",
         body: "Notifications for Acid Test are now enabled",
       });

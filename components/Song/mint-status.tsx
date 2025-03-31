@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { formatCountdown } from "@/lib/utils";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
+import sdk from "@farcaster/frame-sdk";
 
 type MintStatusProps = {
   status: "live" | "end";
@@ -15,6 +16,12 @@ export const MintStatus = ({
   setIsMintModalOpen,
   tokenId,
 }: MintStatusProps) => {
+  const handleOpenUrl = async () => {
+    await sdk.actions.openUrl(
+      `https://opensea.io/assets/base/${CONTRACT_ADDRESS}/${tokenId}`
+    );
+  };
+
   return (
     <div className="w-full max-w-md flex flex-col items-center gap-4 mb-6">
       <div className="w-full flex justify-between items-center">
@@ -45,14 +52,8 @@ export const MintStatus = ({
         </Button>
       ) : (
         <Button
-          variant="outline"
-          className="w-full h-12 text-lg border-2 border-white/60 bg-transparent text-white hover:bg-white/20"
-          onClick={() =>
-            window.open(
-              `https://opensea.io/assets/base/${CONTRACT_ADDRESS}/${tokenId}`,
-              "_blank"
-            )
-          }
+          className="w-full h-10 text-lg bg-mint text-black hover:bg-plum hover:text-black"
+          onClick={handleOpenUrl}
         >
           VIEW ON OPENSEA
         </Button>
