@@ -7,7 +7,7 @@ const requestSchema = z.object({
   text: z.string().min(1),
 });
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -21,36 +21,40 @@ export async function POST(request: Request) {
   try {
     const users = await prisma.user.findMany();
 
-    for (const user of users) {
-      let result = await sendFrameNotification({
-        fid: user.fid,
-        title,
-        body: text,
+    let result = await sendFrameNotification({
+      fids: users.map((user) => user.fid),
+      title,
+      body: text,
+    });
+    if (result.state === "success") {
+      console.log(
+        `[QSTASH-${new Date().toISOString()}]`,
+        `Notification sent to all users`
+      );
+      return new Response("Notification sent to all users", {
+        status: 200,
       });
+    } else {
       if (result.state === "error") {
         console.error(
           `[QSTASH-${new Date().toISOString()}]`,
-          `Error sending notification to user ${user.fid}: ${result.error}`
+          `Error sending notification to all users: ${result.error}`
         );
       } else if (result.state === "no_token") {
         console.error(
           `[QSTASH-${new Date().toISOString()}]`,
-          `No token found for user ${user.fid}`
+          `No token found for all users`
         );
       } else if (result.state === "rate_limit") {
         console.error(
           `[QSTASH-${new Date().toISOString()}]`,
-          `Rate limit exceeded for user ${user.fid}`
+          `Rate limit exceeded for all users`
         );
       }
-      await sleep(15); // 15ms delay between each notification
+      return new Response("Failed to send notification", {
+        status: 500,
+      });
     }
-
-    console.log(`Notification sent: title=${title}`);
-
-    return new Response("Notification scheduled successfully", {
-      status: 200,
-    });
   } catch (error) {
     console.error("Error sending notification:", error);
     return new Response("Failed to send notification", {

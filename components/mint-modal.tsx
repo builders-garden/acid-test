@@ -33,6 +33,7 @@ interface MintModalProps {
   tokenId: number;
   usdPrice: number;
   ethUsd: number;
+  refetch: () => void;
   image?: string;
 }
 
@@ -54,6 +55,7 @@ export function MintModal({
   tokenId,
   usdPrice,
   ethUsd,
+  refetch,
   image,
 }: MintModalProps) {
   const [isSliderInteracting, setIsSliderInteracting] = useState(false);
@@ -291,7 +293,7 @@ export function MintModal({
           }
         }
         try {
-          const response = await fetch("/api/dbops", {
+          const response = await fetch("/api/collection", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -299,6 +301,7 @@ export function MintModal({
             body: JSON.stringify({
               userId: fid, // Assuming `context.user.id` contains the user ID
               songId: tokenId, // Assuming `tokenCounter` is the ID of the song
+              amount: mintQuantity,
             }),
           });
 
@@ -307,8 +310,7 @@ export function MintModal({
             throw new Error(errorData.error || "Failed to create collection");
           }
 
-          const result = await response.json();
-          console.log("Created collection: ", result.data);
+          refetch();
         } catch (error: unknown) {
           console.error(
             "Error creating collection: ",

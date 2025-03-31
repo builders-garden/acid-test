@@ -54,18 +54,26 @@ export const deleteUserNotificationDetails = async (fid: number) => {
   });
 };
 
-export const getUserNotificationDetails = async (
-  fid: number
-): Promise<FrameNotificationDetails | null> => {
-  const user = await getUser(fid);
+export const getUsersNotificationDetails = async (
+  fid: number[]
+): Promise<FrameNotificationDetails[]> => {
+  const users = await prisma.user.findMany({
+    where: {
+      fid: {
+        in: fid,
+      },
+    },
+  });
 
-  if (!user) {
-    return null;
-  }
-
-  return user.notificationDetails
-    ? (JSON.parse(user.notificationDetails) as FrameNotificationDetails)
-    : null;
+  const notificationDetails = users
+    .map((user) => {
+      if (!user.notificationDetails) {
+        return null;
+      }
+      return JSON.parse(user.notificationDetails) as FrameNotificationDetails;
+    })
+    .filter((details) => details !== null);
+  return notificationDetails as FrameNotificationDetails[];
 };
 
 export const getSong = async (id: number) => {
@@ -117,10 +125,23 @@ export const getCollection = async (userId: number, songId: number) => {
   return collection;
 };
 
+export const getCollectorsBySongId = async (songId: number) => {
+  const collectors = await prisma.collection.findMany({
+    where: {
+      songId,
+    },
+    include: {
+      user: true,
+    },
+  });
+
+  return collectors;
+};
+
 export const createCollection = async (collection: {
   userId: number;
   songId: number;
-  collectedAt?: Date;
+  amount: number;
 }): Promise<DbCollection> => {
   // First check if the collection already exists
   const existingCollection = await isInCollection(
@@ -135,10 +156,19 @@ export const createCollection = async (collection: {
       throw new Error("Collection exists but couldn't be retrieved");
     }
 
-    return res;
+    return await prisma.collection.update({
+      where: {
+        userId_songId: {
+          userId: collection.userId,
+          songId: collection.songId,
+        },
+      },
+      data: {
+        amount: res.amount + collection.amount,
+      },
+    });
   }
 
-  // Verify that both the user and song exist before creating the collection
   const user = await getUser(collection.userId);
   if (!user) {
     throw new Error(`User with ID ${collection.userId} does not exist`);
@@ -149,12 +179,11 @@ export const createCollection = async (collection: {
     throw new Error(`Song with ID ${collection.songId} does not exist`);
   }
 
-  // Create the new collection entry
   return await prisma.collection.create({
     data: {
       userId: collection.userId,
       songId: collection.songId,
-      collectedAt: collection.collectedAt ?? new Date(),
+      amount: collection.amount,
     },
   });
 };

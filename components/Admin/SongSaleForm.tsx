@@ -93,8 +93,7 @@ export default function SongSaleForm({
       setModalMessage("Transaction successful");
       const setNotifications = async () => {
         try {
-          // Make a POST request to the API endpoint
-          const dbopsResponse = await fetch("/api/dbops", {
+          const songResponse = await fetch("/api/song", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -108,8 +107,8 @@ export default function SongSaleForm({
           });
 
           // Check if the request was successful
-          if (!dbopsResponse.ok) {
-            const errorData = await dbopsResponse.json(); // Parse error response
+          if (!songResponse.ok) {
+            const errorData = await songResponse.json(); // Parse error response
             throw new Error(errorData.error || "Failed to upload song");
           }
 

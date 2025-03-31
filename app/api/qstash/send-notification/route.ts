@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   const { fid, title, text } = parsedBody.data;
   try {
     let result = await sendFrameNotification({
-      fid: Number(fid),
+      fids: [fid],
       title,
       body: text,
     });
