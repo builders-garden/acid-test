@@ -81,6 +81,20 @@ const config: Config = {
           DEFAULT: "#3D3433",
         },
       },
+      keyframes: {
+        fadeOut: {
+          '0%': { opacity: '1' },
+          '100%': { opacity: '0' },
+        },
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        }
+      },
+      animation: {
+        fadeOut: 'fadeOut 0.6s ease-out forwards',
+        fadeInOut: 'fadeIn 0.15s ease-out forwards, fadeOut 0.6s ease-out 0.15s forwards'
+      }
     },
   },
   plugins: [require("tailwindcss-animate")],

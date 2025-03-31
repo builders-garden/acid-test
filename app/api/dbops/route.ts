@@ -1,4 +1,4 @@
-import { createSong, createCollection } from "@/lib/prisma/queries";
+import { createSong, createCollection, getUser } from "@/lib/prisma/queries";
 
 import { NextRequest } from "next/server";
 
@@ -64,6 +64,45 @@ export async function POST(request: NextRequest) {
       error instanceof Error ? error.message : "An unknown error occurred";
     return Response.json(
       { success: false, error: errorMessage },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const fid = searchParams.get('fid');
+
+  if (!fid) {
+    return Response.json(
+      { error: 'Missing fid parameter' },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const fidNumber = Number(fid);
+    if (isNaN(fidNumber)) {
+      return Response.json(
+        { error: 'Invalid fid format' },
+        { status: 400 }
+      );
+    }
+
+    const user = await getUser(fidNumber);
+
+    if (!user) {
+      return Response.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    return Response.json({ user });
+  } catch (error) {
+    console.error('Database error:', error);
+    return Response.json(
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
