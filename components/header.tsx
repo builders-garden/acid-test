@@ -29,11 +29,11 @@ export const Header = () => {
       if (contextType === "farcaster") {
         if (context && context.user.fid) {
           try {
-            const response = await fetch(`/api/dbops?fid=${context.user.fid}`);
+            const response = await fetch(`/api/user/${context.user.fid}`);
             const data = await response.json();
             setUserExists(!!data.user);
           } catch (error) {
-            console.error('Error checking user:', error);
+            console.error("Error checking user:", error);
             setUserExists(false);
           }
         } else {

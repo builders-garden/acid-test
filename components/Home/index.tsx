@@ -37,7 +37,7 @@ export const handleAddFrame = () => {
 };
 
 export default function Home() {
-  const { signIn, isLoading, isSignedIn } = useSignIn();
+  const { signIn, isLoading, isSignedIn, isAdmin } = useSignIn();
   const [liveSong, setLiveSong] = useState<ReleaseBlock | null>(null);
   const [isLoadingSongs, setIsLoadingSongs] = useState(false);
 
@@ -50,7 +50,8 @@ export default function Home() {
 
   useEffect(() => {
     if (getTokenInfosResult.data) {
-      const allContractReleases = getTokenInfosResult.data as ReadonlyArray<TokenInfo>;
+      const allContractReleases =
+        getTokenInfosResult.data as ReadonlyArray<TokenInfo>;
       const contractReleases = allContractReleases.filter(
         (release) => release.uri !== ""
       );
@@ -112,7 +113,9 @@ export default function Home() {
           );
 
           // Find the first live song
-          const firstLiveSong = filteredReleases.find(song => song.status === "live");
+          const firstLiveSong = filteredReleases.find(
+            (song) => song.status === "live"
+          );
           setLiveSong(firstLiveSong || null);
         } catch (error) {
           console.error("Error processing release data:", error);
@@ -157,15 +160,25 @@ export default function Home() {
             {isSignedIn && (
               <div className="flex flex-col space-y-4 w-full">
                 <Link
-                  href={liveSong ? `/songs/${liveSong.index}` : "https://acidtest.xyz/paper"}
+                  href={
+                    liveSong
+                      ? `/songs/${liveSong.index}`
+                      : "https://acidtest.xyz/paper"
+                  }
                   className="w-full"
                   target={liveSong ? "_self" : "_blank"}
                 >
-                  <Button 
+                  <Button
                     className="w-full h-10 text-lg bg-mint text-black hover:bg-plum hover:text-black transition-colors"
                     disabled={isLoadingSongs}
                   >
-                    {getTokenInfosResult.isLoading ? "" : isLoadingSongs ? "Loading..." : liveSong ? "MINT" : "ACIDPAPER"}
+                    {getTokenInfosResult.isLoading
+                      ? ""
+                      : isLoadingSongs
+                      ? "Loading..."
+                      : liveSong
+                      ? "MINT"
+                      : "ACIDPAPER"}
                   </Button>
                 </Link>
 
@@ -173,21 +186,21 @@ export default function Home() {
                   href="/"
                   className="w-full"
                 >
-                  <Button
-                    className="w-full h-10 text-lg bg-mint text-black hover:bg-plum transition-colors"
-                  >
+                  <Button className="w-full h-10 text-lg bg-mint text-black hover:bg-plum transition-colors">
                     $ACID
                   </Button>
                 </Link>
-                
-                <Link
-                  href="/admin"
-                  className="w-full"
-                >
-                  <Button className="w-full h-10 text-lg bg-mint text-black hover:bg-plum transition-colors">
-                    ADMIN PANEL
-                  </Button>
-                </Link>
+
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    className="w-full"
+                  >
+                    <Button className="w-full h-10 text-lg bg-mint text-black hover:bg-plum transition-colors">
+                      ADMIN PANEL
+                    </Button>
+                  </Link>
+                )}
               </div>
             )}
           </div>

@@ -7,12 +7,14 @@ import { Button } from "@/components/ui/button";
 import SongSaleForm from "./SongSaleForm";
 import TransactionModal from "../transaction-modal";
 import NotificationForm from "./NotificationForm";
+import { useSignIn } from "@/hooks/use-sign-in";
 
 type AdminAction = "Create Song Sale" | "Send Notification" | null;
 
 export default function AdminPage() {
   const [showForm, setShowForm] = useState(false);
   const [selectedAction, setSelectedAction] = useState<AdminAction>(null);
+  const { isAdmin } = useSignIn();
 
   // Transaction modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -25,6 +27,20 @@ export default function AdminPage() {
     setShowForm(false);
     setSelectedAction(null);
   };
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-black text-white font-mono p-4 flex flex-col items-center w-full">
+        <Header />
+        <div className="w-full max-w-md space-y-6 mt-4">
+          <h1 className="text-xl font-bold">Admin Panel</h1>
+          <p className="text-red-500">
+            You do not have permission to access this page.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white font-mono p-4 flex flex-col items-center w-full">

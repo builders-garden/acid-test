@@ -4,11 +4,29 @@ import { MiniKit } from "@worldcoin/minikit-js";
 import { useCallback, useState, useEffect } from "react";
 import { ContextType, useMiniAppContext } from "./use-miniapp-context";
 
+const ADMINS = [
+  1504, // chaim
+  5698, // caso
+  266506, // drone
+  16286, // frank
+];
+
 export const useSignIn = () => {
   const { type: contextType, context } = useMiniAppContext();
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (contextType === ContextType.Farcaster) {
+      if (context?.user?.fid && ADMINS.includes(context.user.fid)) {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+    }
+  }, [contextType, context]);
 
   // Check for existing auth token on mount
   useEffect(() => {
@@ -125,5 +143,5 @@ export const useSignIn = () => {
     }
   }, []);
 
-  return { signIn, logout, isSignedIn, isLoading, error };
+  return { signIn, logout, isSignedIn, isLoading, error, isAdmin };
 };
