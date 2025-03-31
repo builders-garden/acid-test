@@ -134,8 +134,8 @@ export default function Home() {
         className="absolute inset-0"
         style={{
           backgroundImage: `url('/images/presave_bg.svg')`,
-          backgroundSize: "85%",
-          backgroundPosition: "center top -17px",
+          backgroundSize: "64%",
+          backgroundPosition: "center center", // Changed from "center top -17px" to center the background
           backgroundRepeat: "no-repeat",
         }}
       />
@@ -204,6 +204,10 @@ export default function Home() {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center text-sm">
+          © 2025 ACIDTEST
         </div>
       </div>
     </div>
