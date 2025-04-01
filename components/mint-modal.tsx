@@ -5,18 +5,13 @@ import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import Image from "next/image";
-import {
-  EclipseIcon as Ethereum,
-  CircleDollarSign,
-  Loader2,
-} from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useBalance, useReadContract, useWriteContract } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { toast } from "sonner";
 import { CONTRACT_ADDRESS, USDC_CONTRACT_ADDRESS } from "@/lib/constants";
 import { useWaitForTransactionReceipt } from "wagmi";
 import { useMiniAppContext } from "@/hooks/use-miniapp-context";
-import { sendDelayedNotification } from "@/lib/qstash";
 import { erc20Abi } from "viem";
 import { formatSongId } from "@/lib/utils";
 import { handleAddFrame } from "./Home";

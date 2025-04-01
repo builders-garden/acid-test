@@ -2,7 +2,7 @@ import { sendFrameNotification } from "@/lib/notifs";
 import { z } from "zod";
 
 const requestSchema = z.object({
-  fid: z.number().min(1),
+  fids: z.array(z.number().min(1)),
   title: z.string().min(1),
   text: z.string().min(1),
 });
@@ -15,10 +15,10 @@ export async function POST(request: Request) {
       status: 400,
     });
   }
-  const { fid, title, text } = parsedBody.data;
+  const { fids, title, text } = parsedBody.data;
   try {
     let result = await sendFrameNotification({
-      fids: [fid],
+      fids: fids,
       title,
       body: text,
     });
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
       return new Response("Rate limit exceeded", { status: 429 });
     }
 
-    console.log(`Notification sent: fid=${fid}, title=${title}`);
+    console.log(`Notification sent: fids=${fids.join(", ")}, title=${title}`);
     return new Response("Notification scheduled successfully", {
       status: 200,
     });
