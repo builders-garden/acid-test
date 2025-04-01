@@ -1,10 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { BellIcon, ClockIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BellIcon, ClockIcon, MusicIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMiniAppContext } from "@/hooks/use-miniapp-context";
 import { Switch } from "@/components/ui/switch";
+import { DbSongWithCollectors } from "@/lib/types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface NotificationFormProps {
   setModalOpen: (open: boolean) => void;
@@ -18,6 +26,11 @@ export default function NotificationForm({
   setModalMessage,
 }: NotificationFormProps) {
   const { type: contextType, context } = useMiniAppContext();
+  const [songsAndCollectors, setSongsAndCollectors] = useState<
+    DbSongWithCollectors[]
+  >([]);
+  const [selectedSongId, setSelectedSongId] = useState<string>("All");
+  const [nCollectors, setNCollectors] = useState<number>(0);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -27,13 +40,38 @@ export default function NotificationForm({
 
   const [productionMode, setProductionMode] = useState(false);
 
+  useEffect(() => {
+    const fetchSongsAndCollectors = async () => {
+      const response = await fetch("/api/songs");
+      const data = await response.json();
+      if (response.ok) {
+        setSongsAndCollectors(data);
+      } else {
+        console.error("Failed to fetch songs and collectors:", data.error);
+      }
+    };
+    fetchSongsAndCollectors();
+  }, []);
+
+  const handleSongSelect = (songId: string) => {
+    setSelectedSongId(songId);
+
+    const selectedSong = songsAndCollectors.find(
+      (song) => song.id === parseInt(songId)
+    );
+    if (selectedSong && selectedSong.collectors) {
+      setNCollectors(selectedSong.collectors.length);
+    } else {
+      setNCollectors(0);
+    }
+  };
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
 
     if (name === "delay") {
-      // Ensure delay is always a positive number
       const numValue = parseInt(value);
       if (numValue < 0) return;
 
@@ -62,8 +100,11 @@ export default function NotificationForm({
         title: formData.title,
         text: formData.body,
         delay: formData.delay,
-        // Only include fid in test mode (when productionMode is false)
-        ...(productionMode ? {} : { fid: context.user.fid }),
+        ...(productionMode
+          ? selectedSongId !== "All"
+            ? { songId: Number(selectedSongId) }
+            : {}
+          : { fid: context.user.fid }),
       };
 
       const response = await fetch("/api/manual-notification", {
@@ -82,10 +123,11 @@ export default function NotificationForm({
       setModalMessage(
         `Notification scheduled successfully in ${
           productionMode ? "production" : "test"
-        } mode`
+        } mode ${
+          selectedSongId && productionMode ? `to ${nCollectors} collectors` : ""
+        }`
       );
 
-      // Clear form
       setFormData({
         title: "",
         body: "",
@@ -121,10 +163,45 @@ export default function NotificationForm({
         </div>
         <span className="text-xs text-white/70">
           {productionMode
-            ? "Notification will be sent to ALL users"
+            ? selectedSongId
+              ? `Notification will be sent to ${nCollectors} collectors of the selected song`
+              : "Notification will be sent to ALL users"
             : "Notification will be sent only to your FID"}
         </span>
       </div>
+
+      {productionMode && (
+        <div>
+          <label
+            htmlFor="song"
+            className="block mb-1 text-sm text-white/80"
+          >
+            Target Song Collectors
+          </label>
+          <div className="relative">
+            <Select
+              value={selectedSongId}
+              onValueChange={handleSongSelect}
+            >
+              <SelectTrigger className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white">
+                <SelectValue placeholder="Select a song to target collectors" />
+              </SelectTrigger>
+              <SelectContent className="bg-black text-white border-white/60">
+                <SelectItem value="All">All Users</SelectItem>
+                {songsAndCollectors.map((song) => (
+                  <SelectItem
+                    key={song.id}
+                    value={String(song.id)}
+                  >
+                    {song.title} ({song.collectors?.length || 0} collectors)
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <MusicIcon className="absolute top-2.5 right-8 h-4 w-4 text-white/60" />
+          </div>
+        </div>
+      )}
 
       <div>
         <label

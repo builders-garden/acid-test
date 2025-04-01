@@ -27,3 +27,14 @@ export interface DbCollection {
 export type InsertDbUser = Omit<DbUser, "createdAt">;
 export type InsertDbSong = Omit<DbSong, "createdAt">;
 export type InsertDbCollection = Omit<DbCollection, "createdAt">;
+
+export interface DbSongWithCollectors {
+  id: number;
+  title: string;
+  startDate: string | null;
+  endDate: string | null;
+  createdAt: Date;
+  collectors: (DbCollection & {
+    user: DbUser;
+  })[];
+}

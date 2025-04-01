@@ -6,6 +6,7 @@ import {
   InsertDbSong,
   DbCollection,
   InsertDbCollection,
+  DbSongWithCollectors,
 } from "../types";
 import { prisma } from "./client";
 
@@ -79,6 +80,20 @@ export const getUsersNotificationDetails = async (
 export const getSong = async (id: number) => {
   return await prisma.song.findUnique({
     where: { id },
+    include: {
+      collectors: {
+        include: {
+          user: true,
+        },
+      },
+    },
+  });
+};
+
+export const getAllSongsAndCollectors = async (): Promise<
+  DbSongWithCollectors[]
+> => {
+  return await prisma.song.findMany({
     include: {
       collectors: {
         include: {
