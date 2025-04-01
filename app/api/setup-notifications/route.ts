@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
 
     // Format token ID consistently
     const formattedTokenId = tokenId.toString().padStart(3, "0");
+    const tokenIdNumeric = Number(tokenId);
 
     // Calculate time until key events
     const timeUntilStart = startTimeInSeconds - currentTimeInSeconds;
@@ -94,7 +95,7 @@ export async function POST(request: NextRequest) {
       sendDelayedNotificationBasedOnOwnership(
         `Acid Test ${formattedTokenId} debuted yesterday!`,
         `The secondary market is now live.`,
-        tokenId,
+        tokenIdNumeric,
         timeUntilEnd + oneDayInSeconds
       ),
 
@@ -102,7 +103,7 @@ export async function POST(request: NextRequest) {
       sendDelayedNotificationBasedOnOwnership(
         `30 minutes left til' mint closes`,
         `Mint "${title}" and climb the leaderboard before time runs out`,
-        tokenId,
+        tokenIdNumeric,
         timeUntilEnd - thirtyMinutesInSeconds
       ),
 
@@ -110,7 +111,7 @@ export async function POST(request: NextRequest) {
       sendDelayedNotificationBasedOnOwnership(
         `30 minutes left til' mint closes`,
         `You currently hold the 15th spot on the collectors leaderboard`,
-        tokenId,
+        tokenIdNumeric,
         timeUntilEnd - thirtyMinutesInSeconds
       ),
     ]);
