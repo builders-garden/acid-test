@@ -114,11 +114,12 @@ export default function NotificationForm({
           line = line.trim();
           if (!line) continue;
 
-          const fid = parseInt(line);
-          if (isNaN(fid)) {
-            throw new Error(`Invalid FID: ${line}`);
+          const fid = parseInt(line.replace('"', ""));
+          if (!isNaN(fid)) {
+            fids.push(fid);
+          } else {
+            console.error("Invalid FID:", line);
           }
-          fids.push(fid);
         }
 
         setCustomFids(fids);
@@ -351,11 +352,13 @@ export default function NotificationForm({
         )}
 
         {mode === "test" && (
-          <div className="p-3 border-2 border-white/60 bg-black text-white">
-            <p className="text-sm text-white/70">
-              In test mode, notifications will only be sent to you.
-            </p>
-          </div>
+          <Card className="border-white/60 bg-black text-white">
+            <CardContent className="pt-4">
+              <p className="text-sm text-white/70">
+                In test mode, notifications will only be sent to you.
+              </p>
+            </CardContent>
+          </Card>
         )}
 
         <div>
