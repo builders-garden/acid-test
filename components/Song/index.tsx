@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import axios from "axios";
 
 import { Header } from "../header";
 import { MintModal } from "@/components/mint-modal";
@@ -76,10 +77,12 @@ export default function Song() {
   useEffect(() => {
     const fetchEthPrice = async () => {
       try {
-        const response = await fetch(
-          "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"
+        const { data } = await axios.get(
+          "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd",
+          {
+            timeout: 5000, // 5 seconds timeout
+          }
         );
-        const data = await response.json();
         setEthUsd(data.ethereum.usd);
       } catch (error) {
         console.error("Error fetching ETH price:", error);
@@ -122,8 +125,12 @@ export default function Song() {
           setCountdown(salesExpirationDate - now);
         }
 
-        const response = await fetch(getTokenInfoResult.data.uri);
-        const data: SongMetadata = await response.json();
+        const { data } = await axios.get<SongMetadata>(
+          getTokenInfoResult.data.uri,
+          {
+            timeout: 10000, // 10 seconds timeout
+          }
+        );
         setMetadata(data);
 
         setIsLoading(false);

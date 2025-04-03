@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Clock, EyeOff } from "lucide-react";
+import axios from "axios";
 import { useReadContract } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
@@ -98,12 +98,15 @@ export default function SongsPage() {
               let image = "";
 
               try {
-                const response = await fetch(release.uri);
-                if (response.ok) {
-                  const metadata = (await response.json()) as SongMetadata;
-                  title = metadata.name || title;
-                  image = metadata.image || "";
-                }
+                console.log("release.uri", release.uri);
+                const { data: metadata } = await axios.get<SongMetadata>(
+                  release.uri,
+                  {
+                    timeout: 10000, // 10 seconds timeout
+                  }
+                );
+                title = metadata.name || title;
+                image = metadata.image || "";
               } catch (error) {
                 console.error(
                   `Error fetching metadata for release ${songCid}:`,

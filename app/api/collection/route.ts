@@ -1,4 +1,4 @@
-import { createCollection, getCollectorsBySongId } from "@/lib/prisma/queries";
+import { createCollection } from "@/lib/prisma/queries";
 import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {

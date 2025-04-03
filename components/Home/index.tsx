@@ -10,6 +10,8 @@ import { useReadContract } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
 import { formatSongId } from "@/lib/utils";
+import axios from "axios";
+import { SongMetadata } from "@/types";
 
 interface TokenInfo {
   salesStartDate: number;
@@ -62,12 +64,15 @@ export default function Home() {
               let image = "";
 
               try {
-                const response = await fetch(release.uri);
-                if (response.ok) {
-                  const metadata = await response.json();
-                  title = metadata.name || title;
-                  image = metadata.image || "";
-                }
+                const { data: metadata } = await axios.get<SongMetadata>(
+                  release.uri,
+                  {
+                    timeout: 10000, // 10 seconds timeout
+                  }
+                );
+
+                title = metadata.name || title;
+                image = metadata.image || "";
               } catch (error) {
                 console.error(
                   `Error fetching metadata for release ${songCid}:`,
