@@ -1,10 +1,11 @@
 import { SafeAreaContainer } from "@/components/safe-area-container";
 import { ContextType, useMiniAppContext } from "@/hooks/use-miniapp-context";
 import dynamic from "next/dynamic";
+import { LoadingScreen } from "../loading-screen";
 
 const HomePage = dynamic(() => import("@/components/Home"), {
   ssr: false,
-  loading: () => <div>Loading...</div>,
+  loading: () => <LoadingScreen />,
 });
 
 export default function Home() {

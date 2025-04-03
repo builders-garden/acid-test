@@ -28,14 +28,6 @@ interface ReleaseBlock {
   salesStartDate: number;
 }
 
-export const handleAddFrame = () => {
-  try {
-    sdk.actions.addFrame();
-  } catch (error) {
-    console.error("Error adding frame:", error);
-  }
-};
-
 export default function Home() {
   const { signIn, isLoading, isSignedIn, isAdmin } = useSignIn();
   const [liveSong, setLiveSong] = useState<ReleaseBlock | null>(null);
@@ -175,7 +167,7 @@ export default function Home() {
                     {getTokenInfosResult.isLoading
                       ? ""
                       : isLoadingSongs
-                      ? "Loading..."
+                      ? "LOADING..."
                       : liveSong
                       ? "MINT"
                       : "ACIDPAPER"}

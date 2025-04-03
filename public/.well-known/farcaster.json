@@ -6,13 +6,13 @@
   },
   "frame": {
     "version": "1",
-    "name": "Example Frame",
-    "iconUrl": "https://acid-test.vercel.app/icon.png",
+    "name": "Acid Test",
+    "iconUrl": "https://acid-test.vercel.app/images/icon.png",
     "homeUrl": "https://acid-test.vercel.app",
-    "imageUrl": "https://acid-test.vercel.app/image.png",
-    "buttonTitle": "Check this out",
-    "splashImageUrl": "https://acid-test.vercel.app/splash.png",
-    "splashBackgroundColor": "#eeccff",
+    "imageUrl": "https://acid-test.vercel.app/images/feed.jpg",
+    "buttonTitle": "Start Acid Test",
+    "splashImageUrl": "https://acid-test.vercel.app/images/icon.png",
+    "splashBackgroundColor": "#000000",
     "webhookUrl": "https://acid-test.vercel.app/api/webhook"
   }
 }

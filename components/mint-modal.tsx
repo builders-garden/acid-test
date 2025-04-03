@@ -14,7 +14,7 @@ import { useWaitForTransactionReceipt } from "wagmi";
 import { useMiniAppContext } from "@/hooks/use-miniapp-context";
 import { erc20Abi } from "viem";
 import { formatSongId } from "@/lib/utils";
-import { handleAddFrame } from "./Home";
+import { handleAddFrame } from "./header";
 
 interface MintModalProps {
   isOpen: boolean;
