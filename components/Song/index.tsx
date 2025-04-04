@@ -17,9 +17,12 @@ import { useMiniAppContext } from "@/hooks/use-miniapp-context";
 
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
-import { formatSongId } from "@/lib/utils";
+import { composeSongCastUrl, formatSongId } from "@/lib/utils";
 import { SongMetadata } from "@/types";
 import sdk from "@farcaster/frame-sdk";
+import { Check, Share2 } from "lucide-react";
+import Image from "next/image";
+import copy from "@/public/images/copy.svg";
 
 export default function Song() {
   // State management
@@ -35,6 +38,9 @@ export default function Song() {
   const [usdPrice, setUsdPrice] = useState(0);
   const [ethUsd, setEthUsd] = useState(2325);
   const [userFid, setUserFid] = useState<number | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [frameUrl, setFrameUrl] = useState("");
+  const [castUrl, setCastUrl] = useState("");
 
   // Hooks
   const { isPlaying, currentSong, play, pause, currentTime, duration, seek } =
@@ -209,6 +215,20 @@ export default function Song() {
     return index !== -1 ? index + 1 : null;
   }, [userFid, sortedCollectors, collectors]);
 
+  useEffect(() => {
+    if (metadata) {
+      const { frameUrl, castUrl } = composeSongCastUrl(tokenId, metadata.name);
+      setFrameUrl(frameUrl);
+      setCastUrl(castUrl);
+    }
+  }, [metadata, tokenId]);
+
+  const handleShareSong = () => {
+    if (contextType === "farcaster" && context?.user?.fid) {
+      sdk.actions.openUrl(castUrl);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-white font-mono p-4 flex flex-col items-center w-full">
       <Header />
@@ -240,6 +260,50 @@ export default function Song() {
         setIsMintModalOpen={setIsMintModalOpen}
         tokenId={tokenId}
       />
+
+      {/* Share Buttons */}
+      <div className="flex gap-2 mb-8 w-full">
+        <button
+          onClick={handleShareSong}
+          className="p-2 border border-white hover:bg-white/10 transition-colors rounded"
+          aria-label="Share"
+        >
+          <Share2
+            width={20}
+            height={20}
+          />
+        </button>
+        <button
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(window.location.href);
+              setLinkCopied(true);
+              setTimeout(() => {
+                setLinkCopied(false);
+              }, 1500);
+            } catch {
+              console.error("Failed to copy text");
+            }
+          }}
+          className="p-2 border border-white hover:bg-white/10 transition-colors rounded"
+          aria-label="Copy link"
+        >
+          {linkCopied ? (
+            <Check
+              width={20}
+              height={20}
+            />
+          ) : (
+            <Image
+              src={copy}
+              alt="Copy"
+              width={20}
+              height={20}
+              className="rounded-sm"
+            />
+          )}
+        </button>
+      </div>
 
       {/* Collectors Section */}
       <CollectorsSection

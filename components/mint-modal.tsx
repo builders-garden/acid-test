@@ -13,8 +13,9 @@ import { CONTRACT_ADDRESS, USDC_CONTRACT_ADDRESS } from "@/lib/constants";
 import { useWaitForTransactionReceipt } from "wagmi";
 import { useMiniAppContext } from "@/hooks/use-miniapp-context";
 import { erc20Abi } from "viem";
-import { formatSongId } from "@/lib/utils";
+import { composeMintCastUrl, formatSongId } from "@/lib/utils";
 import { handleAddFrame } from "./header";
+import sdk from "@farcaster/frame-sdk";
 
 interface MintModalProps {
   isOpen: boolean;
@@ -55,6 +56,7 @@ export function MintModal({
 }: MintModalProps) {
   const [isSliderInteracting, setIsSliderInteracting] = useState(false);
   const [mintState, setMintState] = useState<MintState>(MintState.Initial);
+  const [castUrl, setCastUrl] = useState<string>("");
   const modalRef = useRef<HTMLDivElement>(null);
   const dragControls = useDragControls();
   const price = usdPrice / ethUsd;
@@ -327,6 +329,17 @@ export function MintModal({
     }
   }, [mintTxResult, mintQuantity, mintState, songName, tokenId]);
 
+  useEffect(() => {
+    const { castUrl } = composeMintCastUrl(tokenId, songName, mintQuantity);
+    setCastUrl(castUrl);
+  }, [songName, tokenId, mintQuantity]);
+
+  const handleShareMintedSong = () => {
+    if (contextType === "farcaster" && context?.user?.fid) {
+      sdk.actions.openUrl(castUrl);
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -373,7 +386,7 @@ export function MintModal({
                     </div>
                     <Slider
                       min={1}
-                      max={500}
+                      max={25}
                       step={1}
                       value={[mintQuantity]}
                       onValueChange={(value) => setMintQuantity(value[0])}
@@ -528,22 +541,21 @@ export function MintModal({
                       You minted {mintQuantity} edition
                       {mintQuantity > 1 ? "s" : ""} of {formatSongId(tokenId)}
                     </p>
-                    {/* {mintTxHash && (
-                      <a
-                        href={`https://basescan.org/tx/${mintTxHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-400 hover:text-blue-300 underline text-sm flex items-center gap-1"
+                    <div className="flex flex-col gap-4 w-full">
+                      <Button
+                        className="w-full h-10 py-4 text-lg bg-mint text-black hover:bg-plum hover:text-black"
+                        onClick={handleClose}
                       >
-                        View on Basescan
-                      </a>
-                    )} */}
-                    <Button
-                      className="w-full h-10 py-4 text-lg bg-mint text-black hover:bg-plum hover:text-black"
-                      onClick={handleClose}
-                    >
-                      Done
-                    </Button>
+                        Done
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full h-10 py-4 text-lg bg-black text-white hover:bg-white/10 hover:text-white"
+                        onClick={handleShareMintedSong}
+                      >
+                        Share
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}

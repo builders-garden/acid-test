@@ -65,7 +65,7 @@ export const PlayerControls = ({
       </div>
 
       {/* Audio Controls */}
-      {isPlaying && (
+      {(displayTime > 0 || isPlaying) && (
         <div className="w-full max-w-md space-y-2 mb-6">
           <Slider
             value={[isCurrentSong ? displayTime : 0]}

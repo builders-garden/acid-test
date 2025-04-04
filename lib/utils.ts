@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { env } from "./env";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -32,4 +33,34 @@ export const formatCountdown = (seconds: number) => {
       .toString()
       .padStart(2, "0")}`;
   }
+};
+
+export const composeSongCastUrl = (songId: number, songTitle: string) => {
+  const frameUrl = `${env.NEXT_PUBLIC_URL}/songs/${songId}`;
+  const text = `Listen to ${songTitle} by Acid Test 💿`;
+  const urlFriendlyText = encodeURIComponent(text);
+  return {
+    frameUrl,
+    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+      frameUrl
+    )}`,
+  };
+};
+
+export const composeMintCastUrl = (
+  songId: number,
+  songTitle: string,
+  mintQuantity: number
+) => {
+  const frameUrl = `${env.NEXT_PUBLIC_URL}/songs/${songId}`;
+  const text = `I just minted ${mintQuantity} ${
+    mintQuantity === 1 ? "edition" : "editions"
+  } of ${songTitle} by Acid Test 💿`;
+  const urlFriendlyText = encodeURIComponent(text);
+  return {
+    frameUrl,
+    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+      frameUrl
+    )}`,
+  };
 };
