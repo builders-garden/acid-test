@@ -4,7 +4,6 @@ import { useSignIn } from "@/hooks/use-sign-in";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Header } from "../header";
-import sdk from "@farcaster/frame-sdk";
 import { useState, useEffect } from "react";
 import { useReadContract } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
@@ -12,6 +11,9 @@ import { CONTRACT_ADDRESS } from "@/lib/constants";
 import { formatSongId } from "@/lib/utils";
 import axios from "axios";
 import { SongMetadata } from "@/types";
+import { usePrelaunchState } from "@/hooks/use-prelaunch-state";
+import { useRouter } from "next/navigation";
+import { LoadingScreen } from "../loading-screen";
 
 interface TokenInfo {
   salesStartDate: number;
@@ -31,9 +33,15 @@ interface ReleaseBlock {
 }
 
 export default function Home() {
-  const { signIn, isLoading, isSignedIn, isAdmin } = useSignIn();
-  const [liveSong, setLiveSong] = useState<ReleaseBlock | null>(null);
-  const [isLoadingSongs, setIsLoadingSongs] = useState(false);
+  const router = useRouter();
+  const {
+    signIn,
+    isLoading: isSignInLoading,
+    isSignedIn,
+    isAdmin,
+  } = useSignIn();
+  const [isLoadingSongs, setIsLoadingSongs] = useState(true);
+  const { isPrelaunch, isLoading: isPrelaunchLoading } = usePrelaunchState();
 
   const getTokenInfosResult = useReadContract({
     abi: AcidTestABI,
@@ -43,7 +51,11 @@ export default function Home() {
   });
 
   useEffect(() => {
-    if (getTokenInfosResult.data) {
+    if (isPrelaunch) {
+      setIsLoadingSongs(false);
+      return;
+    }
+    if (getTokenInfosResult.data && !isPrelaunch && !isPrelaunchLoading) {
       const allContractReleases =
         getTokenInfosResult.data as ReadonlyArray<TokenInfo>;
       const contractReleases = allContractReleases.filter(
@@ -51,7 +63,6 @@ export default function Home() {
       );
 
       const fetchReleasesData = async () => {
-        setIsLoadingSongs(true);
         try {
           const releasesData = await Promise.all(
             contractReleases.map(async (release, i) => {
@@ -113,17 +124,33 @@ export default function Home() {
           const firstLiveSong = filteredReleases.find(
             (song) => song.status === "live"
           );
-          setLiveSong(firstLiveSong || null);
+          // Redirect to the first live song's page if there is one and we're not in prelaunch
+          if (firstLiveSong) {
+            router.push(`/songs/${firstLiveSong.index}`);
+          }
         } catch (error) {
           console.error("Error processing release data:", error);
         } finally {
-          setIsLoadingSongs(false);
+          setTimeout(() => setIsLoadingSongs(false), 500);
         }
       };
 
       fetchReleasesData();
+    } else if (!getTokenInfosResult.data && getTokenInfosResult.isFetched) {
+      setIsLoadingSongs(false);
     }
-  }, [getTokenInfosResult.data]);
+  }, [
+    getTokenInfosResult.data,
+    getTokenInfosResult.isFetched,
+    isPrelaunch,
+    isPrelaunchLoading,
+    router,
+  ]);
+
+  // Show loader while checking initial states
+  if (isPrelaunchLoading || isLoadingSongs) {
+    return <LoadingScreen />;
+  }
 
   return (
     <div className="relative min-h-screen bg-black text-white font-mono p-4 flex flex-col items-center w-full overflow-hidden">
@@ -146,10 +173,10 @@ export default function Home() {
               {!isSignedIn && (
                 <Button
                   onClick={signIn}
-                  disabled={isLoading}
+                  disabled={isSignInLoading}
                   className="w-full h-10 text-lg bg-mint text-black hover:bg-plum hover:text-black transition-colors"
                 >
-                  {isLoading ? "Signing in..." : "Sign in"}
+                  {isSignInLoading ? "Signing in..." : "Sign in"}
                 </Button>
               )}
             </div>
@@ -157,25 +184,12 @@ export default function Home() {
             {isSignedIn && (
               <div className="flex flex-col space-y-4 w-full">
                 <Link
-                  href={
-                    liveSong
-                      ? `/songs/${liveSong.index}`
-                      : "https://acidtest.xyz/paper"
-                  }
+                  href={isPrelaunch ? "https://acidtest.xyz/paper" : `/songs`}
                   className="w-full"
-                  target={liveSong ? "_self" : "_blank"}
+                  target={!isPrelaunch ? "_self" : "_blank"}
                 >
-                  <Button
-                    className="w-full h-10 text-lg bg-mint text-black hover:bg-plum hover:text-black transition-colors"
-                    disabled={isLoadingSongs}
-                  >
-                    {getTokenInfosResult.isLoading
-                      ? ""
-                      : isLoadingSongs
-                      ? "LOADING..."
-                      : liveSong
-                      ? "MINT"
-                      : "ACIDPAPER"}
+                  <Button className="w-full h-10 text-lg bg-mint text-black hover:bg-plum hover:text-black transition-colors">
+                    {isPrelaunch ? "ACIDPAPER" : "RELEASES"}
                   </Button>
                 </Link>
 
