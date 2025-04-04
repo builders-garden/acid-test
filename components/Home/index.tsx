@@ -3,7 +3,6 @@
 import { useSignIn } from "@/hooks/use-sign-in";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Header } from "../header";
 import { useState, useEffect } from "react";
 import { useReadContract } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
@@ -12,7 +11,8 @@ import { formatSongId, fetchWithIPFSFallback } from "@/lib/utils";
 import { SongMetadata } from "@/types";
 import { usePrelaunchState } from "@/hooks/use-prelaunch-state";
 import { useRouter } from "next/navigation";
-import { LoadingScreen } from "../loading-screen";
+import { LoadingScreen } from "../ui/loading-screen";
+import { Header } from "../ui/header";
 
 interface TokenInfo {
   salesStartDate: number;

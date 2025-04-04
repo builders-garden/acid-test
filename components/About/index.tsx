@@ -1,5 +1,5 @@
 "use client";
-import { Header } from "../header";
+
 import Image from "next/image";
 import dexscreener from "@/public/images/dexscreener_icon.svg";
 import base from "@/public/images/base_icon.svg";
@@ -8,6 +8,7 @@ import acid_test from "@/public/images/acid_test_sm_icon.svg";
 import copy from "@/public/images/copy_icon.svg";
 import { useState, useEffect } from "react";
 import { copyToClipboard } from "@/lib/utils";
+import { Header } from "../ui/header";
 
 // const AcidTest_CA = process.env.NEXT_PUBLIC_ACID_ERC20_ADDRESS;
 const AcidTest_CA = "0x3A1609CEbE67C1d303954B5fb907bEF36213034B";

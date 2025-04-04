@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Button } from "./ui/button";
 import Logo from "@/public/images/logo.svg";
 import DiscIcon from "@/public/images/disc.svg";
 import QuestionIcon from "@/public/images/question.svg";
@@ -7,17 +6,9 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ContextType, useMiniAppContext } from "@/hooks/use-miniapp-context";
 import { useEffect, useState } from "react";
-import sdk from "@farcaster/frame-sdk";
 import { usePrelaunchState } from "@/hooks/use-prelaunch-state";
-
-export const handleAddFrame = async () => {
-  try {
-    await sdk.actions.addFrame();
-  } catch (error) {
-    console.error("Error adding frame:", error);
-    throw error;
-  }
-};
+import { Button } from "./button";
+import { handleAddFrame } from "@/lib/utils";
 
 export const Header = () => {
   const pathname = usePathname();

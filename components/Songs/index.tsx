@@ -8,9 +8,9 @@ import { useReadContract } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
 import { SongMetadata } from "@/types";
-import { Header } from "../header";
 import { fetchWithIPFSFallback, formatSongId } from "@/lib/utils";
 import QuestionMark from "@/public/images/question_mark.png";
+import { Header } from "../ui/header";
 
 interface TokenInfo {
   salesStartDate: number;

@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { env } from "./env";
 import axios from "axios";
+import sdk from "@farcaster/frame-sdk";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -118,3 +119,12 @@ export async function fetchWithIPFSFallback<T>(
     }
   }
 }
+
+export const handleAddFrame = async () => {
+  try {
+    await sdk.actions.addFrame();
+  } catch (error) {
+    console.error("Error adding frame:", error);
+    throw error;
+  }
+};

@@ -3,9 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import axios from "axios";
-
-import { Header } from "../header";
-import { MintModal } from "@/components/mint-modal";
+import { MintModal } from "@/components/Song/mint-modal";
 import { PlayerControls } from "./player-controls";
 import { MintStatus } from "./mint-status";
 import { CollectorsSection } from "./collectors-section";
@@ -28,6 +26,7 @@ import sdk from "@farcaster/frame-sdk";
 import { Check, Share2 } from "lucide-react";
 import Image from "next/image";
 import copy from "@/public/images/copy.svg";
+import { Header } from "../ui/header";
 
 export default function Song() {
   // State management
