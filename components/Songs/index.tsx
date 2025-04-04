@@ -4,13 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
-import axios from "axios";
 import { useReadContract } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
 import { SongMetadata } from "@/types";
 import { Header } from "../header";
-import { formatSongId } from "@/lib/utils";
+import { fetchWithIPFSFallback, formatSongId } from "@/lib/utils";
 import QuestionMark from "@/public/images/question_mark.png";
 
 interface TokenInfo {
@@ -98,12 +97,8 @@ export default function SongsPage() {
               let image = "";
 
               try {
-                console.log("release.uri", release.uri);
-                const { data: metadata } = await axios.get<SongMetadata>(
-                  release.uri,
-                  {
-                    timeout: 10000, // 10 seconds timeout
-                  }
+                const metadata = await fetchWithIPFSFallback<SongMetadata>(
+                  release.uri
                 );
                 title = metadata.name || title;
                 image = metadata.image || "";

@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
     version: "next",
     imageUrl: `${appUrl}/images/feed.jpg`,
     button: {
-      title: "Start Acid Test",
+      title: "About Acid Test",
       action: {
         type: "launch_frame",
         name: "Acid Test",

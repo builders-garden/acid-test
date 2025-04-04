@@ -17,7 +17,12 @@ import { useMiniAppContext } from "@/hooks/use-miniapp-context";
 
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
-import { composeSongCastUrl, copyToClipboard, formatSongId } from "@/lib/utils";
+import {
+  composeSongCastUrl,
+  copyToClipboard,
+  fetchWithIPFSFallback,
+  formatSongId,
+} from "@/lib/utils";
 import { SongMetadata } from "@/types";
 import sdk from "@farcaster/frame-sdk";
 import { Check, Share2 } from "lucide-react";
@@ -131,11 +136,8 @@ export default function Song() {
           setCountdown(salesExpirationDate - now);
         }
 
-        const { data } = await axios.get<SongMetadata>(
-          getTokenInfoResult.data.uri,
-          {
-            timeout: 10000, // 10 seconds timeout
-          }
+        const data = await fetchWithIPFSFallback<SongMetadata>(
+          getTokenInfoResult.data.uri
         );
         setMetadata(data);
 

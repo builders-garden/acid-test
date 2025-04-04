@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { env } from "./env";
+import axios from "axios";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -88,3 +89,32 @@ export const copyToClipboard = (
 
   document.body.removeChild(textArea);
 };
+
+/**
+ * Fetches data from IPFS with gateway fallback
+ * @param uri Original IPFS URI (usually Pinata gateway)
+ * @param timeout Timeout in milliseconds for each attempt
+ */
+export async function fetchWithIPFSFallback<T>(
+  uri: string,
+  timeout: number = 10000
+): Promise<T> {
+  try {
+    // First attempt with original URI
+    const response = await axios.get<T>(uri, { timeout });
+    return response.data;
+  } catch (error) {
+    // If original request fails, try dweb.link gateway
+    try {
+      // Extract CID from Pinata URL
+      const cid = uri.split("/").pop();
+      if (!cid) throw new Error("Invalid IPFS URI");
+
+      const dwebUrl = `https://${cid}.ipfs.dweb.link/#x-ipfs-companion-no-redirect`;
+      const fallbackResponse = await axios.get<T>(dwebUrl, { timeout });
+      return fallbackResponse.data;
+    } catch (fallbackError) {
+      throw new Error(`Failed to fetch from both gateways: ${fallbackError}`);
+    }
+  }
+}

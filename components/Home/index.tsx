@@ -8,8 +8,7 @@ import { useState, useEffect } from "react";
 import { useReadContract } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
-import { formatSongId } from "@/lib/utils";
-import axios from "axios";
+import { formatSongId, fetchWithIPFSFallback } from "@/lib/utils";
 import { SongMetadata } from "@/types";
 import { usePrelaunchState } from "@/hooks/use-prelaunch-state";
 import { useRouter } from "next/navigation";
@@ -75,13 +74,9 @@ export default function Home() {
               let image = "";
 
               try {
-                const { data: metadata } = await axios.get<SongMetadata>(
-                  release.uri,
-                  {
-                    timeout: 10000, // 10 seconds timeout
-                  }
+                const metadata = await fetchWithIPFSFallback<SongMetadata>(
+                  release.uri
                 );
-
                 title = metadata.name || title;
                 image = metadata.image || "";
               } catch (error) {
