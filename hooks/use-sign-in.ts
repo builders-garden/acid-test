@@ -14,9 +14,10 @@ const ADMINS = [
 export const useSignIn = () => {
   const { type: contextType, context } = useMiniAppContext();
   const [isSignedIn, setIsSignedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [signinIn, setSigninIn] = useState(false);
 
   useEffect(() => {
     if (contextType === ContextType.Farcaster) {
@@ -43,6 +44,8 @@ export const useSignIn = () => {
       } catch (error) {
         console.error("Error checking auth status:", error);
         // Don't update isSignedIn, leave as false
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -53,8 +56,9 @@ export const useSignIn = () => {
 
   const signIn = useCallback(async () => {
     try {
-      setIsLoading(true);
       setError(null);
+      setSigninIn(true);
+      setIsLoading(true);
 
       if (!context) {
         throw new Error("No context found");
@@ -120,14 +124,16 @@ export const useSignIn = () => {
 
       const data = await res.json();
       setIsSignedIn(true);
+      setIsLoading(false);
+      setSigninIn(false);
       return data;
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Sign in failed";
       setError(errorMessage);
-      throw err;
-    } finally {
       setIsLoading(false);
+      setSigninIn(false);
+      throw err;
     }
   }, [context, contextType]);
 
@@ -143,5 +149,5 @@ export const useSignIn = () => {
     }
   }, []);
 
-  return { signIn, logout, isSignedIn, isLoading, error, isAdmin };
+  return { signIn, logout, isSignedIn, isLoading, error, isAdmin, signinIn };
 };

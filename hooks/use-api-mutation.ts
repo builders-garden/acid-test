@@ -23,7 +23,7 @@ export const useApiMutation = <TData, TVariables = unknown>(
   return useMutation<TData, Error, TVariables>({
     ...mutationOptions,
     mutationFn: async (variables) => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("auth_token");
       const resolvedUrl = typeof url === "function" ? url(variables) : url;
       const resolvedBody = options.body ? options.body(variables) : null;
       const response = await fetch(resolvedUrl, {

@@ -6,6 +6,7 @@ import { FrameProvider } from "@/components/farcaster-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
 import localFont from "next/font/local";
+import { AppWrapper } from "@/components/app-wrapper";
 
 const suisseIntlMono = localFont({
   src: "../public/fonts/SuisseIntlMono-Regular-WebS.ttf",
@@ -35,7 +36,7 @@ export default function RootLayout({
           <FrameProvider>
             <MiniKitProvider>
               <AudioPlayerProvider>
-                {children}
+                <AppWrapper>{children}</AppWrapper>
                 <Toaster />
               </AudioPlayerProvider>
             </MiniKitProvider>

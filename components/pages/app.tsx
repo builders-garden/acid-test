@@ -8,7 +8,7 @@ const HomePage = dynamic(() => import("@/components/Home"), {
   loading: () => <LoadingScreen />,
 });
 
-export default function Home() {
+export default function App() {
   const { type: contextType, context } = useMiniAppContext();
   return contextType === ContextType.Farcaster ? (
     <SafeAreaContainer insets={context.client.safeAreaInsets}>

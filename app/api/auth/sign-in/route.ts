@@ -34,7 +34,7 @@ export const POST = async (req: NextRequest) => {
     .sign(secret);
 
   // Create the response
-  const response = NextResponse.json({ success: true });
+  const response = NextResponse.json({ success: true, token });
 
   // Set the auth cookie with the JWT token
   response.cookies.set({

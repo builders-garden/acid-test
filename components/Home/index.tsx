@@ -33,12 +33,7 @@ interface ReleaseBlock {
 
 export default function Home() {
   const router = useRouter();
-  const {
-    signIn,
-    isLoading: isSignInLoading,
-    isSignedIn,
-    isAdmin,
-  } = useSignIn();
+  const { isAdmin } = useSignIn();
   const [isLoadingSongs, setIsLoadingSongs] = useState(true);
   const { isPrelaunch, isLoading: isPrelaunchLoading } = usePrelaunchState();
 
@@ -164,51 +159,37 @@ export default function Home() {
 
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md px-4">
           <div className="flex flex-col items-center space-y-6 rounded-xl">
-            <div className="text-center space-y-4 w-full">
-              {!isSignedIn && (
-                <Button
-                  onClick={signIn}
-                  disabled={isSignInLoading}
-                  className="w-full h-10 text-lg bg-mint text-black hover:bg-plum hover:text-black transition-colors"
-                >
-                  {isSignInLoading ? "Signing in..." : "Sign in"}
+            <div className="flex flex-col space-y-4 w-full">
+              <Link
+                href={isPrelaunch ? "https://acidtest.xyz/paper" : `/songs`}
+                className="w-full"
+                target={!isPrelaunch ? "_self" : "_blank"}
+              >
+                <Button className="w-full h-10 text-lg bg-mint text-black hover:bg-plum hover:text-black transition-colors">
+                  {isPrelaunch ? "ACIDPAPER" : "RELEASES"}
                 </Button>
-              )}
-            </div>
+              </Link>
 
-            {isSignedIn && (
-              <div className="flex flex-col space-y-4 w-full">
-                <Link
-                  href={isPrelaunch ? "https://acidtest.xyz/paper" : `/songs`}
-                  className="w-full"
-                  target={!isPrelaunch ? "_self" : "_blank"}
-                >
-                  <Button className="w-full h-10 text-lg bg-mint text-black hover:bg-plum hover:text-black transition-colors">
-                    {isPrelaunch ? "ACIDPAPER" : "RELEASES"}
-                  </Button>
-                </Link>
+              <Link
+                href="/"
+                className="w-full"
+              >
+                <Button className="w-full h-10 text-lg bg-mint text-black hover:bg-plum transition-colors">
+                  $ACID
+                </Button>
+              </Link>
 
+              {isAdmin && (
                 <Link
-                  href="/"
+                  href="/admin"
                   className="w-full"
                 >
                   <Button className="w-full h-10 text-lg bg-mint text-black hover:bg-plum transition-colors">
-                    $ACID
+                    ADMIN PANEL
                   </Button>
                 </Link>
-
-                {isAdmin && (
-                  <Link
-                    href="/admin"
-                    className="w-full"
-                  >
-                    <Button className="w-full h-10 text-lg bg-mint text-black hover:bg-plum transition-colors">
-                      ADMIN PANEL
-                    </Button>
-                  </Link>
-                )}
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
 

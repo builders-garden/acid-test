@@ -13,12 +13,18 @@ interface UseApiQueryOptions<TData, TBody = unknown>
 export const useApiQuery = <TData, TBody = unknown>(
   options: UseApiQueryOptions<TData, TBody>
 ) => {
-  const { url, method = "GET", body, isProtected = false, ...queryOptions } = options;
+  const {
+    url,
+    method = "GET",
+    body,
+    isProtected = false,
+    ...queryOptions
+  } = options;
 
   return useQuery<TData>({
     ...queryOptions,
     queryFn: async () => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("auth_token");
       const response = await fetch(url, {
         method,
         headers: {

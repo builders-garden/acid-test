@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
         fid: payload.fid,
         walletAddress: payload.walletAddress,
       },
+      token,
     });
   } catch (error) {
     console.error("Token verification failed:", error);

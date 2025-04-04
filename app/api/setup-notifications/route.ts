@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
       // 30 minutes before mint closes (owners)
       sendDelayedNotificationBasedOnOwnership(
         `30 minutes left til' mint closes`,
-        `You currently hold the 15th spot on the collectors leaderboard`,
+        `Check your position on the leaderboard!`,
         tokenIdNumeric,
         timeUntilEnd - thirtyMinutesInSeconds
       ),
