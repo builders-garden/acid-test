@@ -17,7 +17,7 @@ import { useMiniAppContext } from "@/hooks/use-miniapp-context";
 
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
-import { composeSongCastUrl, formatSongId } from "@/lib/utils";
+import { composeSongCastUrl, copyToClipboard, formatSongId } from "@/lib/utils";
 import { SongMetadata } from "@/types";
 import sdk from "@farcaster/frame-sdk";
 import { Check, Share2 } from "lucide-react";
@@ -274,17 +274,7 @@ export default function Song() {
           />
         </button>
         <button
-          onClick={async () => {
-            try {
-              await navigator.clipboard.writeText(window.location.href);
-              setLinkCopied(true);
-              setTimeout(() => {
-                setLinkCopied(false);
-              }, 1500);
-            } catch {
-              console.error("Failed to copy text");
-            }
-          }}
+          onClick={() => copyToClipboard(frameUrl, setLinkCopied)}
           className="p-2 border border-white hover:bg-white/10 transition-colors rounded"
           aria-label="Copy link"
         >

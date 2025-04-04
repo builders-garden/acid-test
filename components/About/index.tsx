@@ -7,8 +7,10 @@ import candles from "@/public/images/candles_icon.svg";
 import acid_test from "@/public/images/acid_test_sm_icon.svg";
 import copy from "@/public/images/copy_icon.svg";
 import { useState, useEffect } from "react";
+import { copyToClipboard } from "@/lib/utils";
 
-const AcidTest_CA = process.env.NEXT_PUBLIC_ACID_ERC20_ADDRESS;
+// const AcidTest_CA = process.env.NEXT_PUBLIC_ACID_ERC20_ADDRESS;
+const AcidTest_CA = "0x3A1609CEbE67C1d303954B5fb907bEF36213034B";
 
 interface DexScreenerData {
   marketCap: number;
@@ -62,27 +64,6 @@ export default function AboutPage() {
       return `$${(num / 1000).toFixed(2)}K`;
     }
     return `$${num.toFixed(2)}`;
-  };
-
-  const copyToClipboard = (text: string | undefined) => {
-    if (!text) return;
-
-    const textArea = document.createElement("textarea");
-    textArea.value = text;
-    textArea.style.position = "fixed";
-    textArea.style.opacity = "0";
-    document.body.appendChild(textArea);
-
-    textArea.select();
-    try {
-      document.execCommand("copy");
-      setShowCopied(true);
-      setTimeout(() => setShowCopied(false), 750);
-    } catch (err) {
-      console.error("Failed to copy text: ", err);
-    }
-
-    document.body.removeChild(textArea);
   };
 
   return (
@@ -171,7 +152,7 @@ export default function AboutPage() {
               </span>
               <div className="relative flex items-center">
                 <button
-                  onClick={() => copyToClipboard(AcidTest_CA)}
+                  onClick={() => copyToClipboard(AcidTest_CA, setShowCopied)}
                   className="hover:opacity-70 transition-opacity w-6 h-6 mb-1 flex items-center justify-center"
                 >
                   <Image
