@@ -1,6 +1,5 @@
 import {
   sendDelayedNotification,
-  sendDelayedNotificationBasedOnOwnership,
   sendDelayedNotificationToAll,
   sendDelayedNotificationToFids,
 } from "@/lib/qstash";
@@ -11,7 +10,6 @@ const requestSchema = z.object({
   text: z.string().min(1),
   delay: z.number().int().min(0),
   fids: z.array(z.number().int().positive()).optional(),
-  songId: z.number().optional(),
 });
 
 export async function POST(request: Request) {
@@ -22,14 +20,12 @@ export async function POST(request: Request) {
       status: 400,
     });
   }
-  const { title, text, delay, fids, songId } = parsedBody.data;
+  const { title, text, delay, fids } = parsedBody.data;
   try {
     if (fids && fids.length === 1) {
       await sendDelayedNotification(fids[0], title, text, delay);
     } else if (fids && fids.length > 1) {
       await sendDelayedNotificationToFids(fids, title, text, delay);
-    } else if (songId) {
-      await sendDelayedNotificationBasedOnOwnership(title, text, songId, delay);
     } else {
       await sendDelayedNotificationToAll(title, text, delay);
     }

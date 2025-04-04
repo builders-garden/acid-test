@@ -12,15 +12,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { useMiniAppContext } from "@/hooks/use-miniapp-context";
 import { DbSongWithCollectors } from "@/lib/types";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface NotificationFormProps {
   setModalOpen: (open: boolean) => void;
@@ -37,7 +32,10 @@ export default function NotificationForm({
   const [songsAndCollectors, setSongsAndCollectors] = useState<
     DbSongWithCollectors[]
   >([]);
-  const [selectedSongId, setSelectedSongId] = useState<string>("");
+  const [selectedSongIds, setSelectedSongIds] = useState<Set<string>>(
+    new Set()
+  );
+  const [selectAllSongs, setSelectAllSongs] = useState(false);
   const [nCollectors, setNCollectors] = useState<number>(0);
   const [customFids, setCustomFids] = useState<number[]>([]);
   const [csvFile, setCsvFile] = useState<File | null>(null);
@@ -46,7 +44,7 @@ export default function NotificationForm({
   const [formData, setFormData] = useState({
     title: "",
     body: "",
-    delay: 0,
+    scheduledDate: "", // This will store the Eastern Time date string
   });
 
   const [mode, setMode] = useState<"test" | "prod">("test");
@@ -67,15 +65,47 @@ export default function NotificationForm({
     fetchSongsAndCollectors();
   }, []);
 
-  const handleSongSelect = (songId: string) => {
-    setSelectedSongId(songId);
-
-    const selectedSong = songsAndCollectors.find(
-      (song) => song.id === parseInt(songId)
-    );
-    if (selectedSong && selectedSong.collectors) {
-      setNCollectors(selectedSong.collectors.length);
+  const handleSongSelect = (songId: string, isChecked: boolean) => {
+    const newSelectedSongs = new Set(selectedSongIds);
+    if (isChecked) {
+      newSelectedSongs.add(songId);
     } else {
+      newSelectedSongs.delete(songId);
+    }
+    setSelectedSongIds(newSelectedSongs);
+
+    // Calculate total unique collectors
+    const uniqueCollectors = new Set<number>();
+    songsAndCollectors
+      .filter((song) => newSelectedSongs.has(String(song.id)))
+      .forEach((song) => {
+        song.collectors?.forEach((collector) =>
+          uniqueCollectors.add(collector.user.fid)
+        );
+      });
+    setNCollectors(uniqueCollectors.size);
+    setCustomFids(Array.from(uniqueCollectors));
+  };
+
+  const handleSelectAllToggle = (checked: boolean) => {
+    setSelectAllSongs(checked);
+    if (checked) {
+      const allSongIds = new Set(
+        songsAndCollectors.map((song) => String(song.id))
+      );
+      setSelectedSongIds(allSongIds);
+
+      // Calculate total unique collectors for all songs
+      const uniqueCollectors = new Set<number>();
+      songsAndCollectors.forEach((song) => {
+        song.collectors?.forEach((collector) =>
+          uniqueCollectors.add(collector.user.fid)
+        );
+      });
+      setNCollectors(uniqueCollectors.size);
+      setCustomFids(Array.from(uniqueCollectors));
+    } else {
+      setSelectedSongIds(new Set());
       setNCollectors(0);
     }
   };
@@ -85,14 +115,7 @@ export default function NotificationForm({
   ) => {
     const { name, value } = e.target;
 
-    if (name === "delay") {
-      const numValue = parseInt(value);
-      if (numValue < 0) return;
-
-      setFormData((prev) => ({ ...prev, [name]: numValue }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -132,6 +155,16 @@ export default function NotificationForm({
     reader.readAsText(file);
   };
 
+  const calculateDelay = (scheduledDateStr: string): number => {
+    if (!scheduledDateStr) return 0;
+
+    const now = new Date();
+    const scheduledDate = new Date(scheduledDateStr);
+
+    const delayMs = scheduledDate.getTime() - now.getTime();
+    return Math.max(0, Math.floor(delayMs / 1000)); // Convert to seconds, minimum 0
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setModalOpen(true);
@@ -150,23 +183,18 @@ export default function NotificationForm({
       let body: any = {
         title: formData.title,
         text: formData.body,
-        delay: formData.delay,
+        delay: calculateDelay(formData.scheduledDate),
       };
 
       if (mode === "test") {
         body.fids = [context.user.fid];
       } else {
         // Production mode
-        switch (prodTab) {
-          case "announce":
-            // No specific targeting, send to everyone
-            break;
-          case "holders":
-            body.songId = Number(selectedSongId);
-            break;
-          case "custom":
-            body.fids = customFids;
-            break;
+        if (prodTab === "announce") {
+          // No fids needed - will send to all users
+        } else {
+          // Both "holders" and "custom" cases use customFids array
+          body.fids = customFids;
         }
       }
 
@@ -204,7 +232,7 @@ export default function NotificationForm({
       setFormData({
         title: "",
         body: "",
-        delay: 0,
+        scheduledDate: "",
       });
     } catch (error) {
       console.error("Error sending notification:", error);
@@ -274,39 +302,47 @@ export default function NotificationForm({
                   className="mt-0 space-y-4"
                 >
                   <p className="text-sm text-white/70">
-                    This will send a notification to collectors of a specific
-                    song.
+                    Select songs to send notifications to their collectors.
+                    Duplicate collectors will receive only one notification.
                   </p>
 
-                  <div>
+                  <div className="flex items-center space-x-2 mb-4">
+                    <Switch
+                      checked={selectAllSongs}
+                      onCheckedChange={handleSelectAllToggle}
+                      id="select-all"
+                    />
                     <label
-                      htmlFor="song"
-                      className="block mb-1 text-sm text-white/80"
+                      htmlFor="select-all"
+                      className="text-sm font-medium"
                     >
-                      Target Song Collectors
+                      Select All Songs
                     </label>
-                    <div className="relative">
-                      <Select
-                        value={selectedSongId}
-                        onValueChange={handleSongSelect}
+                  </div>
+
+                  <div className="space-y-2">
+                    {songsAndCollectors.map((song) => (
+                      <div
+                        key={song.id}
+                        className="flex items-center space-x-2"
                       >
-                        <SelectTrigger className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white">
-                          <SelectValue placeholder="Select a song to target collectors" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-black text-white border-white/60">
-                          {songsAndCollectors.map((song) => (
-                            <SelectItem
-                              key={song.id}
-                              value={String(song.id)}
-                            >
-                              {song.title} ({song.collectors?.length || 0}{" "}
-                              collectors)
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <MusicIcon className="absolute top-2.5 right-8 h-4 w-4 text-white/60" />
-                    </div>
+                        <Checkbox
+                          checked={selectedSongIds.has(String(song.id))}
+                          onCheckedChange={(checked) =>
+                            handleSongSelect(String(song.id), checked === true)
+                          }
+                          disabled={selectAllSongs}
+                          id={`song-${song.id}`}
+                        />
+                        <label
+                          htmlFor={`song-${song.id}`}
+                          className="text-sm"
+                        >
+                          {song.title} ({song.collectors?.length || 0}{" "}
+                          collectors)
+                        </label>
+                      </div>
+                    ))}
                   </div>
                 </TabsContent>
 
@@ -399,22 +435,20 @@ export default function NotificationForm({
 
         <div>
           <label
-            htmlFor="delay"
+            htmlFor="scheduledDate"
             className="block mb-1 text-sm text-white/80"
           >
-            Delay (in seconds)
+            Schedule Date and Time
           </label>
-          <div className="relative">
-            <input
-              type="number"
-              name="delay"
-              value={formData.delay}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white"
-            />
-            <ClockIcon className="absolute top-2.5 right-2.5 h-4 w-4 text-white/60" />
-          </div>
+          <input
+            type="datetime-local"
+            name="scheduledDate"
+            value={formData.scheduledDate}
+            onChange={handleChange}
+            required
+            min={new Date().toISOString().slice(0, 16)}
+            className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white [color-scheme:dark]"
+          />
         </div>
 
         <Button
@@ -425,8 +459,10 @@ export default function NotificationForm({
           }`}
           disabled={
             mode === "prod" &&
-            ((prodTab === "holders" && !selectedSongId) ||
-              (prodTab === "custom" && customFids.length === 0))
+            ((prodTab === "holders" && selectedSongIds.size === 0) ||
+              (prodTab === "custom" && customFids.length === 0) ||
+              !formData.scheduledDate ||
+              calculateDelay(formData.scheduledDate) < 0)
           }
         >
           {mode === "prod"
