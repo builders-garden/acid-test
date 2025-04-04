@@ -9,6 +9,7 @@ export const usePrelaunchState = () => {
   const { data, isLoading, error, refetch } = useApiQuery<PrelaunchState>({
     queryKey: ["prelaunchState"],
     url: "/api/state",
+    isProtected: true,
   });
 
   const mutation = useApiMutation<PrelaunchState, { isPrelaunch: boolean }>({
