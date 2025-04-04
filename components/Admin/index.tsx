@@ -8,6 +8,8 @@ import SongSaleForm from "./SongSaleForm";
 import TransactionModal from "../transaction-modal";
 import NotificationForm from "./NotificationForm";
 import { useSignIn } from "@/hooks/use-sign-in";
+import { Switch } from "@/components/ui/switch";
+import { usePrelaunchState } from "@/hooks/use-prelaunch-state";
 
 type AdminAction = "Create Song Sale" | "Send Notification" | null;
 
@@ -22,6 +24,8 @@ export default function AdminPage() {
     "loading" | "success" | "error"
   >("loading");
   const [modalMessage, setModalMessage] = useState("");
+
+  const { isPrelaunch, toggleState } = usePrelaunchState();
 
   const handleBack = () => {
     setShowForm(false);
@@ -58,6 +62,16 @@ export default function AdminPage() {
             </Button>
           </Link>
         </div>
+
+        {!showForm && (
+          <div className="flex items-center justify-between p-4 border-2 border-white/60 rounded-lg">
+            <span className="text-sm">Prelaunch Mode</span>
+            <Switch
+              checked={isPrelaunch}
+              onCheckedChange={toggleState}
+            />
+          </div>
+        )}
 
         {selectedAction && (
           <div className="w-full">

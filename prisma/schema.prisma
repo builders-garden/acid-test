@@ -36,8 +36,8 @@ model Collection {
   userId Int
   songId Int
   amount Int
-  song   Song @relation(fields: [songId], references: [id])
   user   User @relation(fields: [userId], references: [fid])
+  song   Song @relation(fields: [songId], references: [id])
 
   @@id([userId, songId])
   @@map("collections")
@@ -48,4 +48,11 @@ model RedactedSong {
   createdAt DateTime @default(now())
 
   @@map("redacted_songs")
+}
+
+model State {
+  id          Int     @id @default(autoincrement())
+  isPrelaunch Boolean @default(true)
+
+  @@map("state")
 }

@@ -202,3 +202,31 @@ export const createCollection = async (collection: {
     },
   });
 };
+
+export const getState = async () => {
+  const state = await prisma.state.findFirst();
+  if (!state) {
+    // Create initial state if none exists
+    return await prisma.state.create({
+      data: {
+        isPrelaunch: true,
+      },
+    });
+  }
+  return state;
+};
+
+export const updateState = async (isPrelaunch: boolean) => {
+  const state = await prisma.state.findFirst();
+  if (!state) {
+    return await prisma.state.create({
+      data: {
+        isPrelaunch,
+      },
+    });
+  }
+  return await prisma.state.update({
+    where: { id: state.id },
+    data: { isPrelaunch },
+  });
+};

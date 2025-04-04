@@ -1,0 +1,5 @@
+-- CreateTable
+CREATE TABLE "state" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "isPrelaunch" BOOLEAN NOT NULL DEFAULT true
+);
