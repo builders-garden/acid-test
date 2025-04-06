@@ -38,7 +38,9 @@ export async function POST(request: Request) {
       if (result.state === "error") {
         console.error(
           `[QSTASH-${new Date().toISOString()}]`,
-          `Error sending notification to all users: ${result.error}`
+          `Error sending notification to all users: ${JSON.stringify(
+            result.error
+          )}`
         );
       } else if (result.state === "no_token") {
         console.error(

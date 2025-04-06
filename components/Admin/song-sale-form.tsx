@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { FileIcon, DollarSignIcon } from "lucide-react";
-import { parseUnits } from "viem";
+import { formatUnits, parseUnits } from "viem";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { Button } from "@/components/ui/button";
@@ -121,7 +121,7 @@ export default function SongSaleForm({
               title: formData.title,
               startDate: formData.startDate.toString(),
               endDate: formData.endDate.toString(),
-              price: formData.price.toString(),
+              price: formatUnits(BigInt(formData.price), 6),
               tokenId: (tokenCounter + 1).toString(),
             }),
           });

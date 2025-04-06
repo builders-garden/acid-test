@@ -6,7 +6,11 @@ import { z } from "zod";
 const requestSchema = z.object({
   title: z.string().min(1),
   text: z.string().min(1),
-  tokenId: z.number().int().positive(), // Add tokenId validation
+  tokenId: z.number().int().positive(),
+  didCollect: z
+    .string()
+    .min(1)
+    .transform((val) => val === "true"),
 });
 
 export async function POST(request: Request) {
@@ -17,9 +21,13 @@ export async function POST(request: Request) {
       status: 400,
     });
   }
-  const { title, text, tokenId } = parsedBody.data;
+  const { title, text, tokenId, didCollect } = parsedBody.data;
 
   try {
+    // Get all users
+    const allUsers = await prisma.user.findMany();
+
+    // Get users who collected the song
     const usersWithSong = await prisma.collection.findMany({
       where: {
         songId: tokenId,
@@ -29,18 +37,26 @@ export async function POST(request: Request) {
       },
     });
 
-    const users = usersWithSong.map(
-      (item: { user: any }) => item.user
-    ) as DbUser[];
+    const collectorFids = new Set(
+      usersWithSong.map((item: { user: any }) => item.user.fid)
+    );
 
-    if (users.length === 0) {
-      return new Response("No users found who collected this song", {
+    // Select users based on didCollect flag
+    const targetUsers = didCollect
+      ? (usersWithSong.map((item: { user: any }) => item.user) as DbUser[])
+      : (allUsers.filter((user) => !collectorFids.has(user.fid)) as DbUser[]);
+
+    if (targetUsers.length === 0) {
+      const message = didCollect
+        ? "No users found who collected this song"
+        : "No users found who haven't collected this song";
+      return new Response(message, {
         status: 404,
       });
     }
 
     let result = await sendFrameNotification({
-      fids: users.map((user: DbUser) => user.fid),
+      fids: targetUsers.map((user: DbUser) => user.fid),
       title,
       body: text,
     });
@@ -48,7 +64,7 @@ export async function POST(request: Request) {
     if (result.state === "success") {
       console.log(
         `[QSTASH-${new Date().toISOString()}]`,
-        `Notification sent to ${users.length} users: title=${title}`
+        `Notification sent to ${targetUsers.length} users: title=${title}`
       );
       return new Response("Notification sent successfully", {
         status: 200,
@@ -62,12 +78,12 @@ export async function POST(request: Request) {
       } else if (result.state === "no_token") {
         console.error(
           `[QSTASH-${new Date().toISOString()}]`,
-          `No token found for users` // Adjusted message
+          `No token found for users`
         );
       } else if (result.state === "rate_limit") {
         console.error(
           `[QSTASH-${new Date().toISOString()}]`,
-          `Rate limit exceeded for users` // Adjusted message
+          `Rate limit exceeded for users`
         );
       }
       return new Response("Failed to send notification", {

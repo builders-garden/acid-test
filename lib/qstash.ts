@@ -158,6 +158,7 @@ export const sendDelayedNotificationBasedOnOwnership = async (
   title: string,
   text: string,
   tokenId: number,
+  didCollect: boolean,
   delay?: number | `${bigint}s` | `${bigint}m` | `${bigint}h` | `${bigint}d`
 ) => {
   if (process.env.NEXT_PUBLIC_URL === "http://localhost:3000") {
@@ -169,6 +170,7 @@ export const sendDelayedNotificationBasedOnOwnership = async (
       title,
       text,
       tokenId,
+      didCollect: String(didCollect),
     },
     delay,
   });

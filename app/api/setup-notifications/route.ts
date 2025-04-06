@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
       // 1 hour before song goes live
       sendDelayedNotificationToAll(
         "1 hour til' AT debut!",
-        `${title} (AT${formattedTokenId}). Live in 1 hour on Acid Test.`,
+        `AT${formattedTokenId}. Live in 1 hour on Acid Test.`,
         timeUntilStart - oneHourInSeconds
       ),
 
@@ -94,24 +94,27 @@ export async function POST(request: NextRequest) {
       // 24 hours after mint ends
       sendDelayedNotificationBasedOnOwnership(
         `Acid Test ${formattedTokenId} debuted yesterday!`,
-        `The secondary market is now live.`,
+        `The mint window is closed, you can collect the song now on secondary.`,
         tokenIdNumeric,
+        false,
         timeUntilEnd + oneDayInSeconds
       ),
 
       // 30 minutes before mint closes (non-owners)
       sendDelayedNotificationBasedOnOwnership(
-        `30 minutes left til' mint closes`,
+        `30 minutes left til' mint closes!`,
         `Mint "${title}" and climb the leaderboard before time runs out`,
         tokenIdNumeric,
+        false,
         timeUntilEnd - thirtyMinutesInSeconds
       ),
 
       // 30 minutes before mint closes (owners)
       sendDelayedNotificationBasedOnOwnership(
-        `30 minutes left til' mint closes`,
+        `30 minutes left til' mint closes!`,
         `Check your position on the leaderboard!`,
         tokenIdNumeric,
+        true,
         timeUntilEnd - thirtyMinutesInSeconds
       ),
     ]);
