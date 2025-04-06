@@ -36,6 +36,7 @@ export default function Home() {
   const { isAdmin } = useSignIn();
   const [isLoadingSongs, setIsLoadingSongs] = useState(true);
   const { isPrelaunch, isLoading: isPrelaunchLoading } = usePrelaunchState();
+  const [isPageLoading, setIsPageLoading] = useState(true);
 
   const getTokenInfosResult = useReadContract({
     abi: AcidTestABI,
@@ -45,8 +46,9 @@ export default function Home() {
   });
 
   useEffect(() => {
-    if (isPrelaunch) {
+    if (!isPrelaunchLoading && isPrelaunch) {
       setIsLoadingSongs(false);
+      setIsPageLoading(false);
       return;
     }
     if (getTokenInfosResult.data && !isPrelaunch && !isPrelaunchLoading) {
@@ -119,16 +121,23 @@ export default function Home() {
             router.push(`/songs/${firstLiveSong.index}`);
           } else {
             setIsLoadingSongs(false);
+            setIsPageLoading(false);
           }
         } catch (error) {
           console.error("Error processing release data:", error);
           setIsLoadingSongs(false);
+          setIsPageLoading(false);
         }
       };
 
       fetchReleasesData();
-    } else if (!getTokenInfosResult.data && getTokenInfosResult.isFetched) {
+    } else if (
+      !isPrelaunchLoading &&
+      !getTokenInfosResult.data &&
+      getTokenInfosResult.isFetched
+    ) {
       setIsLoadingSongs(false);
+      setIsPageLoading(false);
     }
   }, [
     getTokenInfosResult.data,
