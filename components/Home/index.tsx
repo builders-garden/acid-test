@@ -117,11 +117,12 @@ export default function Home() {
           // Redirect to the first live song's page if there is one and we're not in prelaunch
           if (firstLiveSong) {
             router.push(`/songs/${firstLiveSong.index}`);
+          } else {
+            setIsLoadingSongs(false);
           }
         } catch (error) {
           console.error("Error processing release data:", error);
-        } finally {
-          setTimeout(() => setIsLoadingSongs(false), 500);
+          setIsLoadingSongs(false);
         }
       };
 
