@@ -1,4 +1,4 @@
-## This template provides a minimal setup to get Next.js working with MiniKit and Frames.js
+## This template provides a minimal setup to get Next.js working with MiniKit and Frames.js 
 
 ## Setup
 
