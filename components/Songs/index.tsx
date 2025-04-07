@@ -272,7 +272,7 @@ export default function SongsPage() {
                 {release.id}
               </p>
               <div className="flex items-center gap-2 text-white/40">
-                <div className="w-2 h-2 rounded-full bg-white/40 animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-white/40" />
                 <span className="text-[14px] leading-none">Coming Soon</span>
               </div>
             </div>
@@ -352,7 +352,7 @@ export default function SongsPage() {
                       {release.id}
                     </p>
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-plum animate-pulse" />
+                      <div className="w-2 h-2 rounded-full bg-plum" />
                       <p className="text-[14px] leading-none">Mint Closed</p>
                     </div>
                   </div>

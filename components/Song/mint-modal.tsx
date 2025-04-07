@@ -401,18 +401,6 @@ export function MintModal({
                       <Button
                         variant="outline"
                         className={`flex-1 flex items-center justify-center gap-2 py-6 bg-black hover:bg-black/90 ${
-                          paymentMethod === "ETH"
-                            ? "border-2 border-white text-white hover:text-white"
-                            : "border border-white/20 text-white/60 hover:text-white"
-                        }`}
-                        onClick={() => setPaymentMethod("ETH")}
-                      >
-                        {/* <Ethereum className="w-5 h-5" /> */}
-                        ETH
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className={`flex-1 flex items-center justify-center gap-2 py-6 bg-black hover:bg-black/90 ${
                           paymentMethod === "USDC"
                             ? "border-2 border-white text-white hover:text-white"
                             : "border border-white/20 text-white/60 hover:text-white"
@@ -421,6 +409,18 @@ export function MintModal({
                       >
                         {/*  <CircleDollarSign className="w-5 h-5" /> */}
                         USDC
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className={`flex-1 flex items-center justify-center gap-2 py-6 bg-black hover:bg-black/90 ${
+                          paymentMethod === "ETH"
+                            ? "border-2 border-white text-white hover:text-white"
+                            : "border border-white/20 text-white/60 hover:text-white"
+                        }`}
+                        onClick={() => setPaymentMethod("ETH")}
+                      >
+                        {/* <Ethereum className="w-5 h-5" /> */}
+                        ETH
                       </Button>
                     </div>
                   </div>

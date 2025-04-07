@@ -38,7 +38,7 @@ export const CollectorItem = ({
             : undefined
         }
       >
-        <div className="w-6 h-6 rounded-full border flex items-center justify-center text-xs">
+        <div className="w-6 h-6 flex items-center justify-center text-xs">
           {position}
         </div>
         <Image
@@ -61,10 +61,7 @@ export const CollectorItem = ({
             : collector.user?.username || `User ${collector.userId}`}
         </span>
       </div>
-      <span
-        className="cursor-pointer"
-        onClick={handleOpenUrl}
-      >
+      <span className="cursor-pointer" onClick={handleOpenUrl}>
         {collector.amount}
       </span>
     </div>
