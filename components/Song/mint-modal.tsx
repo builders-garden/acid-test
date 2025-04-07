@@ -260,7 +260,7 @@ export function MintModal({
               } of ${songName}!`,
               text: "You currently hold the 15th spot on the collectors leaderboard. Thank you", // TODO: Add custom message
               delay: 0,
-              fid: context.user.fid,
+              fids: [context.user.fid],
             };
 
             const response = await fetch("/api/manual-notification", {

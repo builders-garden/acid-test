@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       // 24 hours before song goes live
       sendDelayedNotificationToAll(
         "Our debut song goes live tomorrow",
-        `Editions are ${price}. You can checkout in ETH or USDC. See you tomorrow at ${formattedStartDate}.`,
+        `Editions are $${price}. You can checkout in ETH or USDC. See you tomorrow at ${formattedStartDate}.`,
         timeUntilStart - oneDayInSeconds
       ),
 
