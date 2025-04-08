@@ -543,16 +543,16 @@ export function MintModal({
                     <div className="flex flex-col gap-4 w-full">
                       <Button
                         className="w-full h-10 py-4 text-lg bg-mint text-black hover:bg-plum hover:text-black"
-                        onClick={handleClose}
+                        onClick={handleShareMintedSong}
                       >
-                        Done
+                        Share
                       </Button>
                       <Button
                         variant="outline"
                         className="w-full h-10 py-4 text-lg bg-black text-white hover:bg-white/10 hover:text-white"
-                        onClick={handleShareMintedSong}
+                        onClick={handleClose}
                       >
-                        Share
+                        Done
                       </Button>
                     </div>
                   </div>

@@ -15,7 +15,7 @@ export async function generateMetadata({
     version: "next",
     imageUrl: `${appUrl}/images/feed.jpg`,
     button: {
-      title: "Listen to Song",
+      title: "Listen Now",
       action: {
         type: "launch_frame",
         name: "Acid Test",

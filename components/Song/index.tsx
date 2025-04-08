@@ -23,7 +23,7 @@ import {
 } from "@/lib/utils";
 import { SongMetadata } from "@/types";
 import sdk from "@farcaster/frame-sdk";
-import { Check, Share2 } from "lucide-react";
+import { Check, Upload } from "lucide-react";
 import Image from "next/image";
 import copy from "@/public/images/copy.svg";
 import { Header } from "../ui/header";
@@ -231,7 +231,7 @@ export default function Song() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white font-mono p-4 flex flex-col items-center w-full">
+    <div className="min-h-screen bg-black text-white font-mono p-4 flex flex-col items-center w-full pb-16">
       <Header />
 
       {/* Player Controls */}
@@ -263,13 +263,16 @@ export default function Song() {
       />
 
       {/* Share Buttons */}
-      <div className="flex gap-2 mb-8 w-full">
+      <div className="flex gap-2 mb-8 w-fit m-auto">
         <button
           onClick={handleShareSong}
           className="p-2 border border-white hover:bg-white/10 transition-colors rounded"
           aria-label="Share"
         >
-          <Share2 width={20} height={20} />
+          <Upload
+            width={20}
+            height={20}
+          />
         </button>
         <button
           onClick={() => copyToClipboard(frameUrl, setLinkCopied)}
@@ -277,7 +280,10 @@ export default function Song() {
           aria-label="Copy link"
         >
           {linkCopied ? (
-            <Check width={20} height={20} />
+            <Check
+              width={20}
+              height={20}
+            />
           ) : (
             <Image
               src={copy}
