@@ -32,7 +32,7 @@ export default function Song() {
   // State management
   const [mintQuantity, setMintQuantity] = useState(1);
   const [isMintModalOpen, setIsMintModalOpen] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"ETH" | "USDC">("ETH");
+  const [paymentMethod, setPaymentMethod] = useState<"USDC" | "ETH">("USDC");
   const [countdown, setCountdown] = useState(19330);
   const [metadata, setMetadata] = useState<SongMetadata | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,6 +45,8 @@ export default function Song() {
   const [linkCopied, setLinkCopied] = useState(false);
   const [frameUrl, setFrameUrl] = useState("");
   const [castUrl, setCastUrl] = useState("");
+  const [userAddedFrameOnAction, setUserAddedFrameOnAction] =
+    useState<boolean>(false);
 
   // Hooks
   const { isPlaying, currentSong, play, pause, currentTime, duration, seek } =
@@ -65,7 +67,7 @@ export default function Song() {
   const {
     collectors,
     isLoading: collectorsLoading,
-    refetch,
+    refetch: refetchCollectors,
   } = useCollectors(tokenId);
 
   // Contract interaction
@@ -216,6 +218,44 @@ export default function Song() {
     return index !== -1 ? index + 1 : null;
   }, [userFid, sortedCollectors, collectors]);
 
+  // Projected user position after minting
+  const projectedUserPosition = useMemo(() => {
+    if (!userFid || !collectors || !mintQuantity) return null;
+
+    // Create a copy of collectors to simulate the new state
+    const projectedCollectors: {
+      fid: number | undefined;
+      amount: number;
+    }[] = collectors.map((c) => ({
+      fid: c.user?.fid,
+      amount: c.amount,
+    }));
+
+    // Find current user's collector entry
+    const userCollector = projectedCollectors.find((c) => c.fid === userFid);
+
+    if (!userCollector) {
+      // If user is not yet a collector, add them
+      projectedCollectors.push({
+        fid: userFid,
+        amount: mintQuantity,
+      });
+    } else {
+      // Update user's amount with new mint quantity
+      userCollector.amount += mintQuantity;
+    }
+
+    // Sort collectors by amount in descending order
+    const sortedProjected = projectedCollectors.sort(
+      (a, b) => b.amount - a.amount
+    );
+
+    // Find user's new position
+    const newPosition = sortedProjected.findIndex((c) => c.fid === userFid);
+
+    return newPosition !== -1 ? newPosition + 1 : null;
+  }, [userFid, collectors, mintQuantity]);
+
   useEffect(() => {
     if (metadata) {
       const { frameUrl, castUrl } = composeSongCastUrl(tokenId, metadata.name);
@@ -231,8 +271,8 @@ export default function Song() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white font-mono p-4 flex flex-col items-center w-full pb-16">
-      <Header />
+    <div className="min-h-screen bg-black text-white font-mono p-4 flex flex-col items-center w-full pb-8">
+      <Header userAddedFrameOnAction={userAddedFrameOnAction} />
 
       {/* Player Controls */}
       <PlayerControls
@@ -338,7 +378,9 @@ export default function Song() {
           usdPrice={usdPrice}
           ethUsd={ethUsd}
           image={metadata?.image}
-          refetch={refetch}
+          refetchCollectors={refetchCollectors}
+          projectedUserPosition={projectedUserPosition}
+          setUserAddedFrameOnAction={setUserAddedFrameOnAction}
         />
       )}
     </div>

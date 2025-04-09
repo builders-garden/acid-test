@@ -10,7 +10,11 @@ import { usePrelaunchState } from "@/hooks/use-prelaunch-state";
 import { Button } from "./button";
 import { handleAddFrame } from "@/lib/utils";
 
-export const Header = () => {
+interface HeaderProps {
+  userAddedFrameOnAction?: boolean;
+}
+
+export const Header: React.FC<HeaderProps> = ({ userAddedFrameOnAction }) => {
   const pathname = usePathname();
   const isSongsPage = pathname === "/songs";
   const isAboutPage = pathname === "/about";
@@ -19,13 +23,38 @@ export const Header = () => {
   const { isPrelaunch } = usePrelaunchState();
 
   useEffect(() => {
-    if (contextType === ContextType.Farcaster) {
-      if (context && context.user.fid) {
-        setUserAddedFrame(context.client.added);
-      } else {
-        setUserAddedFrame(false);
+    const fetchUser = async () => {
+      try {
+        const response = await fetch("/api/user");
+        const result = await response.json();
+
+        if (result?.data?.notificationDetails) {
+          setUserAddedFrame(true);
+          return;
+        }
+
+        // Fall back to context check if no notification details
+        if (contextType === ContextType.Farcaster) {
+          if (context && context.user.fid) {
+            setUserAddedFrame(context.client.added);
+          } else {
+            setUserAddedFrame(false);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        // Fall back to context check on error
+        if (contextType === ContextType.Farcaster) {
+          if (context && context.user.fid) {
+            setUserAddedFrame(context.client.added);
+          } else {
+            setUserAddedFrame(false);
+          }
+        }
       }
-    }
+    };
+
+    fetchUser();
   }, [contextType, context]);
 
   const handleAddFrameAndRefresh = async () => {
@@ -37,6 +66,12 @@ export const Header = () => {
       setUserAddedFrame(false);
     }
   };
+
+  useEffect(() => {
+    if (userAddedFrameOnAction) {
+      setUserAddedFrame(true);
+    }
+  }, [userAddedFrameOnAction]);
 
   return (
     <div className="w-full max-w-md flex justify-between items-center mb-6">

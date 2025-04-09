@@ -122,7 +122,8 @@ export async function fetchWithIPFSFallback<T>(
 
 export const handleAddFrame = async () => {
   try {
-    await sdk.actions.addFrame();
+    const result = await sdk.actions.addFrame();
+    return result.notificationDetails;
   } catch (error) {
     console.error("Error adding frame:", error);
     throw error;

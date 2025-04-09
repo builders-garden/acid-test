@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  SetStateAction,
+  Dispatch,
+} from "react";
 import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -14,7 +21,7 @@ import { useWaitForTransactionReceipt } from "wagmi";
 import { useMiniAppContext } from "@/hooks/use-miniapp-context";
 import { erc20Abi } from "viem";
 import { composeMintCastUrl, formatSongId, handleAddFrame } from "@/lib/utils";
-import sdk from "@farcaster/frame-sdk";
+import sdk, { FrameNotificationDetails } from "@farcaster/frame-sdk";
 
 interface MintModalProps {
   isOpen: boolean;
@@ -28,8 +35,10 @@ interface MintModalProps {
   tokenId: number;
   usdPrice: number;
   ethUsd: number;
-  refetch: () => void;
+  refetchCollectors: () => void;
   image?: string;
+  projectedUserPosition: number | null;
+  setUserAddedFrameOnAction: Dispatch<SetStateAction<boolean>>;
 }
 
 enum MintState {
@@ -50,8 +59,10 @@ export function MintModal({
   tokenId,
   usdPrice,
   ethUsd,
-  refetch,
+  refetchCollectors,
   image,
+  projectedUserPosition,
+  setUserAddedFrameOnAction,
 }: MintModalProps) {
   const [isSliderInteracting, setIsSliderInteracting] = useState(false);
   const [mintState, setMintState] = useState<MintState>(MintState.Initial);
@@ -229,7 +240,6 @@ export function MintModal({
     setMintState(MintState.Initial);
     resetMint();
     onClose();
-    handleAddFrame();
   };
 
   useEffect(() => {
@@ -244,88 +254,140 @@ export function MintModal({
   }, [mintStatus]);
 
   useEffect(() => {
-    if (
-      mintTxResult &&
-      mintTxResult.status === "success" &&
-      mintState !== MintState.Success
-    ) {
-      setMintState(MintState.Success);
+    const postMint = async () => {
+      if (
+        mintTxResult &&
+        mintTxResult.status === "success" &&
+        mintState !== MintState.Success
+      ) {
+        let notificationDetails: FrameNotificationDetails | undefined =
+          undefined;
+        try {
+          notificationDetails = await handleAddFrame();
+          setUserAddedFrameOnAction(true);
+        } catch (error) {}
 
-      const sendNotification = async () => {
-        if (contextType === "farcaster" && context?.user?.fid) {
+        setMintState(MintState.Success);
+
+        const signUpUser = async () => {
+          if (contextType === "farcaster" && context?.user?.fid) {
+            try {
+              const body = {
+                fid: context.user.fid,
+                notificationDetails: notificationDetails,
+              };
+
+              const response = await fetch("/api/user", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(body),
+              });
+
+              if (!response.ok) {
+                throw new Error("Failed to sign up user");
+              }
+            } catch (error) {
+              console.error("Error signing up user:", error);
+              toast("Error signing up user");
+            }
+          }
+        };
+
+        const sendNotification = async () => {
+          if (contextType === "farcaster" && context?.user?.fid) {
+            try {
+              const leaderboardText = projectedUserPosition
+                ? `You currently hold the ${projectedUserPosition}${
+                    projectedUserPosition % 10 === 1 &&
+                    projectedUserPosition % 100 !== 11
+                      ? "st"
+                      : projectedUserPosition % 10 === 2 &&
+                        projectedUserPosition % 100 !== 12
+                      ? "nd"
+                      : projectedUserPosition % 10 === 3 &&
+                        projectedUserPosition % 100 !== 13
+                      ? "rd"
+                      : "th"
+                  } spot on the collectors leaderboard.`
+                : "You're now part of the collectors leaderboard.";
+
+              const body = {
+                title: `You just collected ${mintQuantity} ${
+                  mintQuantity > 1 ? "editions" : "edition"
+                } of ${songName}!`,
+                text: `${leaderboardText} Thank you!`,
+                delay: 0,
+                fids: [context.user.fid],
+              };
+
+              const response = await fetch("/api/manual-notification", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(body),
+              });
+
+              if (!response.ok) {
+                throw new Error("Failed to send notification");
+              }
+            } catch (error) {
+              console.error("Error sending notification:", error);
+              toast("Error sending notification");
+            }
+          }
+        };
+
+        const createCollection = async () => {
+          let fid;
+          if (contextType === "farcaster") {
+            if (context && context.user.fid) {
+              fid = context.user.fid;
+            }
+          }
           try {
-            const body = {
-              title: `You just collected ${mintQuantity} ${
-                mintQuantity > 1 ? "editions" : "edition"
-              } of ${songName}!`,
-              text: "You currently hold the 15th spot on the collectors leaderboard. Thank you", // TODO: Add custom message
-              delay: 0,
-              fids: [context.user.fid],
-            };
-
-            const response = await fetch("/api/manual-notification", {
+            const response = await fetch("/api/collection", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify(body),
+              body: JSON.stringify({
+                userId: fid, // Assuming `context.user.id` contains the user ID
+                songId: tokenId, // Assuming `tokenCounter` is the ID of the song
+                amount: mintQuantity,
+              }),
             });
 
             if (!response.ok) {
-              throw new Error("Failed to send notification");
+              const errorData = await response.json(); // Parse error response
+              throw new Error(errorData.error || "Failed to create collection");
             }
-          } catch (error) {
-            console.error("Error sending notification:", error);
-            toast("Error sending notification");
+
+            refetchCollectors();
+          } catch (error: unknown) {
+            console.error(
+              "Error creating collection: ",
+              error instanceof Error ? error.message : error
+            );
+            toast("Error creating collection");
           }
-        }
-      };
+        };
 
-      const createCollection = async () => {
-        let fid;
-        if (contextType === "farcaster") {
-          if (context && context.user.fid) {
-            fid = context.user.fid;
-          }
-        }
-        try {
-          const response = await fetch("/api/collection", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              userId: fid, // Assuming `context.user.id` contains the user ID
-              songId: tokenId, // Assuming `tokenCounter` is the ID of the song
-              amount: mintQuantity,
-            }),
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json(); // Parse error response
-            throw new Error(errorData.error || "Failed to create collection");
-          }
-
-          refetch();
-        } catch (error: unknown) {
-          console.error(
-            "Error creating collection: ",
-            error instanceof Error ? error.message : error
-          );
-          toast("Error creating collection");
-        }
-      };
-
-      sendNotification();
-      createCollection();
-    } else if (
-      mintTxResult &&
-      mintTxResult.status === "error" &&
-      mintState !== MintState.Initial
-    ) {
-      toast("Minting failed");
-      setMintState(MintState.Initial);
-    }
+        await signUpUser();
+        await createCollection();
+        await sendNotification();
+      } else if (
+        mintTxResult &&
+        mintTxResult.status === "error" &&
+        mintState !== MintState.Initial
+      ) {
+        toast("Minting failed");
+        setMintState(MintState.Initial);
+      }
+    };
+    postMint();
   }, [mintTxResult, mintQuantity, mintState, songName, tokenId]);
 
   useEffect(() => {
@@ -385,7 +447,7 @@ export function MintModal({
                     </div>
                     <Slider
                       min={1}
-                      max={25}
+                      max={100}
                       step={1}
                       value={[mintQuantity]}
                       onValueChange={(value) => setMintQuantity(value[0])}
