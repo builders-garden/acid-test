@@ -44,7 +44,7 @@ export default function NotificationForm({
   const [formData, setFormData] = useState({
     title: "",
     body: "",
-    scheduledDate: "", // This will store the Eastern Time date string
+    scheduledDate: "",
   });
 
   const [mode, setMode] = useState<"test" | "prod">("test");

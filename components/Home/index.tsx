@@ -13,6 +13,7 @@ import { usePrelaunchState } from "@/hooks/use-prelaunch-state";
 import { useRouter } from "next/navigation";
 import { LoadingScreen } from "../ui/loading-screen";
 import { Header } from "../ui/header";
+import sdk from "@farcaster/frame-sdk";
 
 interface TokenInfo {
   salesStartDate: number;
@@ -170,24 +171,37 @@ export default function Home() {
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md px-4">
           <div className="flex flex-col items-center space-y-6 rounded-xl">
             <div className="flex flex-col space-y-4 w-full">
-              <Link
-                href={isPrelaunch ? "https://acidtest.xyz/paper" : `/songs`}
-                className="w-full"
-                target={!isPrelaunch ? "_self" : "_blank"}
-              >
-                <Button className="w-full h-10 text-lg bg-mint text-black hover:bg-plum hover:text-black transition-colors">
-                  {isPrelaunch ? "ACIDPAPER" : "RELEASES"}
+              {isPrelaunch ? (
+                <Button
+                  onClick={() =>
+                    sdk.actions.openUrl("https://pdfobject.com/pdf/sample.pdf")
+                  }
+                  className="w-full h-10 text-lg bg-mint text-black hover:bg-plum hover:text-black transition-colors"
+                >
+                  ACIDPAPER
                 </Button>
-              </Link>
+              ) : (
+                <Link
+                  href={`/songs`}
+                  className="w-full"
+                  target={"_self"}
+                >
+                  <Button className="w-full h-10 text-lg bg-mint text-black hover:bg-plum hover:text-black transition-colors">
+                    RELEASES
+                  </Button>
+                </Link>
+              )}
 
-              <Link
-                href="/"
-                className="w-full"
+              <Button
+                onClick={() =>
+                  sdk.actions.openUrl(
+                    "https://dexscreener.com/base/0x71182a44ca67eb9492d6476222ac15a73c2bd32c"
+                  )
+                }
+                className="w-full h-10 text-lg bg-mint text-black hover:bg-plum transition-colors"
               >
-                <Button className="w-full h-10 text-lg bg-mint text-black hover:bg-plum transition-colors">
-                  $ACID
-                </Button>
-              </Link>
+                $ACID
+              </Button>
 
               {isAdmin && (
                 <Link

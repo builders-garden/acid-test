@@ -57,22 +57,20 @@ export async function POST(request: NextRequest) {
       durationText = `${days} day${days !== 1 ? "s" : ""}`;
     }
 
-    // Format date for display (TODO: implement proper formatting)
-    const formattedStartDate = new Date(
-      startTimeInSeconds * 1000
-    ).toLocaleString();
+    const formattedStartDate =
+      new Date(startTimeInSeconds * 1000).toLocaleString("en-US", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "America/New_York",
+      }) + " ET";
 
     await Promise.all([
-      // When song goes live
-      sendDelayedNotificationToAll(
-        `${title} (AT${formattedTokenId}) is live now!`,
-        `Mint is open for ${durationText}. Grab yours and climb the leaderboard.`,
-        timeUntilStart
-      ),
-
       // 24 hours before song goes live
       sendDelayedNotificationToAll(
-        "Our debut song goes live tomorrow",
+        "Our debut song goes live tomorrow!",
         `Editions are $${price}. You can checkout in ETH or USDC. See you tomorrow at ${formattedStartDate}.`,
         timeUntilStart - oneDayInSeconds
       ),
@@ -84,26 +82,17 @@ export async function POST(request: NextRequest) {
         timeUntilStart - oneHourInSeconds
       ),
 
-      // When mint window closes
+      // When song goes live
       sendDelayedNotificationToAll(
-        `The AT${formattedTokenId} mint has officially closed.`,
-        `The secondary market is now live`,
-        timeUntilEnd
-      ),
-
-      // 24 hours after mint ends
-      sendDelayedNotificationBasedOnOwnership(
-        `Acid Test ${formattedTokenId} debuted yesterday!`,
-        `The mint window is closed, you can collect the song now on secondary.`,
-        tokenIdNumeric,
-        false,
-        timeUntilEnd + oneDayInSeconds
+        `${title} (AT${formattedTokenId}) is live now!`,
+        `Mint is open for ${durationText}. Grab yours and climb the leaderboard.`,
+        timeUntilStart
       ),
 
       // 30 minutes before mint closes (non-owners)
       sendDelayedNotificationBasedOnOwnership(
         `30 minutes left til' mint closes!`,
-        `Mint "${title}" and climb the leaderboard before time runs out`,
+        `Mint "${title}" and climb the leaderboard before time runs out.`,
         tokenIdNumeric,
         false,
         timeUntilEnd - thirtyMinutesInSeconds
@@ -112,10 +101,26 @@ export async function POST(request: NextRequest) {
       // 30 minutes before mint closes (owners)
       sendDelayedNotificationBasedOnOwnership(
         `30 minutes left til' mint closes!`,
-        `Check your position on the leaderboard!`,
+        `Check your position on the leaderboard.`,
         tokenIdNumeric,
         true,
         timeUntilEnd - thirtyMinutesInSeconds
+      ),
+
+      // When mint window closes
+      sendDelayedNotificationToAll(
+        `The AT${formattedTokenId} mint has officially closed.`,
+        `The secondary market is now live.`,
+        timeUntilEnd
+      ),
+
+      // 24 hours after mint ends
+      sendDelayedNotificationBasedOnOwnership(
+        `Acid Test ${formattedTokenId} debuted yesterday!`,
+        `The ${durationText} mint window is closed, you can collect the song now on secondary.`,
+        tokenIdNumeric,
+        false,
+        timeUntilEnd + oneDayInSeconds
       ),
     ]);
 

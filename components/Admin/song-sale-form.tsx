@@ -179,7 +179,7 @@ export default function SongSaleForm({
       if (value) {
         const [datePart, timePart] = value.split("T");
         const easternDate = new Date(
-          `${datePart}T${timePart || "00:00:00"}-05:00`
+          `${datePart}T${timePart || "00:00:00"}-04:00`
         );
         const utcDate = new Date(easternDate.toISOString());
         const timestamp = Math.floor(utcDate.getTime() / 1000);

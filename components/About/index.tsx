@@ -9,6 +9,7 @@ import copy from "@/public/images/copy_icon.svg";
 import { useState, useEffect } from "react";
 import { copyToClipboard } from "@/lib/utils";
 import { Header } from "../ui/header";
+import sdk from "@farcaster/frame-sdk";
 
 // const AcidTest_CA = process.env.NEXT_PUBLIC_ACID_ERC20_ADDRESS;
 const AcidTest_CA = "0x3A1609CEbE67C1d303954B5fb907bEF36213034B";
@@ -98,10 +99,12 @@ export default function AboutPage() {
               <span className="text-xl">$ACID</span>
             </div>
             <div className="flex -mt-1">
-              <a
-                href="https://dexscreener.com/base/0x1234567890abcdef"
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={() =>
+                  sdk.actions.openUrl(
+                    "https://dexscreener.com/base/0x71182a44ca67eb9492d6476222ac15a73c2bd32c"
+                  )
+                }
                 className="p-1 rounded bg-black hover:bg-[#AD82CD4D] transition-colors"
               >
                 <Image
@@ -111,11 +114,13 @@ export default function AboutPage() {
                   height={24}
                   className="rounded-sm"
                 />
-              </a>
-              <a
-                href="https://dexscreener.com/base/0x1234567890abcdef/chart"
-                target="_blank"
-                rel="noopener noreferrer"
+              </button>
+              <button
+                onClick={() =>
+                  sdk.actions.openUrl(
+                    "https://www.clanker.world/clanker/0x2e210c2D0f1B513dbA97aeaaB1D7F9fF38D8AA36"
+                  )
+                }
                 className="p-1 rounded bg-black hover:bg-[#AD82CD4D] transition-colors"
               >
                 <Image
@@ -125,11 +130,13 @@ export default function AboutPage() {
                   height={24}
                   className="rounded-sm"
                 />
-              </a>
-              <a
-                href="https://basescan.org/token/0x1234567890abcdef"
-                target="_blank"
-                rel="noopener noreferrer"
+              </button>
+              <button
+                onClick={() =>
+                  sdk.actions.openUrl(
+                    "https://basescan.org/token/0x2e210c2D0f1B513dbA97aeaaB1D7F9fF38D8AA36"
+                  )
+                }
                 className="p-1 rounded bg-black hover:bg-[#AD82CD4D] transition-colors"
               >
                 <Image
@@ -139,17 +146,19 @@ export default function AboutPage() {
                   height={24}
                   className="rounded-sm"
                 />
-              </a>
+              </button>
             </div>
           </div>
 
           <div className="space-y-4">
-            <div className="text-sm flex items-center gap-2">
+            <div className="flex text-sm items-center gap-2">
               <span className="text-white/60 text-[10.5px] flex items-center">
                 CA:
               </span>
-              <span className="text-[10.5px] flex items-center">
-                {AcidTest_CA?.toLowerCase()}
+              <span className="text-md flex items-center">
+                {`${AcidTest_CA?.slice(0, 8)}...${AcidTest_CA?.slice(
+                  -6
+                )}`.toLowerCase()}
               </span>
               <div className="relative flex items-center">
                 <button
@@ -200,67 +209,91 @@ export default function AboutPage() {
           <h2 className="text-xl font-mono mb-4">OFFICIAL LINKS</h2>
           <div className="grid grid-cols-2 gap-y-4 text-[14px]">
             <div className="space-y-4">
-              <a
-                href="https://acidtest.xyz/paper"
+              <button
+                onClick={() =>
+                  sdk.actions.openUrl("https://acidtest.xyz/paper")
+                }
                 className="block text-white hover:text-white/80 no-underline"
               >
                 ACIDPAPER
-              </a>
+              </button>
               <div className="flex items-center gap-2">
-                <a
-                  href="https://acidtest.xyz/docs"
+                <button
+                  onClick={() =>
+                    sdk.actions.openUrl("https://acidtest.xyz/docs")
+                  }
                   className="text-white hover:text-white/80 no-underline"
                 >
                   DOCS
-                </a>
+                </button>
                 <span className="text-[10px] text-black bg-[#606075] px-1">
                   COMING SOON
                 </span>
               </div>
-              <a
-                href="https://opensea.io/collection/acidtest"
+              <button
+                onClick={() =>
+                  sdk.actions.openUrl("https://opensea.io/collection/acidtest")
+                }
                 className="block text-white hover:text-white/80 no-underline"
               >
                 OPENSEA
-              </a>
+              </button>
               <div className="flex items-center gap-2">
-                <a
-                  href="https://basescan.org/address/0x1234567890abcdef"
+                <button
+                  onClick={() =>
+                    sdk.actions.openUrl(
+                      "https://basescan.org/token/0x2e210c2D0f1B513dbA97aeaaB1D7F9fF38D8AA36"
+                    )
+                  }
                   className="text-white hover:text-white/80 no-underline"
                 >
                   BASESCAN
-                </a>
-                <span className="text-[10px] text-black bg-[#606075] px-1 ">
-                  ACIDTEST NFTS
+                </button>
+                <span className="text-[10px] text-black bg-[#606075] px-1">
+                  NFTS
                 </span>
               </div>
             </div>
             <div className="space-y-4">
-              <a
-                href="https://twitter.com/acidtest"
+              <button
+                onClick={() =>
+                  sdk.actions.openUrl("https://twitter.com/acidtest")
+                }
                 className="block text-white hover:text-white/80 no-underline"
               >
                 TWITTER
-              </a>
-              <a
-                href="https://dexscreener.com/base/0x1234567890abcdef"
+              </button>
+              <button
+                onClick={() =>
+                  sdk.actions.openUrl(
+                    "https://dexscreener.com/base/0x71182a44ca67eb9492d6476222ac15a73c2bd32c"
+                  )
+                }
                 className="block text-white hover:text-white/80 no-underline"
               >
                 DEXSCREENER
-              </a>
-              <a
-                href="https://clanker.xyz/acidtest"
+              </button>
+              <button
+                onClick={() =>
+                  sdk.actions.openUrl(
+                    "https://www.clanker.world/clanker/0x2e210c2D0f1B513dbA97aeaaB1D7F9fF38D8AA36"
+                  )
+                }
                 className="block text-white hover:text-white/80 no-underline"
               >
                 CLANKER
-              </a>
+              </button>
               <div className="flex items-center gap-2">
-                <a
-                  href="https://basescan.org/token/0x1234567890abcdef"
+                <button
+                  onClick={() =>
+                    sdk.actions.openUrl(
+                      "https://basescan.org/token/0x2e210c2D0f1B513dbA97aeaaB1D7F9fF38D8AA36"
+                    )
+                  }
                   className="text-white hover:text-white/80 no-underline"
                 >
                   BASESCAN
-                </a>
+                </button>
                 <span className="text-[10px] text-black px-1 bg-[#606075]">
                   $ACID
                 </span>
