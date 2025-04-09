@@ -3,6 +3,7 @@ import { sdk } from "@farcaster/frame-sdk";
 import { MiniKit } from "@worldcoin/minikit-js";
 import { useCallback, useState, useEffect } from "react";
 import { ContextType, useMiniAppContext } from "./use-miniapp-context";
+import posthog from "posthog-js";
 
 const ADMINS = [
   1504, // chaim
@@ -124,6 +125,9 @@ export const useSignIn = () => {
 
       const data = await res.json();
       setIsSignedIn(true);
+      if (contextType === ContextType.Farcaster) {
+        posthog.identify(context?.user?.fid.toString());
+      }
       setIsLoading(false);
       setSigninIn(false);
       return data;

@@ -22,6 +22,10 @@ export const env = createEnv({
     NEXT_PUBLIC_GATEWAY_URL: z.string().min(1),
     NEXT_PUBLIC_SMART_CONTRACT_TEST_ADDRESS: z.string().min(1),
     NEXT_PUBLIC_SMART_CONTRACT_ADDRESS: z.string().min(1),
+    // PostHog
+    NEXT_PUBLIC_POSTHOG_KEY: z.string().min(1),
+    NEXT_PUBLIC_POSTHOG_HOST: z.string().min(1),
+    NEXT_PUBLIC_POSTHOG_DISABLED: z.string().optional(),
   },
   // For Next.js >= 13.4.4, you only need to destructure client variables:
   experimental__runtimeEnv: {
@@ -34,5 +38,9 @@ export const env = createEnv({
       process.env.NEXT_PUBLIC_SMART_CONTRACT_TEST_ADDRESS,
     NEXT_PUBLIC_SMART_CONTRACT_ADDRESS:
       process.env.NEXT_PUBLIC_SMART_CONTRACT_ADDRESS,
+    // PostHog
+    NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
+    NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+    NEXT_PUBLIC_POSTHOG_DISABLED: process.env.NEXT_PUBLIC_POSTHOG_DISABLED,
   },
 });

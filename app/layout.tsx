@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
 import localFont from "next/font/local";
 import { AppWrapper } from "@/components/app-wrapper";
+import { PHProvider } from "@/components/posthog-provider";
 
 const suisseIntlMono = localFont({
   src: "../public/fonts/SuisseIntlMono-Regular-WebS.ttf",
@@ -32,16 +33,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${suisseIntlMono.variable} font-mono`}>
-        <ErudaProvider>
-          <FrameProvider>
-            <MiniKitProvider>
-              <AudioPlayerProvider>
-                <AppWrapper>{children}</AppWrapper>
-                <Toaster />
-              </AudioPlayerProvider>
-            </MiniKitProvider>
-          </FrameProvider>
-        </ErudaProvider>
+        <PHProvider>
+          <ErudaProvider>
+            <FrameProvider>
+              <MiniKitProvider>
+                <AudioPlayerProvider>
+                  <AppWrapper>{children}</AppWrapper>
+                  <Toaster />
+                </AudioPlayerProvider>
+              </MiniKitProvider>
+            </FrameProvider>
+          </ErudaProvider>
+        </PHProvider>
       </body>
     </html>
   );
