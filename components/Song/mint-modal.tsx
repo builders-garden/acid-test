@@ -22,6 +22,7 @@ import { useMiniAppContext } from "@/hooks/use-miniapp-context";
 import { erc20Abi } from "viem";
 import { composeMintCastUrl, formatSongId, handleAddFrame } from "@/lib/utils";
 import sdk, { FrameNotificationDetails } from "@farcaster/frame-sdk";
+import { trackEvent } from "@/lib/posthog/client";
 
 interface MintModalProps {
   isOpen: boolean;
@@ -73,6 +74,8 @@ export function MintModal({
   const safePrice = price + price * 0.01;
 
   const { type: contextType, context } = useMiniAppContext();
+
+  const userFid = contextType === "farcaster" ? context.user.fid : undefined;
 
   const { data: balanceData } = useBalance({ address: userAddress });
 
@@ -270,10 +273,10 @@ export function MintModal({
         setMintState(MintState.Success);
 
         const signUpUser = async () => {
-          if (contextType === "farcaster" && context?.user?.fid) {
+          if (userFid) {
             try {
               const body = {
-                fid: context.user.fid,
+                fid: userFid,
                 notificationDetails: notificationDetails,
               };
 
@@ -296,7 +299,7 @@ export function MintModal({
         };
 
         const sendNotification = async () => {
-          if (contextType === "farcaster" && context?.user?.fid) {
+          if (userFid) {
             try {
               const leaderboardText = projectedUserPosition
                 ? `You currently hold the ${projectedUserPosition}${
@@ -319,7 +322,7 @@ export function MintModal({
                 } of ${songName}!`,
                 text: `${leaderboardText} Thank you!`,
                 delay: 0,
-                fids: [context.user.fid],
+                fids: [userFid],
               };
 
               const response = await fetch("/api/manual-notification", {
@@ -378,6 +381,13 @@ export function MintModal({
         await signUpUser();
         await createCollection();
         await sendNotification();
+        trackEvent("mint", {
+          fid: userFid,
+          tokenId: tokenId,
+          quantity: mintQuantity,
+          paymentMethod: paymentMethod,
+          totalUsd: usdPrice * mintQuantity,
+        });
       } else if (
         mintTxResult &&
         mintTxResult.status === "error" &&
@@ -396,7 +406,7 @@ export function MintModal({
   }, [songName, tokenId, mintQuantity]);
 
   const handleShareMintedSong = () => {
-    if (contextType === "farcaster" && context?.user?.fid) {
+    if (userFid) {
       sdk.actions.openUrl(castUrl);
     }
   };

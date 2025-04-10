@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
 import localFont from "next/font/local";
 import { AppWrapper } from "@/components/app-wrapper";
-import { PHProvider } from "@/components/posthog-provider";
+import { PostHogProvider } from "@/components/posthog-provider";
 
 const suisseIntlMono = localFont({
   src: "../public/fonts/SuisseIntlMono-Regular-WebS.ttf",
@@ -21,9 +21,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   const ErudaProvider = dynamic(
     () => import("../components/Eruda").then((c) => c.ErudaProvider),
     {
@@ -33,8 +31,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${suisseIntlMono.variable} font-mono`}>
-        <PHProvider>
-          <ErudaProvider>
+        <ErudaProvider>
+          <PostHogProvider>
             <FrameProvider>
               <MiniKitProvider>
                 <AudioPlayerProvider>
@@ -43,8 +41,8 @@ export default function RootLayout({
                 </AudioPlayerProvider>
               </MiniKitProvider>
             </FrameProvider>
-          </ErudaProvider>
-        </PHProvider>
+          </PostHogProvider>
+        </ErudaProvider>
       </body>
     </html>
   );

@@ -27,6 +27,7 @@ import { Check, Upload } from "lucide-react";
 import Image from "next/image";
 import copy from "@/public/images/copy.svg";
 import { Header } from "../ui/header";
+import { trackEvent } from "@/lib/posthog/client";
 
 export default function Song() {
   // State management
@@ -187,10 +188,21 @@ export default function Song() {
 
   const handlePlayPause = () => {
     if (isLoading || !metadata) return;
+
     if (isPlaying && currentSong.tokenId === tokenId) {
       pause();
+      trackEvent("song_paused", {
+        fid: userFid,
+        songId: tokenId,
+        songName: metadata.name,
+      });
     } else {
       play(metadata, tokenId);
+      trackEvent("song_played", {
+        fid: userFid,
+        songId: tokenId,
+        songName: metadata.name,
+      });
     }
   };
 

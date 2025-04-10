@@ -11,6 +11,8 @@ import { SongMetadata } from "@/types";
 import { fetchWithIPFSFallback, formatSongId } from "@/lib/utils";
 import QuestionMark from "@/public/images/question_mark.png";
 import { Header } from "../ui/header";
+import { trackEvent } from "@/lib/posthog/client";
+import { ContextType, useMiniAppContext } from "@/hooks/use-miniapp-context";
 
 interface TokenInfo {
   salesStartDate: number;
@@ -38,6 +40,10 @@ export default function SongsPage() {
   const [releases, setReleases] = useState<ReleaseBlock[]>([]);
   const [metadataLoading, setMetadataLoading] = useState(true);
   const [redactedSongs, setRedactedSongs] = useState<RedactedSong[]>([]);
+  const { type: contextType, context } = useMiniAppContext();
+
+  const userFid =
+    contextType === ContextType.Farcaster ? context.user.fid : undefined;
 
   const formatCountdown = (seconds: number) => {
     if (seconds <= 0) return "00:00:00";
@@ -198,6 +204,14 @@ export default function SongsPage() {
           href={`/songs/${release.index}`}
           key={release.id}
           className="w-full"
+          onClick={() => {
+            trackEvent("song_clicked", {
+              fid: userFid,
+              song_id: release.id,
+              song_title: release.title,
+              song_status: "live",
+            });
+          }}
         >
           {/* Existing Live Block UI */}
           <div className="border border-white/50 rounded-[8px] p-4 hover:bg-[#463B3A66] transition-colors w-full">
@@ -320,6 +334,14 @@ export default function SongsPage() {
           href={`/songs/${release.index}`}
           key={release.id}
           className="w-full"
+          onClick={() => {
+            trackEvent("song_clicked", {
+              fid: userFid,
+              song_id: release.id,
+              song_title: release.title,
+              song_status: "ended",
+            });
+          }}
         >
           {/* Existing Ended Block UI */}
           <div className="border border-white/50 rounded-[8px] p-4 hover:bg-[#463B3A66] transition-colors w-full">
