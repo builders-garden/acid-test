@@ -326,7 +326,7 @@ export default function SongSaleForm({
           audioFileUrl: audioBlob.url,
           imageFileUrl: imageBlob.url,
           title: formData.title,
-          description: "Acid test hit",
+          description: "Acid Test",
         }),
       });
 

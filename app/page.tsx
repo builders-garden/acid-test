@@ -24,7 +24,8 @@ export async function generateMetadata(): Promise<Metadata> {
     title: "Acid Test",
     openGraph: {
       title: "Acid Test",
-      description: "Mint and listen to Acid Test.",
+      description:
+        "ACIDTEST is an onchain radio show bringing music, conversation and creative energy to Farcaster. Hosted by chaim.eth.",
     },
     other: {
       "fc:frame": JSON.stringify(frame),
