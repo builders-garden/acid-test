@@ -19,6 +19,7 @@ export const Header: React.FC<HeaderProps> = ({ userAddedFrameOnAction }) => {
   const isSongsPage = pathname === "/songs";
   const isAboutPage = pathname === "/about";
   const { type: contextType, context } = useMiniAppContext();
+  const [loading, setLoading] = useState<boolean>(true);
   const [userAddedFrame, setUserAddedFrame] = useState<boolean>(false);
   const { isPrelaunch } = usePrelaunchState();
 
@@ -30,6 +31,7 @@ export const Header: React.FC<HeaderProps> = ({ userAddedFrameOnAction }) => {
 
         if (result?.data?.notificationDetails) {
           setUserAddedFrame(true);
+          setLoading(false);
           return;
         }
 
@@ -52,8 +54,8 @@ export const Header: React.FC<HeaderProps> = ({ userAddedFrameOnAction }) => {
           }
         }
       }
+      setLoading(false);
     };
-
     fetchUser();
   }, [contextType, context]);
 
@@ -70,12 +72,13 @@ export const Header: React.FC<HeaderProps> = ({ userAddedFrameOnAction }) => {
   useEffect(() => {
     if (userAddedFrameOnAction) {
       setUserAddedFrame(true);
+      setLoading(false);
     }
   }, [userAddedFrameOnAction]);
 
   return (
     <div className="w-full max-w-md flex justify-between items-center mb-6">
-      <Link href="/">
+      <Link href="/?from=internal">
         <Image
           src={Logo}
           alt="ACID TEST"
@@ -83,9 +86,12 @@ export const Header: React.FC<HeaderProps> = ({ userAddedFrameOnAction }) => {
         />
       </Link>
       <div className="flex space-x-2">
-        {userAddedFrame === null ? (
+        {loading || userAddedFrame === null ? (
           // Loading state
-          <div className="w-9 h-9 bg-white/10 animate-pulse rounded-md"></div>
+          <div className="flex space-x-2">
+            <div className="w-9 h-9 bg-white/10 animate-pulse rounded-md"></div>
+            <div className="w-9 h-9 bg-white/10 animate-pulse rounded-md"></div>
+          </div>
         ) : userAddedFrame ? (
           isPrelaunch ? (
             <></>

@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { LoadingScreen } from "../ui/loading-screen";
 import { Header } from "../ui/header";
 import sdk from "@farcaster/frame-sdk";
+import { useSearchParams } from "next/navigation";
 
 interface TokenInfo {
   salesStartDate: number;
@@ -34,6 +35,8 @@ interface ReleaseBlock {
 
 export default function Home() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const fromInternalNav = searchParams.get("from") === "internal";
   const { isAdmin } = useSignIn();
   const [isLoadingSongs, setIsLoadingSongs] = useState(true);
   const { isPrelaunch, isLoading: isPrelaunchLoading } = usePrelaunchState();
@@ -113,17 +116,19 @@ export default function Home() {
             (item): item is NonNullable<typeof item> => item !== null
           );
 
-          // Find the first live song
-          const firstLiveSong = filteredReleases.find(
-            (song) => song.status === "live"
-          );
-          // Redirect to the first live song's page if there is one and we're not in prelaunch
-          if (firstLiveSong) {
-            router.push(`/songs/${firstLiveSong.index}`);
-          } else {
-            setIsLoadingSongs(false);
-            setIsPageLoading(false);
+          // Only check for redirect if not coming from internal navigation
+          if (!fromInternalNav) {
+            const firstLiveSong = filteredReleases.find(
+              (song) => song.status === "live"
+            );
+            if (firstLiveSong) {
+              router.push(`/songs/${firstLiveSong.index}`);
+              return;
+            }
           }
+
+          setIsLoadingSongs(false);
+          setIsPageLoading(false);
         } catch (error) {
           console.error("Error processing release data:", error);
           setIsLoadingSongs(false);
@@ -146,6 +151,7 @@ export default function Home() {
     isPrelaunch,
     isPrelaunchLoading,
     router,
+    fromInternalNav,
   ]);
 
   // Show loader while checking initial states
