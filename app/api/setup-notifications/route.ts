@@ -34,10 +34,9 @@ export async function POST(request: NextRequest) {
     const currentTimeInSeconds = Date.now() / 1000;
     const startTimeInSeconds = Number(startDate);
     const endTimeInSeconds = Number(endDate);
-    const differenceInSeconds = endTimeInSeconds - startTimeInSeconds;
 
     // Format token ID consistently
-    const formattedTokenId = tokenId.toString().padStart(3, "0");
+    const formattedTokenId = tokenId.padStart(3, "0");
     const tokenIdNumeric = Number(tokenId);
 
     // Calculate time until key events
@@ -45,82 +44,31 @@ export async function POST(request: NextRequest) {
     const timeUntilEnd = endTimeInSeconds - currentTimeInSeconds;
     const oneHourInSeconds = 60 * 60;
     const oneDayInSeconds = 24 * oneHourInSeconds;
+    const twoDaysInSeconds = 2 * oneDayInSeconds;
     const thirtyMinutesInSeconds = 30 * 60;
 
-    // Generate human-readable duration text
-    let durationText;
-    if (differenceInSeconds <= oneDayInSeconds) {
-      const hours = Math.round(differenceInSeconds / oneHourInSeconds);
-      durationText = `${hours} hour${hours !== 1 ? "s" : ""}`;
-    } else {
-      const days = Math.round(differenceInSeconds / oneDayInSeconds);
-      durationText = `${days} day${days !== 1 ? "s" : ""}`;
-    }
-
-    const formattedStartDate =
-      new Date(startTimeInSeconds * 1000).toLocaleString("en-US", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        timeZone: "America/New_York",
-      }) + " ET";
-
     await Promise.all([
-      // 24 hours before song goes live
-      sendDelayedNotificationToAll(
-        "Our debut song goes live tomorrow!",
-        `Editions are $${price}. You can checkout in ETH or USDC. See you tomorrow at ${formattedStartDate}.`,
-        timeUntilStart - oneDayInSeconds
-      ),
-
-      // 1 hour before song goes live
-      sendDelayedNotificationToAll(
-        "1 hour til' AT debut!",
-        `AT${formattedTokenId}. Live in 1 hour on Acid Test.`,
-        timeUntilStart - oneHourInSeconds
-      ),
-
       // When song goes live
       sendDelayedNotificationToAll(
-        `${title} (AT${formattedTokenId}) is live now!`,
-        `Mint is open for ${durationText}. Grab yours and climb the leaderboard.`,
+        `Acid Test Episode ${tokenId} is live!`,
+        `We just released AT${formattedTokenId}: "${title}". Listen now!`,
         timeUntilStart
       ),
 
-      // 30 minutes before mint closes (non-owners)
-      sendDelayedNotificationBasedOnOwnership(
-        `30 minutes left til' mint closes!`,
-        `Mint "${title}" and climb the leaderboard before time runs out.`,
-        tokenIdNumeric,
-        false,
-        timeUntilEnd - thirtyMinutesInSeconds
-      ),
-
-      // 30 minutes before mint closes (owners)
-      sendDelayedNotificationBasedOnOwnership(
-        `30 minutes left til' mint closes!`,
-        `Check your position on the leaderboard.`,
-        tokenIdNumeric,
-        true,
-        timeUntilEnd - thirtyMinutesInSeconds
-      ),
-
-      // When mint window closes
+      // 30 minutes before mint ends
       sendDelayedNotificationToAll(
-        `The AT${formattedTokenId} mint has officially closed.`,
-        `The secondary market is now live.`,
-        timeUntilEnd
+        `30 minutes left til' mint closes!`,
+        `Last chance to mint Acid Test Episode ${tokenId}: "${title}".`,
+        timeUntilEnd - thirtyMinutesInSeconds
       ),
 
-      // 24 hours after mint ends
+      // 48 hours after mint ends (non-owners)
       sendDelayedNotificationBasedOnOwnership(
-        `Acid Test ${formattedTokenId} debuted yesterday!`,
-        `The ${durationText} mint window is closed, you can collect the song now on secondary.`,
+        `ICYMI: Acid Test Ep. ${tokenId} is out!`,
+        `AT${formattedTokenId}: "${title}" is out now. Listen in the Acid Test Mini App!`,
         tokenIdNumeric,
         false,
-        timeUntilEnd + oneDayInSeconds
+        timeUntilEnd + twoDaysInSeconds
       ),
     ]);
 
