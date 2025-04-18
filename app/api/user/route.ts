@@ -1,4 +1,5 @@
 import { fetchUser } from "@/lib/neynar";
+import { trackEvent } from "@/lib/posthog/server";
 import {
   createUser,
   getUser,
@@ -69,7 +70,9 @@ export async function POST(request: NextRequest) {
           : null,
       };
       await createUser(newUser);
-      // TODO: Track signup event
+      trackEvent(fid, "signup", {
+        fid,
+      });
     } else if (
       notificationDetails &&
       (user.notificationDetails === null ||

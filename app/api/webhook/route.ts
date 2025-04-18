@@ -1,5 +1,6 @@
 import { fetchUser } from "@/lib/neynar";
 import { sendFrameNotification } from "@/lib/notifs";
+import { trackEvent } from "@/lib/posthog/server";
 import {
   createUser,
   deleteUserNotificationDetails,
@@ -64,7 +65,9 @@ export async function POST(request: NextRequest) {
             notificationDetails: JSON.stringify(event.notificationDetails),
           };
           await createUser(newUser);
-          // TODO: Track signup event
+          trackEvent(fid, "signup", {
+            fid,
+          });
         } else {
           await setUserNotificationDetails(fid, event.notificationDetails);
         }
