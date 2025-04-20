@@ -217,19 +217,6 @@ export default function AboutPage() {
               >
                 ACIDPAPER
               </button>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() =>
-                    sdk.actions.openUrl("https://acidtest.xyz/docs")
-                  }
-                  className="text-white hover:text-white/80 no-underline"
-                >
-                  DOCS
-                </button>
-                <span className="text-[10px] text-black bg-[#606075] px-1">
-                  COMING SOON
-                </span>
-              </div>
               <button
                 onClick={() =>
                   sdk.actions.openUrl("https://opensea.io/collection/acidtest")
@@ -251,6 +238,21 @@ export default function AboutPage() {
                 </button>
                 <span className="text-[10px] text-black bg-[#606075] px-1">
                   NFTS
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() =>
+                    sdk.actions.openUrl(
+                      "https://basescan.org/token/0x2e210c2D0f1B513dbA97aeaaB1D7F9fF38D8AA36"
+                    )
+                  }
+                  className="text-white hover:text-white/80 no-underline"
+                >
+                  BASESCAN
+                </button>
+                <span className="text-[10px] text-black px-1 bg-[#606075]">
+                  $ACID
                 </span>
               </div>
             </div>
@@ -283,21 +285,6 @@ export default function AboutPage() {
               >
                 CLANKER
               </button>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() =>
-                    sdk.actions.openUrl(
-                      "https://basescan.org/token/0x2e210c2D0f1B513dbA97aeaaB1D7F9fF38D8AA36"
-                    )
-                  }
-                  className="text-white hover:text-white/80 no-underline"
-                >
-                  BASESCAN
-                </button>
-                <span className="text-[10px] text-black px-1 bg-[#606075]">
-                  $ACID
-                </span>
-              </div>
             </div>
           </div>
         </div>

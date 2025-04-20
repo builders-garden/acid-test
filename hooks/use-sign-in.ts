@@ -10,6 +10,7 @@ const ADMINS = [
   5698, // caso
   266506, // drone
   16286, // frank
+  978372, // acid test
 ];
 
 export const useSignIn = () => {

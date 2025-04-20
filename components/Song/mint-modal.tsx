@@ -545,16 +545,13 @@ export function MintModal({
                       <div>
                         {paymentMethod === "ETH"
                           ? `${(safePrice * mintQuantity).toFixed(6)} ETH`
-                          : `${(usdPrice * mintQuantity).toFixed(3)} USDC`}
+                          : `${usdPrice * mintQuantity} USDC`}
                       </div>
                       <div className="text-white/60 text-xs">
-                        {paymentMethod === "ETH"
-                          ? `$${(safePrice * mintQuantity * ethUsd).toFixed(
-                              2
-                            )} USD`
-                          : `${((usdPrice * mintQuantity) / ethUsd).toFixed(
-                              6
-                            )} ETH`}
+                        {paymentMethod === "ETH" &&
+                          `$${(safePrice * mintQuantity * ethUsd).toFixed(
+                            2
+                          )} USD`}
                       </div>
                     </div>
                   </div>

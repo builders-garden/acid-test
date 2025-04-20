@@ -46,13 +46,16 @@ export default function SongsPage() {
     contextType === ContextType.Farcaster ? context.user.fid : undefined;
 
   const formatCountdown = (seconds: number) => {
-    if (seconds <= 0) return "00:00:00";
+    if (seconds <= 0) return "00:00:00:00";
 
-    const totalHours = Math.floor(seconds / 3600);
+    const days = Math.floor(seconds / (3600 * 24));
+    const totalHours = Math.floor((seconds % (3600 * 24)) / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = seconds % 60;
 
-    return `${totalHours.toString().padStart(2, "0")}:${minutes
+    return `${days.toString().padStart(2, "0")}:${totalHours
+      .toString()
+      .padStart(2, "0")}:${minutes
       .toString()
       .padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
   };

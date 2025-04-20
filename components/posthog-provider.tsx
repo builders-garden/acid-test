@@ -13,6 +13,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       ui_host: "https://us.posthog.com",
       capture_pageview: false, // We capture pageviews manually
       capture_pageleave: false, // Enable pageleave capture
+      autocapture: false, // Disable automatic event capture
       person_profiles: "identified_only",
     });
   }, []);

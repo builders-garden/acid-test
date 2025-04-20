@@ -77,7 +77,7 @@ export const Header: React.FC<HeaderProps> = ({ userAddedFrameOnAction }) => {
   }, [userAddedFrameOnAction]);
 
   return (
-    <div className="w-full max-w-md flex justify-between items-center mb-6">
+    <div className="w-full max-w-md flex justify-between items-center mb-6 h-[36.5px]">
       <Link href="/?from=internal">
         <Image
           src={Logo}
@@ -92,7 +92,7 @@ export const Header: React.FC<HeaderProps> = ({ userAddedFrameOnAction }) => {
             <div className="w-9 h-9 bg-white/10 animate-pulse rounded-md"></div>
             <div className="w-9 h-9 bg-white/10 animate-pulse rounded-md"></div>
           </div>
-        ) : userAddedFrame ? (
+        ) : userAddedFrame || pathname !== "/" ? (
           isPrelaunch ? (
             <></>
           ) : (
@@ -138,9 +138,9 @@ export const Header: React.FC<HeaderProps> = ({ userAddedFrameOnAction }) => {
             onClick={handleAddFrameAndRefresh}
             variant="outline"
             size="icon"
-            className="w-full h-7 px-2 py-1 rounded-md border-[0.5px] border-white/60 bg-black hover:bg-[#AD82CD4D]"
+            className="w-full h-7 px-2 py-1 rounded-md border-[0.5px] border-white/60 bg-black hover:bg-[#AD82CD4D] hover:text-white"
           >
-            ADD FRAME
+            ADD MINIAPP
           </Button>
         )}
       </div>
