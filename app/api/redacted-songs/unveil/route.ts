@@ -13,7 +13,7 @@ export async function POST() {
     if (!oldestRedactedSong) {
       return NextResponse.json(
         { error: "No redacted songs available to unveil" },
-        { status: 404 }
+        { status: 200 }
       );
     }
 

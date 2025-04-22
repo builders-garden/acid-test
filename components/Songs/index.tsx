@@ -210,9 +210,9 @@ export default function SongsPage() {
           onClick={() => {
             trackEvent("song_clicked", {
               fid: userFid,
-              song_id: release.id,
-              song_title: release.title,
-              song_status: "live",
+              songId: release.id,
+              songTitle: release.title,
+              songStatus: "live",
             });
           }}
         >

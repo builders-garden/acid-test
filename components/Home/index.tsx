@@ -180,7 +180,9 @@ export default function Home() {
               {isPrelaunch ? (
                 <Button
                   onClick={() =>
-                    sdk.actions.openUrl("https://pdfobject.com/pdf/sample.pdf")
+                    sdk.actions.openUrl(
+                      "https://www.dropbox.com/scl/fi/mrxhuz7csxnes7bclhtzg/Acidpaper.pdf?rlkey=yjfo4id6wqahvrwn5xikue8c2&dl=0%5C"
+                    )
                   }
                   className="w-full h-10 text-lg bg-mint text-black hover:bg-plum hover:text-black transition-colors"
                 >

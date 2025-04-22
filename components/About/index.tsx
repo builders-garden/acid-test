@@ -211,7 +211,9 @@ export default function AboutPage() {
             <div className="space-y-4">
               <button
                 onClick={() =>
-                  sdk.actions.openUrl("https://acidtest.xyz/paper")
+                  sdk.actions.openUrl(
+                    "https://www.dropbox.com/scl/fi/mrxhuz7csxnes7bclhtzg/Acidpaper.pdf?rlkey=yjfo4id6wqahvrwn5xikue8c2&dl=0%5C"
+                  )
                 }
                 className="block text-white hover:text-white/80 no-underline"
               >
@@ -259,7 +261,7 @@ export default function AboutPage() {
             <div className="space-y-4">
               <button
                 onClick={() =>
-                  sdk.actions.openUrl("https://twitter.com/acidtest")
+                  sdk.actions.openUrl("https://x.com/acid____test")
                 }
                 className="block text-white hover:text-white/80 no-underline"
               >

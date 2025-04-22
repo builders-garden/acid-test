@@ -383,7 +383,7 @@ export function MintModal({
         await sendNotification();
         trackEvent("mint", {
           fid: userFid,
-          tokenId: tokenId,
+          songId: tokenId,
           quantity: mintQuantity,
           paymentMethod: paymentMethod,
           totalUsd: usdPrice * mintQuantity,

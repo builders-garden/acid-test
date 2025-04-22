@@ -59,22 +59,28 @@ export default function SongSaleForm({
 
   const [formData, setFormData] = useState<{
     title: string;
+    description: string;
     startDate: number;
     endDate: number;
     price: number;
+    priceReceiverAddress: string;
+    royaltyReceiverAddress: string;
+    royaltyFeeAmount: number;
     audioFile: File | null;
     coverImage: File | null;
     isNewRedactedSong: boolean;
-    isUnveilingSong: boolean;
   }>({
     title: "",
+    description: "",
     startDate: 0,
     endDate: 0,
     price: 0,
+    priceReceiverAddress: "",
+    royaltyReceiverAddress: "",
+    royaltyFeeAmount: 0,
     audioFile: null,
     coverImage: null,
     isNewRedactedSong: false,
-    isUnveilingSong: false,
   });
 
   const [displayValues, setDisplayValues] = useState({
@@ -231,16 +237,6 @@ export default function SongSaleForm({
 
   const handleRedactedCheckboxChange = (name: string, checked: boolean) => {
     setFormData((prev) => ({ ...prev, [name]: checked }));
-
-    // If creating a new redacted song, disable unveiling option
-    if (name === "isNewRedactedSong" && checked) {
-      setFormData((prev) => ({ ...prev, isUnveilingSong: false }));
-    }
-
-    // If unveiling a song, disable creating a new redacted option
-    if (name === "isUnveilingSong" && checked) {
-      setFormData((prev) => ({ ...prev, isNewRedactedSong: false }));
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -326,7 +322,7 @@ export default function SongSaleForm({
           audioFileUrl: audioBlob.url,
           imageFileUrl: imageBlob.url,
           title: formData.title,
-          description: "Acid Test",
+          description: formData.description,
         }),
       });
 
@@ -344,7 +340,7 @@ export default function SongSaleForm({
       setModalMessage("Upload successful!");
 
       // If unveiling a song, call the unveil API
-      if (formData.isUnveilingSong) {
+      if (!formData.isNewRedactedSong) {
         try {
           const unveilResponse = await fetch("/api/redacted-songs/unveil", {
             method: "POST",
@@ -383,6 +379,9 @@ export default function SongSaleForm({
             formData.endDate,
             BigInt(formData.price),
             uploadResult.metadataUrl,
+            // formData.priceReceiverAddress as `0x${string}`,
+            // formData.royaltyReceiverAddress as `0x${string}`,
+            // formData.royaltyFeeAmount,
           ],
         });
       }, 2000);
@@ -423,25 +422,6 @@ export default function SongSaleForm({
         <p className="text-xs text-white/60 mb-4">
           Creates a placeholder for a future song release
         </p>
-
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="isUnveilingSong"
-            checked={formData.isUnveilingSong}
-            onCheckedChange={(checked) =>
-              handleRedactedCheckboxChange("isUnveilingSong", checked === true)
-            }
-          />
-          <label
-            htmlFor="isUnveilingSong"
-            className="text-sm font-medium leading-none"
-          >
-            Unveil a redacted song
-          </label>
-        </div>
-        <p className="text-xs text-white/60">
-          This song will replace the oldest redacted placeholder
-        </p>
       </div>
 
       {/* Hide the song details form if only creating a redacted placeholder */}
@@ -460,6 +440,84 @@ export default function SongSaleForm({
               value={formData.title}
               onChange={handleChange}
               required={!formData.isNewRedactedSong}
+              className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="description"
+              className="block mb-1 text-sm text-white/80"
+            >
+              Description
+            </label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
+              required
+              className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white"
+              rows={3}
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="priceReceiverAddress"
+              className="block mb-1 text-sm text-white/80"
+            >
+              Price Receiver Address
+            </label>
+            <input
+              type="text"
+              name="priceReceiverAddress"
+              value={formData.priceReceiverAddress}
+              onChange={handleChange}
+              required
+              pattern="^0x[a-fA-F0-9]{40}$"
+              className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="royaltyReceiverAddress"
+              className="block mb-1 text-sm text-white/80"
+            >
+              Royalty Receiver Address
+            </label>
+            <input
+              type="text"
+              name="royaltyReceiverAddress"
+              value={formData.royaltyReceiverAddress}
+              onChange={handleChange}
+              required
+              pattern="^0x[a-fA-F0-9]{40}$"
+              className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="royaltyFeeAmount"
+              className="block mb-1 text-sm text-white/80"
+            >
+              Royalty Fee (%)
+            </label>
+            <input
+              type="number"
+              name="royaltyFeeAmount"
+              value={formData.royaltyFeeAmount}
+              onChange={handleChange}
+              required
+              min="0"
+              max="100"
+              step="1"
               className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white"
             />
           </div>
