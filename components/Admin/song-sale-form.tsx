@@ -379,9 +379,9 @@ export default function SongSaleForm({
             formData.endDate,
             BigInt(formData.price),
             uploadResult.metadataUrl,
-            // formData.priceReceiverAddress as `0x${string}`,
-            // formData.royaltyReceiverAddress as `0x${string}`,
-            // formData.royaltyFeeAmount,
+            formData.priceReceiverAddress as `0x${string}`,
+            formData.royaltyReceiverAddress as `0x${string}`,
+            BigInt(formData.royaltyFeeAmount * 100), // royalty fee is in basis 100 --> 10% == 1000
           ],
         });
       }, 2000);
@@ -507,7 +507,7 @@ export default function SongSaleForm({
               htmlFor="royaltyFeeAmount"
               className="block mb-1 text-sm text-white/80"
             >
-              Royalty Fee (%)
+              Royalty Fee % (e.g. 1 = 1%)
             </label>
             <input
               type="number"

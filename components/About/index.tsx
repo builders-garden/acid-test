@@ -11,7 +11,6 @@ import { copyToClipboard } from "@/lib/utils";
 import { Header } from "../ui/header";
 import sdk from "@farcaster/frame-sdk";
 
-// const AcidTest_CA = process.env.NEXT_PUBLIC_ACID_ERC20_ADDRESS;
 const AcidTest_CA = "0x3A1609CEbE67C1d303954B5fb907bEF36213034B";
 
 interface DexScreenerData {
@@ -76,12 +75,8 @@ export default function AboutPage() {
         {/* Main Description */}
         <div className="flex flex-col gap-4">
           <p className="text-md leading-relaxed">
-            ACIDTEST is an electronic music and interactive cryptocurrency
-            project built on Farcaster.
-          </p>
-          <p className="text-md leading-relaxed">
-            Everytime an ACIDTEST song is minted, 50% of the revenue goes to
-            buying back $ACID on the open market.
+            ACID TEST is a radio show bringing music, conversation and creative
+            energy to Farcaster.
           </p>
         </div>
 
