@@ -6,12 +6,12 @@
   },
   "frame": {
     "version": "1",
-    "name": "Example Frame",
-    "iconUrl": "https://acidtest.xyz/icon.png",
+    "name": "Acid Test",
+    "iconUrl": "https://acidtest.xyz/images/icon.png",
     "homeUrl": "https://acidtest.xyz",
-    "imageUrl": "https://acidtest.xyz/image.png",
-    "buttonTitle": "Check this out",
-    "splashImageUrl": "https://acidtest.xyz/splash.png",
+    "imageUrl": "https://acidtest.xyz/images/feed.jpg",
+    "buttonTitle": "Start Acid Test",
+    "splashImageUrl": "https://acidtest.xyz/images/icon.png",
     "splashBackgroundColor": "#eeccff",
     "webhookUrl": "https://acidtest.xyz/api/webhook"
   }
