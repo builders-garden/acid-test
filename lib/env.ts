@@ -21,7 +21,6 @@ export const env = createEnv({
       .enum(["development", "production"])
       .optional()
       .default("development"),
-    NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID: z.string().min(1),
     NEXT_PUBLIC_GATEWAY_URL: z.string().min(1),
     NEXT_PUBLIC_SMART_CONTRACT_ADDRESS: z.string().min(1),
     // PostHog
@@ -33,8 +32,6 @@ export const env = createEnv({
   experimental__runtimeEnv: {
     NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
     NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV,
-    NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID:
-      process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID,
     NEXT_PUBLIC_GATEWAY_URL: process.env.NEXT_PUBLIC_GATEWAY_URL,
     NEXT_PUBLIC_SMART_CONTRACT_ADDRESS:
       process.env.NEXT_PUBLIC_SMART_CONTRACT_ADDRESS,
