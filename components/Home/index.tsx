@@ -181,7 +181,7 @@ export default function Home() {
                 <Button
                   onClick={() =>
                     sdk.actions.openUrl(
-                      "https://www.dropbox.com/scl/fi/mrxhuz7csxnes7bclhtzg/Acidpaper.pdf?rlkey=yjfo4id6wqahvrwn5xikue8c2&dl=0%5C"
+                      "https://bafybeihatabk7kagjnwz2xo7ocaphnl3pblcgjikxmoqhsrl4erwwslgqq.ipfs.dweb.link/#x-ipfs-companion-no-redirect"
                     )
                   }
                   className="w-full h-10 text-lg bg-mint text-black hover:bg-plum hover:text-black transition-colors"

@@ -207,7 +207,7 @@ export default function AboutPage() {
               <button
                 onClick={() =>
                   sdk.actions.openUrl(
-                    "https://www.dropbox.com/scl/fi/mrxhuz7csxnes7bclhtzg/Acidpaper.pdf?rlkey=yjfo4id6wqahvrwn5xikue8c2&dl=0%5C"
+                    "https://bafybeihatabk7kagjnwz2xo7ocaphnl3pblcgjikxmoqhsrl4erwwslgqq.ipfs.dweb.link/#x-ipfs-companion-no-redirect"
                   )
                 }
                 className="block text-white hover:text-white/80 no-underline"
