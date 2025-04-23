@@ -1,18 +1,18 @@
 {
   "accountAssociation": {
-    "header": "eyJmaWQiOjU2OTgsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHg5Qzk1QjM1M2MxMDM5RTQzNUM5MTE1NzM3MjBhNGU2MmY4ZTBhYmNhIn0",
-    "payload": "eyJkb21haW4iOiJhY2lkLXRlc3QudmVyY2VsLmFwcCJ9",
-    "signature": "MHhjNTRjOWEyZjdjNmY5YjZkOTIwMzQzOWY2YTJlMWRjY2Y5N2I0MTdmNzhmOGEyZDc1MmQ4NDVjNDc1MmI1OWQ4NjdmODE2NzJkZDdhY2U0MzcxODUwN2E4YWYwMjA1YmVlN2U5ZGQwYTFiYzA3YzQwNGM2YzdjYzZmMzMwOGUzNzFj"
+    "header": "eyJmaWQiOjE1MDQsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHhjMmE3OWZjNzQxRDlEOTRiM0UxODZBRTRFMDMxNTE3MTY5MkZhQzFDIn0",
+    "payload": "eyJkb21haW4iOiJhY2lkdGVzdC54eXoifQ",
+    "signature": "MHg2NDNlM2I1OGI5OTgxY2YxMmJmZjQ4ZTY0YzBmM2I4YmI2NzczY2ViNmMwZWVjYmYyYzM1ZmI5MmZhZTY4YmU5N2QzYmI2NDE4NzQ2YmE4YWM4ZDQ5YzFmZWJmYjM3OGRhN2ZjZGE5MWM4YzEyZjJiODdlYzczYzY5MjdiYWFlMTFi"
   },
   "frame": {
     "version": "1",
-    "name": "Acid Test",
-    "iconUrl": "https://acid-test.vercel.app/images/icon.png",
-    "homeUrl": "https://acid-test.vercel.app",
-    "imageUrl": "https://acid-test.vercel.app/images/feed.jpg",
-    "buttonTitle": "Start Acid Test",
-    "splashImageUrl": "https://acid-test.vercel.app/images/icon.png",
-    "splashBackgroundColor": "#000000",
-    "webhookUrl": "https://acid-test.vercel.app/api/webhook"
+    "name": "Example Frame",
+    "iconUrl": "https://acidtest.xyz/icon.png",
+    "homeUrl": "https://acidtest.xyz",
+    "imageUrl": "https://acidtest.xyz/image.png",
+    "buttonTitle": "Check this out",
+    "splashImageUrl": "https://acidtest.xyz/splash.png",
+    "splashBackgroundColor": "#eeccff",
+    "webhookUrl": "https://acidtest.xyz/api/webhook"
   }
 }
