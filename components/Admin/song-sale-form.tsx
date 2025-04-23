@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useReadContract } from "wagmi";
 import { Checkbox } from "@/components/ui/checkbox";
 import { upload } from "@vercel/blob/client";
+import { CONTRACT_ADDRESS } from "@/lib/constants";
 
 interface SongSaleFormProps {
   setModalOpen: (open: boolean) => void;
@@ -24,16 +25,10 @@ export default function SongSaleForm({
   const [tokenCounter, setTokenCounter] = useState<number | undefined>(
     undefined
   );
-  let contractAddress;
-  if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
-    contractAddress = process.env.NEXT_PUBLIC_SMART_CONTRACT_TEST_ADDRESS;
-  } else {
-    contractAddress = process.env.NEXT_PUBLIC_SMART_CONTRACT_ADDRESS;
-  }
 
   const getIdCounter = useReadContract({
     abi: AcidTestABI,
-    address: contractAddress as `0x${string}`,
+    address: CONTRACT_ADDRESS,
     functionName: "idCounter",
     args: [],
     query: {
@@ -371,7 +366,7 @@ export default function SongSaleForm({
         setModalMessage("Pending transaction");
 
         writeContract_create({
-          address: contractAddress as `0x${string}`,
+          address: CONTRACT_ADDRESS,
           abi: AcidTestABI,
           functionName: "create",
           args: [

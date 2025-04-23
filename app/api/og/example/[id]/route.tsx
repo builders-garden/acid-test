@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import { loadGoogleFont, loadImage } from "@/lib/og-utils";
 import { ImageResponse } from "next/og";
 
@@ -31,7 +32,7 @@ export async function GET(
     const { id } = await params;
 
     // Get the application's base URL from environment variables
-    const appUrl = process.env.NEXT_PUBLIC_URL;
+    const appUrl = env.NEXT_PUBLIC_URL;
 
     // Load the logo image from the public directory
     const logoImage = await loadImage(`${appUrl}/images/icon.png`);

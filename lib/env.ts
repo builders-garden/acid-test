@@ -12,6 +12,8 @@ export const env = createEnv({
     QSTASH_CURRENT_SIGNING_KEY: z.string().min(1),
     QSTASH_NEXT_SIGNING_KEY: z.string().min(1),
     BLOB_READ_WRITE_TOKEN: z.string().min(1),
+    TURSO_DATABASE_URL: z.string().min(1),
+    TURSO_AUTH_TOKEN: z.string().min(1),
   },
   client: {
     NEXT_PUBLIC_URL: z.string().min(1),
@@ -21,7 +23,6 @@ export const env = createEnv({
       .default("development"),
     NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID: z.string().min(1),
     NEXT_PUBLIC_GATEWAY_URL: z.string().min(1),
-    NEXT_PUBLIC_SMART_CONTRACT_TEST_ADDRESS: z.string().min(1),
     NEXT_PUBLIC_SMART_CONTRACT_ADDRESS: z.string().min(1),
     // PostHog
     NEXT_PUBLIC_POSTHOG_KEY: z.string().min(1),
@@ -35,8 +36,6 @@ export const env = createEnv({
     NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID:
       process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID,
     NEXT_PUBLIC_GATEWAY_URL: process.env.NEXT_PUBLIC_GATEWAY_URL,
-    NEXT_PUBLIC_SMART_CONTRACT_TEST_ADDRESS:
-      process.env.NEXT_PUBLIC_SMART_CONTRACT_TEST_ADDRESS,
     NEXT_PUBLIC_SMART_CONTRACT_ADDRESS:
       process.env.NEXT_PUBLIC_SMART_CONTRACT_ADDRESS,
     // PostHog

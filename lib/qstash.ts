@@ -1,12 +1,13 @@
 import { Client } from "@upstash/qstash";
 import * as jose from "jose";
+import { env } from "./env";
 
-if (!process.env.QSTASH_TOKEN) {
+if (!env.QSTASH_TOKEN) {
   throw new Error("QSTASH_TOKEN is required");
 }
 
 const qstashClient = new Client({
-  token: process.env.QSTASH_TOKEN,
+  token: env.QSTASH_TOKEN,
 });
 
 export type QStashPublishJSONRequest = {
@@ -28,7 +29,7 @@ export const qstashPublishJSON = async (req: QStashPublishJSONRequest) => {
       body: req.body,
       headers: {
         ...req.headers,
-        Authorization: `Bearer ${process.env.QSTASH_TOKEN}`,
+        Authorization: `Bearer ${env.QSTASH_TOKEN}`,
       },
       delay: req.delay,
       notBefore: req.notBefore,
@@ -56,10 +57,10 @@ export const validateQstashRequest = async (
 
   const verificationResult = await jose.jwtVerify(
     upstashSignature,
-    new TextEncoder().encode(process.env.QSTASH_CURRENT_SIGNING_KEY),
+    new TextEncoder().encode(env.QSTASH_CURRENT_SIGNING_KEY),
     {
       issuer: "Upstash",
-      subject: `${process.env.NEXT_PUBLIC_URL}${path}`,
+      subject: `${env.NEXT_PUBLIC_URL}${path}`,
     }
   );
 
@@ -84,11 +85,11 @@ export async function sendDelayedNotification(
   text: string,
   delay?: number | `${bigint}s` | `${bigint}m` | `${bigint}h` | `${bigint}d`
 ) {
-  if (process.env.NEXT_PUBLIC_URL === "http://localhost:3000") {
+  if (env.NEXT_PUBLIC_URL === "http://localhost:3000") {
     return;
   }
   const res = await qstashPublishJSON({
-    url: `${process.env.NEXT_PUBLIC_URL}/api/qstash/send-notification`,
+    url: `${env.NEXT_PUBLIC_URL}/api/qstash/send-notification`,
     body: {
       fids: [fid],
       title,
@@ -110,11 +111,11 @@ export async function sendDelayedNotificationToFids(
   text: string,
   delay?: number | `${bigint}s` | `${bigint}m` | `${bigint}h` | `${bigint}d`
 ) {
-  if (process.env.NEXT_PUBLIC_URL === "http://localhost:3000") {
+  if (env.NEXT_PUBLIC_URL === "http://localhost:3000") {
     return;
   }
   const res = await qstashPublishJSON({
-    url: `${process.env.NEXT_PUBLIC_URL}/api/qstash/send-notification`,
+    url: `${env.NEXT_PUBLIC_URL}/api/qstash/send-notification`,
     body: {
       fids,
       title,
@@ -135,11 +136,11 @@ export const sendDelayedNotificationToAll = async (
   text: string,
   delay?: number | `${bigint}s` | `${bigint}m` | `${bigint}h` | `${bigint}d`
 ) => {
-  if (process.env.NEXT_PUBLIC_URL === "http://localhost:3000") {
+  if (env.NEXT_PUBLIC_URL === "http://localhost:3000") {
     return;
   }
   const res = await qstashPublishJSON({
-    url: `${process.env.NEXT_PUBLIC_URL}/api/qstash/send-notification/all`,
+    url: `${env.NEXT_PUBLIC_URL}/api/qstash/send-notification/all`,
     body: {
       title,
       text,
@@ -161,11 +162,11 @@ export const sendDelayedNotificationBasedOnOwnership = async (
   didCollect: boolean,
   delay?: number | `${bigint}s` | `${bigint}m` | `${bigint}h` | `${bigint}d`
 ) => {
-  if (process.env.NEXT_PUBLIC_URL === "http://localhost:3000") {
+  if (env.NEXT_PUBLIC_URL === "http://localhost:3000") {
     return;
   }
   const res = await qstashPublishJSON({
-    url: `${process.env.NEXT_PUBLIC_URL}/api/qstash/send-notification/ownership`,
+    url: `${env.NEXT_PUBLIC_URL}/api/qstash/send-notification/ownership`,
     body: {
       title,
       text,
