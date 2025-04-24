@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { FrameProvider } from "@/components/farcaster-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
+import { FrameStatusProvider } from "@/contexts/FrameStatusContext";
 import localFont from "next/font/local";
 import { AppWrapper } from "@/components/app-wrapper";
 import { PostHogProvider } from "@/components/posthog-provider";
@@ -37,8 +38,10 @@ export default function RootLayout({
             <FrameProvider>
               <MiniKitProvider>
                 <AudioPlayerProvider>
-                  <AppWrapper>{children}</AppWrapper>
-                  <Toaster />
+                  <FrameStatusProvider>
+                    <AppWrapper>{children}</AppWrapper>
+                    <Toaster />
+                  </FrameStatusProvider>
                 </AudioPlayerProvider>
               </MiniKitProvider>
             </FrameProvider>
