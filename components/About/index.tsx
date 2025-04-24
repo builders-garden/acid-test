@@ -216,7 +216,9 @@ export default function AboutPage() {
               </button>
               <button
                 onClick={() =>
-                  sdk.actions.openUrl("https://opensea.io/collection/acidtest")
+                  sdk.actions.openUrl(
+                    "https://opensea.io/collection/acid-test-4866928"
+                  )
                 }
                 className="block text-white hover:text-white/80 no-underline"
               >
@@ -226,7 +228,7 @@ export default function AboutPage() {
                 <button
                   onClick={() =>
                     sdk.actions.openUrl(
-                      "https://basescan.org/token/0x2e210c2D0f1B513dbA97aeaaB1D7F9fF38D8AA36"
+                      "https://basescan.org/address/0x3ddfcf51d4d955fb8436699b8f30d9d9fe442038"
                     )
                   }
                   className="text-white hover:text-white/80 no-underline"
