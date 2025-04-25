@@ -11,7 +11,7 @@ import { copyToClipboard } from "@/lib/utils";
 import { Header } from "../ui/header";
 import sdk from "@farcaster/frame-sdk";
 
-const AcidTest_CA = "0x3A1609CEbE67C1d303954B5fb907bEF36213034B";
+const AcidTest_CA = "0xf7d696B5BED117731B8A71Db264333C8Ec261b07";
 
 interface DexScreenerData {
   marketCap: number;
@@ -97,7 +97,7 @@ export default function AboutPage() {
               <button
                 onClick={() =>
                   sdk.actions.openUrl(
-                    "https://dexscreener.com/base/0x71182a44ca67eb9492d6476222ac15a73c2bd32c"
+                    "https://dexscreener.com/base/0x4e3676c16c0ef1138d1efabfee8a657fdefb0555"
                   )
                 }
                 className="p-1 rounded bg-black hover:bg-[#AD82CD4D] transition-colors"
@@ -113,7 +113,7 @@ export default function AboutPage() {
               <button
                 onClick={() =>
                   sdk.actions.openUrl(
-                    "https://www.clanker.world/clanker/0x2e210c2D0f1B513dbA97aeaaB1D7F9fF38D8AA36"
+                    "https://www.clanker.world/clanker/0xf7d696B5BED117731B8A71Db264333C8Ec261b07"
                   )
                 }
                 className="p-1 rounded bg-black hover:bg-[#AD82CD4D] transition-colors"
@@ -129,7 +129,7 @@ export default function AboutPage() {
               <button
                 onClick={() =>
                   sdk.actions.openUrl(
-                    "https://basescan.org/token/0x2e210c2D0f1B513dbA97aeaaB1D7F9fF38D8AA36"
+                    "https://basescan.org/token/0xf7d696B5BED117731B8A71Db264333C8Ec261b07"
                   )
                 }
                 className="p-1 rounded bg-black hover:bg-[#AD82CD4D] transition-colors"
@@ -243,7 +243,7 @@ export default function AboutPage() {
                 <button
                   onClick={() =>
                     sdk.actions.openUrl(
-                      "https://basescan.org/token/0x2e210c2D0f1B513dbA97aeaaB1D7F9fF38D8AA36"
+                      "https://basescan.org/token/0xf7d696B5BED117731B8A71Db264333C8Ec261b07"
                     )
                   }
                   className="text-white hover:text-white/80 no-underline"
@@ -267,7 +267,7 @@ export default function AboutPage() {
               <button
                 onClick={() =>
                   sdk.actions.openUrl(
-                    "https://dexscreener.com/base/0x71182a44ca67eb9492d6476222ac15a73c2bd32c"
+                    "https://dexscreener.com/base/0x4e3676c16c0ef1138d1efabfee8a657fdefb0555"
                   )
                 }
                 className="block text-white hover:text-white/80 no-underline"
@@ -277,7 +277,7 @@ export default function AboutPage() {
               <button
                 onClick={() =>
                   sdk.actions.openUrl(
-                    "https://www.clanker.world/clanker/0x2e210c2D0f1B513dbA97aeaaB1D7F9fF38D8AA36"
+                    "https://www.clanker.world/clanker/0xf7d696B5BED117731B8A71Db264333C8Ec261b07"
                   )
                 }
                 className="block text-white hover:text-white/80 no-underline"

@@ -203,7 +203,7 @@ export default function Home() {
               <Button
                 onClick={() =>
                   sdk.actions.openUrl(
-                    "https://dexscreener.com/base/0x71182a44ca67eb9492d6476222ac15a73c2bd32c"
+                    "https://dexscreener.com/base/0x4e3676c16c0ef1138d1efabfee8a657fdefb0555"
                   )
                 }
                 className="w-full h-10 text-lg bg-mint text-black hover:bg-plum transition-colors"
