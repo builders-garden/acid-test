@@ -217,7 +217,7 @@ export default function AboutPage() {
               <button
                 onClick={() =>
                   sdk.actions.openUrl(
-                    "https://opensea.io/collection/acid-test-4866928"
+                    "https://opensea.io/collection/acid-test-3"
                   )
                 }
                 className="block text-white hover:text-white/80 no-underline"
