@@ -181,7 +181,7 @@ export default function Home() {
                 <Button
                   onClick={() =>
                     sdk.actions.openUrl(
-                      "https://bafybeihatabk7kagjnwz2xo7ocaphnl3pblcgjikxmoqhsrl4erwwslgqq.ipfs.dweb.link/#x-ipfs-companion-no-redirect"
+                      "https://bafybeiagxkucxpfudahtxd7gokgkvp5kdorfq57g7pt6uzqyi2xyuzjpbe.ipfs.dweb.link/#x-ipfs-companion-no-redirect"
                     )
                   }
                   className="w-full h-10 text-lg bg-mint text-black hover:bg-plum hover:text-black transition-colors"
