@@ -68,6 +68,7 @@ export function MintModal({
   const [isSliderInteracting, setIsSliderInteracting] = useState(false);
   const [mintState, setMintState] = useState<MintState>(MintState.Initial);
   const [castUrl, setCastUrl] = useState<string>("");
+  const [postMintExecuted, setPostMintExecuted] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const dragControls = useDragControls();
   const price = usdPrice / ethUsd;
@@ -120,6 +121,7 @@ export function MintModal({
   const handleApprove = async () => {
     try {
       if (userAddress) {
+        setPostMintExecuted(false);
         writeContractAllowance({
           address: USDC_CONTRACT_ADDRESS,
           abi: erc20Abi,
@@ -151,6 +153,7 @@ export function MintModal({
   const handleMint = async (amount: number, isWETH: boolean) => {
     try {
       if (userAddress) {
+        setPostMintExecuted(false);
         writeContractMint({
           address: CONTRACT_ADDRESS,
           abi: AcidTestABI,
@@ -189,6 +192,7 @@ export function MintModal({
 
   useEffect(() => {
     if (mintError) {
+      setPostMintExecuted(false);
       console.error(mintError);
       if (!mintError.message.includes("The user rejected the request")) {
         toast(mintError.message);
@@ -261,8 +265,10 @@ export function MintModal({
       if (
         mintTxResult &&
         mintTxResult.status === "success" &&
-        mintState !== MintState.Success
+        mintState !== MintState.Success &&
+        !postMintExecuted
       ) {
+        setPostMintExecuted(true);
         let notificationDetails: FrameNotificationDetails | undefined =
           undefined;
         try {
@@ -397,7 +403,9 @@ export function MintModal({
         setMintState(MintState.Initial);
       }
     };
-    postMint();
+    if (!postMintExecuted) {
+      postMint();
+    }
   }, [mintTxResult, mintQuantity, mintState, songName, tokenId]);
 
   useEffect(() => {
@@ -410,6 +418,12 @@ export function MintModal({
       sdk.actions.openUrl(castUrl);
     }
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      setPostMintExecuted(false);
+    }
+  }, [isOpen]);
 
   return (
     <AnimatePresence>

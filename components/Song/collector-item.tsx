@@ -41,27 +41,32 @@ export const CollectorItem = ({
         <div className="w-6 h-6 flex items-center justify-center text-xs">
           {position}
         </div>
-        <Image
-          src={
-            collector.user?.avatarUrl ||
-            `https://ui-avatars.com/api/?name=${
-              isUser ? "You" : collector.user?.username || "User"
-            }&background=random&size=32`
-          }
-          alt={`${
-            isUser ? "Your" : collector.user?.username || "User"
-          } profile`}
-          width={24}
-          height={24}
-          className="rounded-full"
-        />
+        <div className="w-6 h-6 overflow-hidden rounded-full">
+          <Image
+            src={
+              collector.user?.avatarUrl ||
+              `https://ui-avatars.com/api/?name=${
+                isUser ? "You" : collector.user?.username || "User"
+              }&background=random&size=32`
+            }
+            alt={`${
+              isUser ? "Your" : collector.user?.username || "User"
+            } profile`}
+            width={24}
+            height={24}
+            className="w-full h-full object-cover"
+          />
+        </div>
         <span>
           {isUser
             ? "You"
             : collector.user?.username || `User ${collector.userId}`}
         </span>
       </div>
-      <span className="cursor-pointer" onClick={handleOpenUrl}>
+      <span
+        className="cursor-pointer"
+        onClick={handleOpenUrl}
+      >
         {collector.amount}
       </span>
     </div>
