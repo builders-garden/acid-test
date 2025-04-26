@@ -55,6 +55,10 @@ export const CollectorItem = ({
             width={24}
             height={24}
             className="w-full h-full object-cover"
+            placeholder="blur"
+            blurDataURL={`https://ui-avatars.com/api/?name=${
+              isUser ? "You" : collector.user?.username || "User"
+            }&background=random&size=32`}
           />
         </div>
         <span>

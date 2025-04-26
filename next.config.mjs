@@ -8,11 +8,15 @@ jiti("./lib/env");
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: [
-      "ui-avatars.com",
-      "gateway.pinata.cloud",
-      "imagedelivery.net",
-      "i.imgur.com",
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "**",
+      },
     ],
   },
   async rewrites() {

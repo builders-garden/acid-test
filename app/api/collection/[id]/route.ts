@@ -1,12 +1,16 @@
 import { getCollectorsBySongId } from "@/lib/prisma/queries";
 import { NextRequest, NextResponse } from "next/server";
 
+const ITEMS_PER_PAGE = 50;
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id: songId } = await params;
+    const cursor = request.nextUrl.searchParams.get("cursor");
+    const cursorNum = cursor ? parseInt(cursor) : 0;
 
     if (songId) {
       const songIdNum = Number(songId);
@@ -19,14 +23,23 @@ export async function GET(
       }
 
       const collectors = await getCollectorsBySongId(songIdNum);
-      return NextResponse.json(collectors);
+      const startIndex = cursorNum;
+      const endIndex = startIndex + ITEMS_PER_PAGE;
+      const items = collectors.slice(startIndex, endIndex);
+      const nextCursor = endIndex < collectors.length ? endIndex : undefined;
+
+      return NextResponse.json({
+        items,
+        nextCursor,
+        total: collectors.length,
+      });
     }
   } catch (error) {
     console.error("Error retrieving collection:", error);
     const errorMessage =
       error instanceof Error ? error.message : "An unknown error occurred";
     return NextResponse.json(
-      { collectors: [], error: errorMessage },
+      { items: [], error: errorMessage },
       { status: 500 }
     );
   }

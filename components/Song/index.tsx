@@ -68,6 +68,9 @@ export default function Song() {
   const {
     collectors,
     isLoading: collectorsLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     refetch: refetchCollectors,
   } = useCollectors(tokenId);
 
@@ -373,6 +376,9 @@ export default function Song() {
         userPosition={userPosition}
         tokenId={tokenId}
         handleClickUser={handleClickUser}
+        fetchNextPage={fetchNextPage}
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
       />
 
       {/* Mint Modal */}

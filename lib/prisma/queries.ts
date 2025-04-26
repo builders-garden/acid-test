@@ -148,6 +148,9 @@ export const getCollectorsBySongId = async (songId: number) => {
     include: {
       user: true,
     },
+    orderBy: {
+      amount: "desc",
+    },
   });
 
   return collectors;
