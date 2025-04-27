@@ -1,5 +1,6 @@
 import { DbCollection } from "@/lib/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { useApiQuery } from "./use-api-query";
 
 export const useCollectors = (songId: number) => {
   const {
@@ -33,4 +34,15 @@ export const useCollectors = (songId: number) => {
     refetch,
     total: data?.pages[0]?.total ?? 0,
   };
+};
+
+export const useUserCollector = (songId: number, fid: number | null) => {
+  return useApiQuery<{
+    collection: DbCollection | null;
+    position: number | null;
+  }>({
+    queryKey: ["userCollector", songId, fid],
+    url: `/api/collection/${songId}/collector?fid=${fid}`,
+    enabled: !!fid,
+  });
 };

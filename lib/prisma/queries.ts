@@ -233,3 +233,30 @@ export const updateState = async (isPrelaunch: boolean) => {
     data: { isPrelaunch },
   });
 };
+
+export const getUserCollectionWithPosition = async (
+  songId: number,
+  fid: number
+): Promise<{ collection: DbCollection | null; position: number | null }> => {
+  // Get all collectors for this song
+  const collectors = await prisma.collection.findMany({
+    where: {
+      songId,
+    },
+    include: {
+      user: true,
+    },
+    orderBy: {
+      amount: "desc",
+    },
+  });
+
+  // Find the user's collection and position
+  const position = collectors.findIndex((c) => c.user?.fid === fid);
+  const collection = position !== -1 ? collectors[position] : null;
+
+  return {
+    collection,
+    position: position !== -1 ? position + 1 : null,
+  };
+};

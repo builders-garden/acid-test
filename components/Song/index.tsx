@@ -10,7 +10,7 @@ import { CollectorsSection } from "./collectors-section";
 
 import { useAccount, useReadContract } from "wagmi";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
-import { useCollectors } from "@/hooks/use-get-collectors";
+import { useCollectors, useUserCollector } from "@/hooks/use-get-collectors";
 import { useMiniAppContext } from "@/hooks/use-miniapp-context";
 
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
@@ -226,50 +226,11 @@ export default function Song() {
     return [...collectors].sort((a, b) => b.amount - a.amount);
   }, [collectors, collectorsLoading]);
 
-  // Get user position in collector list
-  const userPosition = useMemo(() => {
-    if (!userFid || !collectors) return null;
-    const index = sortedCollectors.findIndex((c) => c.user?.fid === userFid);
-    return index !== -1 ? index + 1 : null;
-  }, [userFid, sortedCollectors, collectors]);
-
-  // Projected user position after minting
-  const projectedUserPosition = useMemo(() => {
-    if (!userFid || !collectors || !mintQuantity) return null;
-
-    // Create a copy of collectors to simulate the new state
-    const projectedCollectors: {
-      fid: number | undefined;
-      amount: number;
-    }[] = collectors.map((c) => ({
-      fid: c.user?.fid,
-      amount: c.amount,
-    }));
-
-    // Find current user's collector entry
-    const userCollector = projectedCollectors.find((c) => c.fid === userFid);
-
-    if (!userCollector) {
-      // If user is not yet a collector, add them
-      projectedCollectors.push({
-        fid: userFid,
-        amount: mintQuantity,
-      });
-    } else {
-      // Update user's amount with new mint quantity
-      userCollector.amount += mintQuantity;
-    }
-
-    // Sort collectors by amount in descending order
-    const sortedProjected = projectedCollectors.sort(
-      (a, b) => b.amount - a.amount
-    );
-
-    // Find user's new position
-    const newPosition = sortedProjected.findIndex((c) => c.fid === userFid);
-
-    return newPosition !== -1 ? newPosition + 1 : null;
-  }, [userFid, collectors, mintQuantity]);
+  const {
+    data: userCollectorData,
+    isLoading: userCollectorIsLoading,
+    refetch: refetchUserCollector,
+  } = useUserCollector(tokenId, userFid);
 
   useEffect(() => {
     if (metadata) {
@@ -373,12 +334,13 @@ export default function Song() {
         collectorsLoading={collectorsLoading}
         sortedCollectors={sortedCollectors}
         userFid={userFid}
-        userPosition={userPosition}
         tokenId={tokenId}
         handleClickUser={handleClickUser}
         fetchNextPage={fetchNextPage}
         hasNextPage={hasNextPage}
         isFetchingNextPage={isFetchingNextPage}
+        userCollectorIsLoading={userCollectorIsLoading}
+        userCollectorData={userCollectorData}
       />
 
       {/* Mint Modal */}
@@ -397,8 +359,8 @@ export default function Song() {
           ethUsd={ethUsd}
           image={metadata?.image}
           refetchCollectors={refetchCollectors}
-          projectedUserPosition={projectedUserPosition}
           setUserAddedFrameOnAction={setUserAddedFrameOnAction}
+          refetchUserCollector={refetchUserCollector}
         />
       )}
     </div>

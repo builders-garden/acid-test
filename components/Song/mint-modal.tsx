@@ -38,8 +38,8 @@ interface MintModalProps {
   ethUsd: number;
   refetchCollectors: () => void;
   image?: string;
-  projectedUserPosition: number | null;
   setUserAddedFrameOnAction: Dispatch<SetStateAction<boolean>>;
+  refetchUserCollector: () => void;
 }
 
 enum MintState {
@@ -62,8 +62,8 @@ export function MintModal({
   ethUsd,
   refetchCollectors,
   image,
-  projectedUserPosition,
   setUserAddedFrameOnAction,
+  refetchUserCollector,
 }: MintModalProps) {
   const [isSliderInteracting, setIsSliderInteracting] = useState(false);
   const [mintState, setMintState] = useState<MintState>(MintState.Initial);
@@ -304,23 +304,32 @@ export function MintModal({
           }
         };
 
-        const sendNotification = async () => {
+        const sendNotification = async (
+          collectionDetails: {
+            position: number | null;
+            amount: number | null;
+          } | null
+        ) => {
           if (userFid) {
+            const newUserPosition = collectionDetails?.position;
+            const totalQuantityHeld = collectionDetails?.amount;
             try {
-              const leaderboardText = projectedUserPosition
-                ? `You currently hold the ${projectedUserPosition}${
-                    projectedUserPosition % 10 === 1 &&
-                    projectedUserPosition % 100 !== 11
-                      ? "st"
-                      : projectedUserPosition % 10 === 2 &&
-                        projectedUserPosition % 100 !== 12
-                      ? "nd"
-                      : projectedUserPosition % 10 === 3 &&
-                        projectedUserPosition % 100 !== 13
-                      ? "rd"
-                      : "th"
-                  } spot on the collectors leaderboard.`
-                : "You're now part of the collectors leaderboard.";
+              const leaderboardText =
+                newUserPosition && totalQuantityHeld
+                  ? `You currently hold the ${newUserPosition}${
+                      newUserPosition % 10 === 1 && newUserPosition % 100 !== 11
+                        ? "st"
+                        : newUserPosition % 10 === 2 &&
+                          newUserPosition % 100 !== 12
+                        ? "nd"
+                        : newUserPosition % 10 === 3 &&
+                          newUserPosition % 100 !== 13
+                        ? "rd"
+                        : "th"
+                    } spot with ${totalQuantityHeld} edition${
+                      totalQuantityHeld > 1 ? "s" : ""
+                    } on the collectors leaderboard.`
+                  : "You're now part of the collectors leaderboard.";
 
               const body = {
                 title: `You just collected ${mintQuantity} ${
@@ -349,7 +358,10 @@ export function MintModal({
           }
         };
 
-        const createCollection = async () => {
+        const createCollection: () => Promise<{
+          position: number | null;
+          amount: number | null;
+        } | null> = async () => {
           let fid;
           if (contextType === "farcaster") {
             if (context && context.user.fid) {
@@ -371,22 +383,35 @@ export function MintModal({
 
             if (!response.ok) {
               const errorData = await response.json(); // Parse error response
-              throw new Error(errorData.error || "Failed to create collection");
+              toast(
+                `Error creating collection: ${
+                  errorData.error || "Unknown error"
+                }`
+              );
+              return null;
             }
 
             refetchCollectors();
+            refetchUserCollector();
+
+            const collectionDetails = await response.json();
+            return collectionDetails as {
+              position: number | null;
+              amount: number | null;
+            };
           } catch (error: unknown) {
             console.error(
               "Error creating collection: ",
               error instanceof Error ? error.message : error
             );
             toast("Error creating collection");
+            return null;
           }
         };
 
         await signUpUser();
-        await createCollection();
-        await sendNotification();
+        const collectionDetails = await createCollection();
+        await sendNotification(collectionDetails);
         trackEvent("mint", {
           fid: userFid,
           songId: tokenId,

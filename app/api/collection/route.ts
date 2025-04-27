@@ -1,4 +1,7 @@
-import { createCollection } from "@/lib/prisma/queries";
+import {
+  createCollection,
+  getUserCollectionWithPosition,
+} from "@/lib/prisma/queries";
 import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -31,13 +34,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const collection = await createCollection({
+    await createCollection({
       userId: userIdNum,
       songId: songIdNum,
       amount: amountNum,
     });
 
-    return Response.json({ success: true, data: collection });
+    const newUserPosition = await getUserCollectionWithPosition(
+      songIdNum,
+      userIdNum
+    );
+
+    return Response.json({
+      position: newUserPosition.position,
+      amount: newUserPosition.collection?.amount,
+    });
   } catch (error) {
     console.error("Error creating collection entry:", error);
     const errorMessage =
