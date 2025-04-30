@@ -12,7 +12,14 @@ export default async function middleware(req: NextRequest) {
   if (
     req.nextUrl.pathname === "/api/auth/sign-in" ||
     req.nextUrl.pathname.includes("/api/og") ||
-    req.nextUrl.pathname.includes("/api/webhook")
+    req.nextUrl.pathname.includes("/api/webhook") ||
+    req.nextUrl.pathname.includes("/api/mints") ||
+    req.nextUrl.pathname.includes("/api/update-collections") ||
+    req.nextUrl.pathname.includes("/api/compare-fids") ||
+    req.nextUrl.pathname.includes("/api/collectors-addresses") ||
+    req.nextUrl.pathname.includes("/api/check-transfers") ||
+    req.nextUrl.pathname.includes("/api/analyze-mints") ||
+    req.nextUrl.pathname.includes("/api/aggregate-fids")
   ) {
     return NextResponse.next();
   }
@@ -34,18 +41,18 @@ export default async function middleware(req: NextRequest) {
 
   // Get token from auth_token cookie
   const token = req.cookies.get("auth_token")?.value;
-
+/*
   if (!token) {
     return NextResponse.json(
       { error: "Authentication required" },
       { status: 401 }
     );
-  }
+  }*/
 
   try {
     const secret = new TextEncoder().encode(env.JWT_SECRET);
     // Verify the token using jose
-    const { payload } = await jose.jwtVerify(token, secret);
+    const { payload } = await jose.jwtVerify(token!, secret);
 
     // Clone the request headers to add user info
     const requestHeaders = new Headers(req.headers);

@@ -1,0 +1,40 @@
+{
+  "inMintsNotInCollectors": [
+    9581,
+    664747,
+    1058356,
+    192311,
+    618152,
+    844555,
+    573753,
+    573755,
+    645057,
+    553452
+  ],
+  "inCollectorsNotInMints": [
+    1079,   20   10
+    1015512,  2  1
+    1049943,  4  2
+    10574687  4  2
+  ],
+  "totalInMints": 451,
+  "totalInCollectors": 445,
+  "missingFids": [
+    {
+      "address": "0xbc699d1618ac14abf1a63b2ada3f9d182d6dde8f",
+      "amount": 10
+    },
+    {
+      "address": "0x54823bbb0f71d56de2bb02fd9eebecfca21d6deb",
+      "amount": 2
+    },
+    {
+      "address": "0xe44b65e23bafb5fdc084423c03bdf6a594116dc2",
+      "amount": 2
+    },
+    {
+      "address": "0xc1f281240de9cbf873256ecdaa384f68a3ab566a",
+      "amount": 1
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "mintedTokens": {
+    "fromJson": 983,
+    "fromCsv": 983,
+    "match": true
+  },
+  "totalAddresses": {
+    "fromJson": 466,
+    "fromCsv": 466,
+    "match": true
+  },
+  "fidComparison": {
+    "fidsInJsonNotInDb": [
+      9581,
+      664747,
+      645057,
+      553452,
+      1058356, 
+      10574687 //NO IN USERS
+    ],
+    "fidsInDbNotInJson": [
+      1057468
+    ],
+    "totalFidsInJson": 458,
+    "totalFidsInDb": 453
+  }
+}
