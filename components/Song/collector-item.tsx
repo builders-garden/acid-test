@@ -63,7 +63,7 @@ export const CollectorItem = ({
         </div>
         <span>
           {isUser
-            ? "You"
+            ? "@" + collector.user?.username
             : collector.user?.username || `User ${collector.userId}`}
         </span>
       </div>
