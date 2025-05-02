@@ -48,8 +48,8 @@ export const PlayerControls = ({
         <Button
           className={`absolute bottom-4 right-4 w-14 h-14 ${
             !isPlaying
-              ? "bg-mint text-black hover:hover:bg-plum"
-              : "bg-plum text-black hover:bg-plum/90"
+              ? "bg-black text-white hover:bg-black/80"
+              : "bg-black text-white hover:bg-black/80"
           } flex items-center justify-center p-0`}
           onClick={handlePlayPause}
           disabled={isLoading}
