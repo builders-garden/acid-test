@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
         await sendFrameNotification({
           fids: [fid],
           title: "Welcome to Acid Test!",
-          body: "I'm so glad you've added us to your mini app collection. We'll hit you here, but only once in a while. Sincerely, chaim.eth :)",
+          body: "Cast any feedback to @chaim.eth",
         });
       } else {
         await deleteUserNotificationDetails(fid);
