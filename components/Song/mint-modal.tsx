@@ -20,9 +20,10 @@ import { CONTRACT_ADDRESS, USDC_CONTRACT_ADDRESS } from "@/lib/constants";
 import { useWaitForTransactionReceipt } from "wagmi";
 import { useMiniAppContext } from "@/hooks/use-miniapp-context";
 import { erc20Abi } from "viem";
-import { composeMintCastUrl, formatSongId, handleAddFrame } from "@/lib/utils";
-import sdk, { FrameNotificationDetails } from "@farcaster/frame-sdk";
+import { composeMintCastUrl, formatSongId } from "@/lib/utils";
+import sdk from "@farcaster/frame-sdk";
 import { trackEvent } from "@/lib/posthog/client";
+import { useFrameStatus } from "@/contexts/FrameStatusContext";
 
 interface MintModalProps {
   isOpen: boolean;
@@ -38,7 +39,6 @@ interface MintModalProps {
   ethUsd: number;
   refetchCollectors: () => void;
   image?: string;
-  setUserAddedFrameOnAction: Dispatch<SetStateAction<boolean>>;
   refetchUserCollector: () => void;
 }
 
@@ -62,7 +62,6 @@ export function MintModal({
   ethUsd,
   refetchCollectors,
   image,
-  setUserAddedFrameOnAction,
   refetchUserCollector,
 }: MintModalProps) {
   const [isSliderInteracting, setIsSliderInteracting] = useState(false);
@@ -260,6 +259,8 @@ export function MintModal({
     }
   }, [mintStatus]);
 
+  const { promptToAddFrame } = useFrameStatus();
+
   useEffect(() => {
     const postMint = async () => {
       if (
@@ -269,11 +270,8 @@ export function MintModal({
         !postMintExecuted
       ) {
         setPostMintExecuted(true);
-        let notificationDetails: FrameNotificationDetails | undefined =
-          undefined;
         try {
-          notificationDetails = await handleAddFrame();
-          setUserAddedFrameOnAction(true);
+          await promptToAddFrame();
         } catch (error) {}
 
         setMintState(MintState.Success);
@@ -281,17 +279,14 @@ export function MintModal({
         const signUpUser = async () => {
           if (userFid) {
             try {
-              const body = {
-                fid: userFid,
-                notificationDetails: notificationDetails,
-              };
-
               const response = await fetch("/api/user", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
                 },
-                body: JSON.stringify(body),
+                body: JSON.stringify({
+                  fid: userFid,
+                }),
               });
 
               if (!response.ok) {
@@ -375,14 +370,14 @@ export function MintModal({
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                userId: fid, // Assuming `context.user.id` contains the user ID
-                songId: tokenId, // Assuming `tokenCounter` is the ID of the song
+                userId: fid,
+                songId: tokenId,
                 amount: mintQuantity,
               }),
             });
 
             if (!response.ok) {
-              const errorData = await response.json(); // Parse error response
+              const errorData = await response.json();
               toast(
                 `Error creating collection: ${
                   errorData.error || "Unknown error"
@@ -431,7 +426,14 @@ export function MintModal({
     if (!postMintExecuted) {
       postMint();
     }
-  }, [mintTxResult, mintQuantity, mintState, songName, tokenId]);
+  }, [
+    mintTxResult,
+    mintQuantity,
+    mintState,
+    songName,
+    tokenId,
+    promptToAddFrame,
+  ]);
 
   useEffect(() => {
     const { castUrl } = composeMintCastUrl(tokenId, songName, mintQuantity);
@@ -586,7 +588,7 @@ export function MintModal({
                           ? `${(safePrice * mintQuantity).toFixed(6)} ETH`
                           : `${usdPrice * mintQuantity} USDC`}
                       </div>
-                      <div className="text-white/60 text-xs">
+                      <div className="text-white/60 text-xs h-[16px]">
                         {paymentMethod === "ETH" &&
                           `$${(safePrice * mintQuantity * ethUsd).toFixed(
                             2

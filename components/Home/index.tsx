@@ -117,15 +117,15 @@ export default function Home() {
           );
 
           // Only check for redirect if not coming from internal navigation
-          if (!fromInternalNav) {
-            const firstLiveSong = filteredReleases.find(
-              (song) => song.status === "live"
-            );
-            if (firstLiveSong) {
-              router.push(`/songs/${firstLiveSong.index}`);
-              return;
-            }
+          // if (!fromInternalNav) {
+          const firstLiveSong = filteredReleases.find(
+            (song) => song.status === "live"
+          );
+          if (firstLiveSong) {
+            router.push(`/songs/${firstLiveSong.index}`);
+            return;
           }
+          // }
 
           setIsLoadingSongs(false);
           setIsPageLoading(false);

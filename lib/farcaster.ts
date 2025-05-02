@@ -33,13 +33,13 @@ export async function getFarcasterManifest() {
       splashBackgroundColor: "#000000",
       webhookUrl: `${appUrl}/api/webhook`,
       // Metadata https://github.com/farcasterxyz/miniapps/discussions/191
-      // subtitle: "", // 30 characters, no emojis or special characters, short description under app name
-      // description: "", // 170 characters, no emojis or special characters, promotional message displayed on Mini App Page
+      subtitle: "Mint new episodes weekly", // 30 characters, no emojis or special characters, short description under app name
+      description: "A radio show for Farcaster", // 170 characters, no emojis or special characters, promotional message displayed on Mini App Page
       // primaryCategory: "music",
       // tags: ["music", "acid", "song"], // up to 5 tags, filtering/search tags
-      // tagline: "", // 30 characters, marketing tagline should be punchy and descriptive
+      tagline: "Mint new episodes weekly", // 30 characters, marketing tagline should be punchy and descriptive
       // ogTitle: "", // 30 characters, app name + short tag, Title case, no emojis
-      // ogDescription: "", // 100 characters, summarize core benefits in 1-2 lines
+      ogDescription: "A radio show for Farcaster", // 100 characters, summarize core benefits in 1-2 lines
       // screenshotUrls: [
       //   // 1284 x 2778, visual previews of the app, max 3 screenshots
       //   `${env.NEXT_PUBLIC_URL}/images/screenshots/1.png`,

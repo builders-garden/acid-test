@@ -2,11 +2,14 @@
 
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { ContextType, useMiniAppContext } from "@/hooks/use-miniapp-context";
+import { handleAddFrame } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface FrameStatusContextType {
   userAddedFrame: boolean;
   setUserAddedFrame: (value: boolean) => void;
   isLoading: boolean;
+  promptToAddFrame: () => Promise<void>;
 }
 
 const FrameStatusContext = createContext<FrameStatusContextType | undefined>(
@@ -27,6 +30,37 @@ export const FrameStatusProvider: React.FC<{ children: React.ReactNode }> = ({
   const [userAddedFrame, setUserAddedFrame] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { type: contextType, context } = useMiniAppContext();
+
+  const promptToAddFrame = async () => {
+    if (userAddedFrame || isLoading) return;
+
+    try {
+      const notificationDetails = await handleAddFrame();
+      if (notificationDetails) {
+        setUserAddedFrame(true);
+
+        // If we have a Farcaster user, save their notification details
+        if (contextType === ContextType.Farcaster && context?.user?.fid) {
+          const response = await fetch("/api/user", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              fid: context.user.fid,
+              notificationDetails,
+            }),
+          });
+
+          if (!response.ok) {
+            console.error("Failed to save user notification details");
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error adding frame:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -66,7 +100,7 @@ export const FrameStatusProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <FrameStatusContext.Provider
-      value={{ userAddedFrame, setUserAddedFrame, isLoading }}
+      value={{ userAddedFrame, setUserAddedFrame, isLoading, promptToAddFrame }}
     >
       {children}
     </FrameStatusContext.Provider>

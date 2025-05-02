@@ -61,11 +61,7 @@ export const CollectorItem = ({
             }&background=random&size=32`}
           />
         </div>
-        <span>
-          {isUser
-            ? "@" + collector.user?.username
-            : collector.user?.username || `User ${collector.userId}`}
-        </span>
+        <span>{collector.user?.username || `User ${collector.userId}`}</span>
       </div>
       <span
         className="cursor-pointer"

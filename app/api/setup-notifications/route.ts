@@ -50,25 +50,23 @@ export async function POST(request: NextRequest) {
     await Promise.all([
       // When song goes live
       sendDelayedNotificationToAll(
-        `Acid Test Episode ${tokenId} is live!`,
-        `We just released AT${formattedTokenId}: "${title}". Listen now!`,
+        `New Episode is live!`,
+        `Listen to AT${formattedTokenId}: "${title}"`,
         timeUntilStart
       ),
 
       // 30 minutes before mint ends
       sendDelayedNotificationToAll(
-        `30 minutes left til' mint closes!`,
-        `Last chance to mint Acid Test Episode ${tokenId}: "${title}".`,
+        `30 mins until mint closes!`,
+        `Last chance to mint AT${formattedTokenId}: "${title}"`,
         timeUntilEnd - thirtyMinutesInSeconds
       ),
 
-      // 48 hours after mint ends (non-owners)
-      sendDelayedNotificationBasedOnOwnership(
-        `ICYMI: Acid Test Ep. ${tokenId} is out!`,
-        `AT${formattedTokenId}: "${title}" is out now. Listen in the Acid Test Mini App!`,
-        tokenIdNumeric,
-        false,
-        timeUntilEnd + twoDaysInSeconds
+      // 48 hours after mint starts
+      sendDelayedNotificationToAll(
+        `ICYMI: ${title} is out now`,
+        `Click here to play the new episode`,
+        timeUntilStart + twoDaysInSeconds
       ),
     ]);
 

@@ -359,7 +359,6 @@ export default function Song() {
           ethUsd={ethUsd}
           image={metadata?.image}
           refetchCollectors={refetchCollectors}
-          setUserAddedFrameOnAction={setUserAddedFrameOnAction}
           refetchUserCollector={refetchUserCollector}
         />
       )}

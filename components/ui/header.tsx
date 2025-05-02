@@ -7,7 +7,6 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { usePrelaunchState } from "@/hooks/use-prelaunch-state";
 import { Button } from "./button";
-import { handleAddFrame } from "@/lib/utils";
 import { useFrameStatus } from "@/contexts/FrameStatusContext";
 
 interface HeaderProps {
@@ -18,24 +17,23 @@ export const Header: React.FC<HeaderProps> = ({ userAddedFrameOnAction }) => {
   const pathname = usePathname();
   const isSongsPage = pathname === "/songs";
   const isAboutPage = pathname === "/about";
+  const isHomePage = pathname === "/";
   const { isPrelaunch } = usePrelaunchState();
-  const { userAddedFrame, setUserAddedFrame, isLoading } = useFrameStatus();
-
-  const handleAddFrameAndRefresh = async () => {
-    try {
-      await handleAddFrame();
-      setUserAddedFrame(true);
-    } catch (error) {
-      console.error("Error adding frame:", error);
-      setUserAddedFrame(false);
-    }
-  };
+  const { userAddedFrame, setUserAddedFrame, isLoading, promptToAddFrame } =
+    useFrameStatus();
 
   useEffect(() => {
     if (userAddedFrameOnAction) {
       setUserAddedFrame(true);
     }
   }, [userAddedFrameOnAction, setUserAddedFrame]);
+
+  // Prompt to add frame when the component mounts
+  useEffect(() => {
+    if (!userAddedFrame && !isLoading && !userAddedFrameOnAction) {
+      promptToAddFrame();
+    }
+  }, [userAddedFrame, isLoading, userAddedFrameOnAction, promptToAddFrame]);
 
   return (
     <div className="w-full max-w-md flex justify-between items-center mb-6 h-[36.5px]">
@@ -48,12 +46,11 @@ export const Header: React.FC<HeaderProps> = ({ userAddedFrameOnAction }) => {
       </Link>
       <div className="flex space-x-2">
         {isLoading ? (
-          // Loading state
           <div className="flex space-x-2">
             <div className="w-9 h-9 bg-white/10 animate-pulse rounded-md"></div>
             <div className="w-9 h-9 bg-white/10 animate-pulse rounded-md"></div>
           </div>
-        ) : userAddedFrame || pathname !== "/" ? (
+        ) : userAddedFrame || !isHomePage ? (
           isPrelaunch ? (
             <></>
           ) : (
@@ -96,7 +93,7 @@ export const Header: React.FC<HeaderProps> = ({ userAddedFrameOnAction }) => {
           )
         ) : (
           <Button
-            onClick={handleAddFrameAndRefresh}
+            onClick={promptToAddFrame}
             variant="outline"
             size="icon"
             className="w-full h-7 px-2 py-1 rounded-md border-[0.5px] border-white/60 bg-black hover:bg-[#AD82CD4D] hover:text-white"
