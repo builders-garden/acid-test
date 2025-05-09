@@ -243,12 +243,12 @@ export default function SongsPage() {
                     {release.id}
                   </p>
                 </div>
-                <div className="flex justify-between items-center w-full">
+                <div className="flex justify-between items-end w-full">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-mint animate-pulse" />
                     <span className="text-[14px] leading-none">Mint Open</span>
                   </div>
-                  <div className="font-mono text-[10px]">
+                  <div className="font-mono text-[10px] leading-none">
                     {release.countdown !== undefined &&
                       formatCountdown(release.countdown)}
                   </div>
@@ -315,7 +315,7 @@ export default function SongsPage() {
             <div className="flex-1 min-w-0 flex flex-col justify-between h-20">
               <div className="flex flex-col gap-2">
                 <h2 className="text-[18px] text-mono leading-none">
-                  {release.title}
+                  {release.title.toUpperCase()}
                 </h2>
                 <p className="text-[14px] text-white/40 leading-none">
                   {release.id}
@@ -365,20 +365,18 @@ export default function SongsPage() {
               <div className="flex-1 min-w-0 flex flex-col justify-between h-20">
                 <div className="flex flex-col gap-2">
                   <h2 className="text-[18px] text-mono leading-none">
-                    {release.title.length > 11
-                      ? `${release.title.slice(0, 11).toUpperCase()}..`
-                      : release.title.toUpperCase()}
+                    {release.title.toUpperCase()}
                   </h2>
                   <p className="text-[14px] text-white/40 leading-none">
                     {release.id}
                   </p>
                 </div>
-                <div className="flex justify-between items-center w-full">
+                <div className="flex justify-between items-end w-full">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-plum" />
                     <p className="text-[14px] leading-none">Mint Closed</p>
                   </div>
-                  <div className="font-mono text-[10px] text-[#606075]">
+                  <div className="font-mono text-[10px] text-[#606075] leading-none">
                     now on secondary
                   </div>
                 </div>
