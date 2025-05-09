@@ -7,7 +7,7 @@ import { ChainHandler } from "./chain-handler";
 export const config = createConfig({
   chains: [CHAIN],
   transports: {
-    [CHAIN.id]: http("https://base.llamarpc.com"),
+    [CHAIN.id]: http("https://base.drpc.org"),
   },
   connectors: [frameConnector()],
 });
