@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { formatCountdown } from "@/lib/utils";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
 import sdk from "@farcaster/frame-sdk";
+import Image from "next/image";
 
 type MintStatusProps = {
   status: "live" | "end";
@@ -52,10 +53,17 @@ export const MintStatus = ({
         </Button>
       ) : (
         <Button
-          className="w-full h-10 text-lg bg-mint text-black hover:bg-plum hover:text-black"
+          className="flex gap-4 w-full h-10 text-lg bg-mint text-black hover:bg-plum hover:text-black"
           onClick={handleOpenUrl}
         >
-          VIEW ON OPENSEA
+          COLLECT ON
+          <Image
+            src="/images/opensea.png"
+            alt="OpenSea"
+            width={20}
+            height={20}
+            className="rounded-sm invert"
+          />
         </Button>
       )}
     </div>

@@ -8,7 +8,6 @@ import acid_test from "@/public/images/acid_test_sm_icon.svg";
 import copy from "@/public/images/copy_icon.svg";
 import { useState, useEffect } from "react";
 import { copyToClipboard } from "@/lib/utils";
-import { Header } from "../ui/header";
 import sdk from "@farcaster/frame-sdk";
 
 const AcidTest_CA = "0xf7d696B5BED117731B8A71Db264333C8Ec261b07";
@@ -19,7 +18,7 @@ interface DexScreenerData {
   liquidity: number;
 }
 
-export default function AboutPage() {
+export default function About() {
   const [showCopied, setShowCopied] = useState(false);
   const [marketData, setMarketData] = useState<DexScreenerData>({
     marketCap: 0,
@@ -68,10 +67,8 @@ export default function AboutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white font-mono p-4 flex flex-col items-center w-full">
-      <Header />
-
-      <div className="flex flex-col w-full max-w-md gap-10 mt-4">
+    <div className="bg-black text-white font-mono p-4 flex flex-col items-center w-full">
+      <div className="flex flex-col w-full max-w-md gap-10">
         {/* Main Description */}
         <div className="flex flex-col gap-4">
           <p className="text-md leading-relaxed">

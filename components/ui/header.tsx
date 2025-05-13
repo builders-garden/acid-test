@@ -8,6 +8,8 @@ import { useEffect } from "react";
 import { usePrelaunchState } from "@/hooks/use-prelaunch-state";
 import { Button } from "./button";
 import { useFrameStatus } from "@/contexts/FrameStatusContext";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import About from "../About";
 
 interface HeaderProps {
   userAddedFrameOnAction?: boolean;
@@ -16,7 +18,6 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ userAddedFrameOnAction }) => {
   const pathname = usePathname();
   const isSongsPage = pathname === "/songs";
-  const isAboutPage = pathname === "/about";
   const isHomePage = pathname === "/";
   const { isPrelaunch } = usePrelaunchState();
   const { userAddedFrame, setUserAddedFrame, isLoading, promptToAddFrame } =
@@ -28,10 +29,15 @@ export const Header: React.FC<HeaderProps> = ({ userAddedFrameOnAction }) => {
     }
   }, [userAddedFrameOnAction, setUserAddedFrame]);
 
-  // Prompt to add frame when the component mounts
   useEffect(() => {
     if (!userAddedFrame && !isLoading && !userAddedFrameOnAction) {
-      promptToAddFrame();
+      const hasPromptedThisSession = localStorage.getItem(
+        "hasPromptedForFrame"
+      );
+      if (!hasPromptedThisSession) {
+        promptToAddFrame();
+        localStorage.setItem("hasPromptedForFrame", "true");
+      }
     }
   }, [userAddedFrame, isLoading, userAddedFrameOnAction, promptToAddFrame]);
 
@@ -72,23 +78,24 @@ export const Header: React.FC<HeaderProps> = ({ userAddedFrameOnAction }) => {
                   />
                 </Button>
               </Link>
-              <Link href="/about">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className={`w-9 h-9 rounded-md border-[0.5px] border-white/60 ${
-                    isAboutPage
-                      ? "bg-plum hover:bg-plum"
-                      : "bg-black hover:bg-[#AD82CD4D]"
-                  }`}
-                >
-                  <Image
-                    src={QuestionIcon}
-                    alt="About"
-                    className="w-6 h-6"
-                  />
-                </Button>
-              </Link>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="w-9 h-9 rounded-md border-[0.5px] border-white/60 bg-black hover:bg-[#AD82CD4D]"
+                  >
+                    <Image
+                      src={QuestionIcon}
+                      alt="About"
+                      className="w-6 h-6"
+                    />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-black text-white border-white/20 p-0 max-h-[90vh] overflow-y-auto max-w-[90%] rounded-lg">
+                  <About />
+                </DialogContent>
+              </Dialog>
             </>
           )
         ) : (

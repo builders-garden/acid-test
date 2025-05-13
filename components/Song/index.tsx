@@ -310,23 +310,25 @@ export default function Song() {
             />
           )}
         </button>
-        <button
-          onClick={() =>
-            sdk.actions.openUrl(
-              `https://opensea.io/assets/base/${CONTRACT_ADDRESS}/${tokenId}`
-            )
-          }
-          className="p-2 border border-white hover:bg-white/10 transition-colors rounded"
-          aria-label="View on OpenSea"
-        >
-          <Image
-            src="/images/opensea.png"
-            alt="OpenSea"
-            width={20}
-            height={20}
-            className="rounded-sm"
-          />
-        </button>
+        {status === "live" && (
+          <button
+            onClick={() =>
+              sdk.actions.openUrl(
+                `https://opensea.io/assets/base/${CONTRACT_ADDRESS}/${tokenId}`
+              )
+            }
+            className="p-2 border border-white hover:bg-white/10 transition-colors rounded"
+            aria-label="View on OpenSea"
+          >
+            <Image
+              src="/images/opensea.png"
+              alt="OpenSea"
+              width={20}
+              height={20}
+              className="rounded-sm"
+            />
+          </button>
+        )}
       </div>
 
       {/* Collectors Section */}

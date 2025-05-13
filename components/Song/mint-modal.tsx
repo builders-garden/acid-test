@@ -12,7 +12,7 @@ import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import Image from "next/image";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { useBalance, useReadContract, useWriteContract } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { toast } from "sonner";
@@ -433,6 +433,14 @@ export function MintModal({
     songName,
     tokenId,
     promptToAddFrame,
+    context,
+    contextType,
+    paymentMethod,
+    postMintExecuted,
+    refetchCollectors,
+    refetchUserCollector,
+    usdPrice,
+    userFid,
   ]);
 
   useEffect(() => {
@@ -484,13 +492,18 @@ export function MintModal({
             className="fixed inset-x-4 bottom-4 z-50 bg-black border-2 border-white/20 rounded-2xl shadow-lg shadow-black/50"
             onPointerDown={handleDragStart}
           >
-            <div className="flex justify-center p-2">
-              <div className="w-12 h-1 bg-white/20 rounded-full" />
+            <div className="flex justify-between items-center p-2 w-full">
+              <button
+                onClick={handleClose}
+                className="p-2 hover:bg-white/10 rounded-full transition-colors ml-auto"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            <div className="h-[400px] flex items-center justify-center">
+            <div className="h-[380px] flex items-center justify-center">
               {mintState === MintState.Initial && (
-                <div className="p-8 space-y-8 max-w-sm w-full">
+                <div className="p-8 pt-4 space-y-8 max-w-sm w-full">
                   <div className="flex flex-col items-center gap-4">
                     <div className="flex justify-between items-center w-full">
                       <span className="text-sm"># of editions</span>
@@ -574,7 +587,8 @@ export function MintModal({
                         : !hasEnoughUsdcAllowance()
                         ? "APPROVE USDC"
                         : "MINT WITH USDC"}
-                      {allowanceStatus === "pending" && (
+                      {(allowanceStatus === "pending" ||
+                        (allowanceTxHash && allowanceTxResult.isPending)) && (
                         <Loader2 className="ml-2 w-4 h-4 animate-spin" />
                       )}
                     </Button>
@@ -600,7 +614,7 @@ export function MintModal({
               )}
 
               {mintState === MintState.Confirm && (
-                <div className="p-8 max-w-sm w-full relative overflow-hidden">
+                <div className="p-8 pt-4 max-w-sm w-full relative overflow-hidden">
                   <div className="flex flex-col items-center justify-center gap-4">
                     <div className="flex items-center justify-center gap-2">
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -628,9 +642,9 @@ export function MintModal({
               )}
 
               {mintState === MintState.Success && (
-                <div className="p-8 max-w-sm w-full">
+                <div className="p-8 pt-4 max-w-sm w-full">
                   <div className="flex flex-col items-center gap-8">
-                    <div className="w-32 h-32 bg-black border border-white/90 border-2 rounded-sm relative">
+                    <div className="w-32 h-32 bg-black border-2 border-white/90 rounded-sm relative">
                       {image ? (
                         <Image
                           src={image}
@@ -650,21 +664,12 @@ export function MintModal({
                       You minted {mintQuantity} edition
                       {mintQuantity > 1 ? "s" : ""} of {formatSongId(tokenId)}
                     </p>
-                    <div className="flex flex-col gap-4 w-full">
-                      <Button
-                        className="w-full h-10 py-4 text-lg bg-mint text-black hover:bg-plum hover:text-black"
-                        onClick={handleShareMintedSong}
-                      >
-                        Share
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="w-full h-10 py-4 text-lg bg-black text-white hover:bg-white/10 hover:text-white"
-                        onClick={handleClose}
-                      >
-                        Done
-                      </Button>
-                    </div>
+                    <Button
+                      className="w-full h-10 py-4 text-lg bg-mint text-black hover:bg-plum hover:text-black"
+                      onClick={handleShareMintedSong}
+                    >
+                      Share
+                    </Button>
                   </div>
                 </div>
               )}
