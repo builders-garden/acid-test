@@ -309,28 +309,25 @@ export function MintModal({
             const newUserPosition = collectionDetails?.position;
             const totalQuantityHeld = collectionDetails?.amount;
             try {
-              const leaderboardText =
-                newUserPosition && totalQuantityHeld
-                  ? `You currently hold the ${newUserPosition}${
-                      newUserPosition % 10 === 1 && newUserPosition % 100 !== 11
-                        ? "st"
-                        : newUserPosition % 10 === 2 &&
-                          newUserPosition % 100 !== 12
-                        ? "nd"
-                        : newUserPosition % 10 === 3 &&
-                          newUserPosition % 100 !== 13
-                        ? "rd"
-                        : "th"
-                    } spot with ${totalQuantityHeld} edition${
-                      totalQuantityHeld > 1 ? "s" : ""
-                    } on the collectors leaderboard.`
-                  : "You're now part of the collectors leaderboard.";
+              const leaderboardText = newUserPosition
+                ? `You're in ${newUserPosition}${
+                    newUserPosition % 10 === 1 && newUserPosition % 100 !== 11
+                      ? "st"
+                      : newUserPosition % 10 === 2 &&
+                        newUserPosition % 100 !== 12
+                      ? "nd"
+                      : newUserPosition % 10 === 3 &&
+                        newUserPosition % 100 !== 13
+                      ? "rd"
+                      : "th"
+                  } place on the leaderboard`
+                : "You're now on the leaderboard";
 
               const body = {
-                title: `You just collected ${mintQuantity} ${
+                title: `You minted ${mintQuantity} ${
                   mintQuantity > 1 ? "editions" : "edition"
                 } of ${songName}!`,
-                text: `${leaderboardText} Thank you!`,
+                text: leaderboardText,
                 delay: 0,
                 fids: [userFid],
               };
@@ -584,6 +581,9 @@ export function MintModal({
                     >
                       {!hasEnoughUsdcBalance()
                         ? "INSUFFICIENT USDC BALANCE"
+                        : allowanceStatus === "pending" ||
+                          (allowanceTxHash && allowanceTxResult.isPending)
+                        ? "APPROVING"
                         : !hasEnoughUsdcAllowance()
                         ? "APPROVE USDC"
                         : "MINT WITH USDC"}

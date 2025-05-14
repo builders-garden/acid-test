@@ -51,14 +51,14 @@ export async function POST(request: NextRequest) {
       // When song goes live
       sendDelayedNotificationToAll(
         `New Episode is live!`,
-        `Listen to AT${formattedTokenId}: "${title}"`,
+        `Listen to AT${formattedTokenId}: ${title}`,
         timeUntilStart
       ),
 
       // 30 minutes before mint ends
       sendDelayedNotificationToAll(
         `30 mins until mint closes!`,
-        `Last chance to mint AT${formattedTokenId}: "${title}"`,
+        `Last chance to mint AT${formattedTokenId}: ${title}`,
         timeUntilEnd - thirtyMinutesInSeconds
       ),
 

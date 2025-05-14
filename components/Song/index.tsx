@@ -23,7 +23,7 @@ import {
 } from "@/lib/utils";
 import { SongMetadata } from "@/types";
 import sdk from "@farcaster/frame-sdk";
-import { Check, Upload } from "lucide-react";
+import { Check } from "lucide-react";
 import Image from "next/image";
 import copy from "@/public/images/copy.svg";
 import { Header } from "../ui/header";
@@ -285,7 +285,9 @@ export default function Song() {
           className="p-2 border border-white hover:bg-white/10 transition-colors rounded"
           aria-label="Share"
         >
-          <Upload
+          <Image
+            src="/images/farcaster.png"
+            alt="Share"
             width={20}
             height={20}
           />
@@ -306,7 +308,6 @@ export default function Song() {
               alt="Copy"
               width={20}
               height={20}
-              className="rounded-sm"
             />
           )}
         </button>

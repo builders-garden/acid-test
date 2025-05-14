@@ -160,14 +160,13 @@ export default function SongsPage() {
             });
           });
 
-          // Sort releases by ID number
+          // Sort releases by salesStartDate in descending order (newest first)
           const sortedReleases = filteredReleases.sort((a, b) => {
-            // Extract numeric ID values from the formatted IDs
-            const aIdNum = parseInt(a.id.replace(/\D/g, ""));
-            const bIdNum = parseInt(b.id.replace(/\D/g, ""));
-
-            // Sort by numeric ID in ascending order
-            return aIdNum - bIdNum;
+            // For redacted releases (which have salesStartDate = 0), place them at the end
+            if (a.status === "redacted" && b.status !== "redacted") return 1;
+            if (a.status !== "redacted" && b.status === "redacted") return -1;
+            // Sort by salesStartDate in descending order
+            return b.salesStartDate - a.salesStartDate;
           });
 
           setReleases(sortedReleases);
