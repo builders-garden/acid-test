@@ -129,3 +129,23 @@ export const handleAddFrame = async () => {
     throw error;
   }
 };
+
+export const getFeaturingDetails = (
+  songId: number
+): { name: string; pfp: string; fid: number; text?: string } => {
+  switch (songId) {
+    case 1:
+      return { name: "jc4p", pfp: "/images/jc4p.avif", fid: 977233 };
+    case 2:
+      return { name: "ted", pfp: "/images/ted.png", fid: 239 };
+    case 3:
+      return {
+        name: "dwr.eth",
+        pfp: "/images/dwr.png",
+        fid: 3,
+        text: "+ 42 others",
+      };
+    default:
+      return { name: "Unknown", pfp: "/images/unknown.png", fid: 1 };
+  }
+};

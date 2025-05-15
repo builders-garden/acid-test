@@ -13,6 +13,7 @@ import { MintModal } from "@/components/Song/mint-modal";
 import { PlayerControls } from "./player-controls";
 import { MintStatus } from "./mint-status";
 import { CollectorsSection } from "./collectors-section";
+import { Feat } from "../ui/feat";
 
 import { useAccount, useReadContract } from "wagmi";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
@@ -26,6 +27,7 @@ import {
   copyToClipboard,
   fetchWithIPFSFallback,
   formatSongId,
+  getFeaturingDetails,
 } from "@/lib/utils";
 import { SongMetadata } from "@/types";
 import sdk from "@farcaster/frame-sdk";
@@ -268,6 +270,13 @@ export default function Song() {
     }
   };
 
+  const {
+    name: featuringName,
+    pfp: featuringPfp,
+    text: featuringText,
+    fid: featuringFid,
+  } = getFeaturingDetails(tokenId);
+
   return (
     <div className="min-h-screen bg-black text-white font-mono p-4 flex flex-col items-center w-full pb-8 gap-6">
       <Header userAddedFrameOnAction={userAddedFrameOnAction} />
@@ -289,131 +298,137 @@ export default function Song() {
         </div>
 
         <div className="flex flex-col items-center gap-4 w-full max-w-lg">
-          {/* Song Title and Release Number */}
-          <div className="grid grid-cols-6 w-full max-w-md">
-            <div className="w-full"></div>
-            <div className="flex flex-col gap-2 text-center col-span-4">
-              <h2 className="text-[18px] font-bold leading-none">
-                {metadata?.name || "LOADING"}
-              </h2>
-              <div className="text-[14px] text-white leading-none">
-                {formatSongId(tokenId)}
+          <div className="flex flex-col items-center gap-2 w-full">
+            {/* Song Title and Release Number */}
+            <div className="grid grid-cols-6 w-full max-w-md">
+              <div className="w-full"></div>
+              <div className="flex flex-col gap-2 text-center col-span-4">
+                <h2 className="text-[18px] font-bold leading-none">
+                  {metadata?.name || "LOADING"}
+                </h2>
               </div>
-            </div>
-            <div className="flex justify-end items-start gap-4 h-fit">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className="hover:text-opacity-70 transition-opacity rounded"
-                    aria-label="Share options"
-                  >
-                    <Upload
-                      width={20}
-                      height={20}
-                      className="text-white"
-                    />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent side="left">
-                  <DropdownMenuItem
-                    onClick={handleShareSong}
-                    className="gap-2"
-                  >
-                    <Image
-                      src="/images/farcaster.png"
-                      alt=""
-                      width={16}
-                      height={16}
-                    />
-                    Share via cast
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={async () => {
-                      if (navigator.share) {
-                        try {
-                          await navigator.share({
-                            title: metadata?.name || "Song",
-                            text: `Check out this song: ${
-                              metadata?.name || ""
-                            }`,
-                            url: frameUrl,
-                          });
-                        } catch (err) {
-                          // User cancelled or error
-                        }
-                      } else {
-                        copyToClipboard(frameUrl, setLinkCopied);
-                      }
-                    }}
-                    className="gap-2"
-                  >
-                    <Share2 className="w-4 h-4" />
-                    Share to...
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={(e) => {
-                      e.preventDefault();
-                      copyToClipboard(frameUrl, setLinkCopied);
-                    }}
-                    className="gap-2"
-                  >
-                    {linkCopied ? (
-                      <Check className="w-4 h-4" />
-                    ) : (
+              <div className="flex justify-end items-start gap-4 h-fit">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="hover:text-opacity-70 transition-opacity rounded"
+                      aria-label="Share options"
+                    >
+                      <Upload
+                        width={20}
+                        height={20}
+                        className="text-white"
+                      />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent side="left">
+                    <DropdownMenuItem
+                      onClick={handleShareSong}
+                      className="gap-2"
+                    >
                       <Image
-                        src={copy}
+                        src="/images/farcaster.png"
                         alt=""
                         width={16}
                         height={16}
                       />
-                    )}
-                    Copy link
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                      Share via cast
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        if (navigator.share) {
+                          try {
+                            await navigator.share({
+                              title: metadata?.name || "Song",
+                              text: `Check out this song: ${
+                                metadata?.name || ""
+                              }`,
+                              url: frameUrl,
+                            });
+                          } catch (err) {
+                            // User cancelled or error
+                          }
+                        } else {
+                          copyToClipboard(frameUrl, setLinkCopied);
+                        }
+                      }}
+                      className="gap-2"
+                    >
+                      <Share2 className="w-4 h-4" />
+                      Share to...
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        copyToClipboard(frameUrl, setLinkCopied);
+                      }}
+                      className="gap-2"
+                    >
+                      {linkCopied ? (
+                        <Check className="w-4 h-4" />
+                      ) : (
+                        <Image
+                          src={copy}
+                          alt=""
+                          width={16}
+                          height={16}
+                        />
+                      )}
+                      Copy link
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className="hover:text-opacity-70 transition-opacity rounded"
-                    aria-label="More options"
-                  >
-                    <Ellipsis
-                      width={20}
-                      height={20}
-                      className="text-white"
-                    />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent side="left">
-                  <DropdownMenuItem
-                    onClick={handleOpenSeaLink}
-                    className="gap-2"
-                  >
-                    <Image
-                      src="/images/opensea.png"
-                      alt=""
-                      width={16}
-                      height={16}
-                      className="rounded-sm"
-                    />
-                    OpenSea link
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={handleSplitsLink}
-                    className="gap-2"
-                  >
-                    <Image
-                      src="/images/splits.svg"
-                      alt=""
-                      width={16}
-                      height={16}
-                    />
-                    Splits link
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="hover:text-opacity-70 transition-opacity rounded"
+                      aria-label="More options"
+                    >
+                      <Ellipsis
+                        width={20}
+                        height={20}
+                        className="text-white"
+                      />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent side="left">
+                    <DropdownMenuItem
+                      onClick={handleOpenSeaLink}
+                      className="gap-2"
+                    >
+                      <Image
+                        src="/images/opensea.png"
+                        alt=""
+                        width={16}
+                        height={16}
+                        className="rounded-sm"
+                      />
+                      OpenSea link
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleSplitsLink}
+                      className="gap-2"
+                    >
+                      <Image
+                        src="/images/splits.svg"
+                        alt=""
+                        width={16}
+                        height={16}
+                      />
+                      Splits link
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
+            {/* Feat element below the grid, centered */}
+            <Feat
+              featuringName={featuringName}
+              featuringPfp={featuringPfp}
+              featuringText={featuringText}
+              featuringFid={featuringFid}
+            />
           </div>
 
           {/* Player Controls */}

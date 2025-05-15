@@ -1,18 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useReadContract } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
 import { SongMetadata } from "@/types";
 import { fetchWithIPFSFallback, formatSongId } from "@/lib/utils";
-import QuestionMark from "@/public/images/question_mark.png";
 import { Header } from "../ui/header";
 import { trackEvent } from "@/lib/posthog/client";
 import { ContextType, useMiniAppContext } from "@/hooks/use-miniapp-context";
+import { ReleaseBlockCard } from "./ReleaseBlockCard";
 
 interface TokenInfo {
   salesStartDate: number;
@@ -26,7 +24,7 @@ interface RedactedSong {
   createdAt: number;
 }
 
-interface ReleaseBlock {
+export interface ReleaseBlock {
   index: number;
   id: string;
   title: string;
@@ -44,21 +42,6 @@ export default function SongsPage() {
 
   const userFid =
     contextType === ContextType.Farcaster ? context.user.fid : undefined;
-
-  const formatCountdown = (seconds: number) => {
-    if (seconds <= 0) return "00:00:00:00";
-
-    const days = Math.floor(seconds / (3600 * 24));
-    const totalHours = Math.floor((seconds % (3600 * 24)) / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const remainingSeconds = seconds % 60;
-
-    return `${days.toString().padStart(2, "0")}:${totalHours
-      .toString()
-      .padStart(2, "0")}:${minutes
-      .toString()
-      .padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
-  };
 
   const getTokenInfosResult = useReadContract({
     abi: AcidTestABI,
@@ -199,194 +182,6 @@ export default function SongsPage() {
     return () => clearInterval(timer);
   }, [releases.length]);
 
-  const renderReleaseBlock = (release: ReleaseBlock) => {
-    if (release.status === "live") {
-      return (
-        <Link
-          href={`/songs/${release.index}`}
-          key={release.id}
-          className="w-full"
-          onClick={() => {
-            trackEvent("song_clicked", {
-              fid: userFid,
-              songId: release.id,
-              songTitle: release.title,
-              songStatus: "live",
-            });
-          }}
-        >
-          <div className="border border-white/50 rounded-[8px] p-4 hover:bg-[#463B3A66] transition-colors w-full">
-            <div className="flex gap-4 relative">
-              <div className="w-20 h-20 bg-black border border-white/60 rounded relative flex-shrink-0 overflow-hidden">
-                {release.image ? (
-                  <Image
-                    src={release.image}
-                    alt={release.title}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-12 h-12 rounded-full border border-white/40 flex items-center justify-center">
-                      <div className="w-2 h-2 rounded-full bg-white/40" />
-                    </div>
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0 flex flex-col justify-between h-20">
-                <div className="flex flex-col gap-2">
-                  <h2 className="text-[18px] text-mono leading-none">
-                    {release.title.toUpperCase()}
-                  </h2>
-                  <p className="text-[14px] text-white leading-none">
-                    {release.id}
-                  </p>
-                </div>
-                <div className="flex justify-between items-end w-full">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-mint animate-pulse" />
-                    <span className="text-[14px] leading-none">Mint Open</span>
-                  </div>
-                  <div className="font-mono text-[10px] leading-none">
-                    {release.countdown !== undefined &&
-                      formatCountdown(release.countdown)}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Link>
-      );
-    } else if (release.status === "redacted") {
-      return (
-        <div
-          key={release.id}
-          className="w-full border border-white/20 opacity-50 rounded-lg p-4 bg-black/60"
-        >
-          <div className="flex gap-4 relative">
-            <div className="w-20 h-20 bg-black border border-white/10 rounded relative flex-shrink-0 overflow-hidden">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Image
-                  src={QuestionMark}
-                  alt={"Redacted"}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            </div>
-            <div className="flex-1 min-w-0 flex flex-col justify-between h-20">
-              <div className="flex flex-col gap-2">
-                <h2 className="text-xl text-mono leading-none bg-white/60 text-transparent select-none rounded-[1px] w-[100%]">
-                  _
-                </h2>
-                <p className="text-[14px] text-white leading-none">
-                  {release.id}
-                </p>
-              </div>
-              <div className="flex items-center gap-2 text-white/40">
-                <div className="w-2 h-2 rounded-full bg-white/40" />
-                <span className="text-[14px] leading-none">Coming Soon</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    } else if (release.status === "coming") {
-      return (
-        <div className="border border-white/50 rounded-[8px] p-4 w-full">
-          <div className="flex gap-4 relative">
-            <div className="w-20 h-20 bg-black border border-white/60 rounded relative overflow-hidden">
-              {release.image ? (
-                <Image
-                  src={release.image}
-                  alt={release.title}
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center">
-                    <div className="w-2 h-2 rounded-full bg-white/20" />
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className="flex-1 min-w-0 flex flex-col justify-between h-20">
-              <div className="flex flex-col gap-2">
-                <h2 className="text-[18px] text-mono leading-none">
-                  {release.title.toUpperCase()}
-                </h2>
-                <p className="text-[14px] text-white/40 leading-none">
-                  {release.id}
-                </p>
-              </div>
-              <div className="flex items-center gap-2 text-white/60">
-                <div className="w-2 h-2 rounded-full bg-white/40" />
-                <p className="text-[14px] leading-none">Coming Soon</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    } else {
-      return (
-        <Link
-          href={`/songs/${release.index}`}
-          key={release.id}
-          className="w-full"
-          onClick={() => {
-            trackEvent("song_clicked", {
-              fid: userFid,
-              song_id: release.id,
-              song_title: release.title,
-              song_status: "ended",
-            });
-          }}
-        >
-          <div className="border border-white/50 rounded-[8px] p-4 hover:bg-[#463B3A66] transition-colors w-full">
-            <div className="flex gap-4 relative">
-              <div className="w-20 h-20 bg-black border border-white/40 rounded relative flex-shrink-0 overflow-hidden">
-                {release.image ? (
-                  <Image
-                    src={release.image}
-                    alt={release.title}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-12 h-12 rounded-full border border-white/40 flex items-center justify-center">
-                      <div className="w-2 h-2 rounded-full bg-white/40" />
-                    </div>
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0 flex flex-col justify-between h-20">
-                <div className="flex flex-col gap-2">
-                  <h2 className="text-[18px] text-mono leading-none">
-                    {release.title.toUpperCase()}
-                  </h2>
-                  <p className="text-[14px] text-white/40 leading-none">
-                    {release.id}
-                  </p>
-                </div>
-                <div className="flex justify-between items-end w-full">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-plum" />
-                    <p className="text-[14px] leading-none">Mint Closed</p>
-                  </div>
-                  <div className="font-mono text-[10px] text-[#606075] leading-none">
-                    now on secondary
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Link>
-      );
-    }
-  };
-
   return (
     <div className="min-h-screen bg-black text-white font-mono p-4 gap-6 flex flex-col items-center w-full">
       <Header />
@@ -409,7 +204,32 @@ export default function SongsPage() {
                 </div>
               </div>
             ))
-          : releases.map(renderReleaseBlock)}
+          : releases.map((release) => (
+              <ReleaseBlockCard
+                key={release.id}
+                release={release}
+                asLink={release.status === "live" || release.status === "end"}
+                onClick={
+                  release.status === "live"
+                    ? () =>
+                        trackEvent("song_clicked", {
+                          fid: userFid,
+                          songId: release.id,
+                          songTitle: release.title,
+                          songStatus: "live",
+                        })
+                    : release.status === "end"
+                    ? () =>
+                        trackEvent("song_clicked", {
+                          fid: userFid,
+                          song_id: release.id,
+                          song_title: release.title,
+                          song_status: "ended",
+                        })
+                    : undefined
+                }
+              />
+            ))}
       </div>
     </div>
   );

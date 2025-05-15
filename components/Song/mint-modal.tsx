@@ -24,6 +24,12 @@ import { composeMintCastUrl, formatSongId } from "@/lib/utils";
 import sdk from "@farcaster/frame-sdk";
 import { trackEvent } from "@/lib/posthog/client";
 import { useFrameStatus } from "@/contexts/FrameStatusContext";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface MintModalProps {
   isOpen: boolean;
@@ -64,10 +70,17 @@ export function MintModal({
   image,
   refetchUserCollector,
 }: MintModalProps) {
+  const WAY_MORE_MIN = 11;
+  const WAY_MORE_MAX = 100;
+
   const [isSliderInteracting, setIsSliderInteracting] = useState(false);
   const [mintState, setMintState] = useState<MintState>(MintState.Initial);
   const [castUrl, setCastUrl] = useState<string>("");
   const [postMintExecuted, setPostMintExecuted] = useState(false);
+  const [wayMoreAccordionValue, setWayMoreAccordionValue] =
+    useState<string>("");
+
+  const presetQuantities = [1, 2, 5, 10];
   const modalRef = useRef<HTMLDivElement>(null);
   const dragControls = useDragControls();
   const price = usdPrice / ethUsd;
@@ -506,19 +519,78 @@ export function MintModal({
                       <span className="text-sm"># of editions</span>
                       <span className="text-sm">{mintQuantity}</span>
                     </div>
-                    <Slider
-                      min={1}
-                      max={100}
-                      step={1}
-                      value={[mintQuantity]}
-                      onValueChange={(value) => setMintQuantity(value[0])}
+                    <div className="grid grid-cols-5 gap-2 w-full">
+                      {presetQuantities.map((quantity) => (
+                        <button
+                          key={quantity}
+                          onClick={() => {
+                            setMintQuantity(quantity);
+                            setWayMoreAccordionValue("");
+                          }}
+                          className={`aspect-square flex items-center justify-center border-2 rounded-md text-lg transition-colors
+                            ${
+                              mintQuantity === quantity
+                                ? "border-white text-white bg-white/10"
+                                : "border-white/20 text-white/60 hover:border-white/60 hover:text-white"
+                            }`}
+                        >
+                          {quantity}
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => {
+                          const newValue = wayMoreAccordionValue ? "" : "more";
+                          setWayMoreAccordionValue(newValue);
+                          if (
+                            newValue === "more" &&
+                            mintQuantity < WAY_MORE_MIN
+                          ) {
+                            setMintQuantity(WAY_MORE_MIN);
+                          }
+                        }}
+                        className={`aspect-square flex items-center justify-center border-2 rounded-md text-[10px] transition-colors
+                          ${
+                            wayMoreAccordionValue
+                              ? "border-white text-white bg-white/10"
+                              : "border-white/20 text-white/60 hover:border-white/60 hover:text-white"
+                          }`}
+                      >
+                        Way More
+                      </button>
+                    </div>
+
+                    <Accordion
+                      type="single"
+                      collapsible
+                      value={wayMoreAccordionValue}
+                      onValueChange={setWayMoreAccordionValue}
                       className="w-full"
-                      onPointerDown={handleSliderPointerDown}
-                      onPointerUp={handleSliderPointerUp}
-                    />
+                    >
+                      <AccordionItem
+                        value="more"
+                        className="border-none"
+                      >
+                        <AccordionContent>
+                          <Slider
+                            min={WAY_MORE_MIN}
+                            max={WAY_MORE_MAX}
+                            step={1}
+                            value={[
+                              mintQuantity < WAY_MORE_MIN
+                                ? WAY_MORE_MIN
+                                : mintQuantity,
+                            ]}
+                            onValueChange={(value) => setMintQuantity(value[0])}
+                            className="w-full mt-2"
+                            onPointerDown={handleSliderPointerDown}
+                            onPointerUp={handleSliderPointerUp}
+                          />
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-2 !mt-3">
                     <span className="text-sm text-white">checkout with</span>
                     <div className="flex justify-center items-center gap-4">
                       <Button
@@ -530,7 +602,6 @@ export function MintModal({
                         }`}
                         onClick={() => setPaymentMethod("USDC")}
                       >
-                        {/*  <CircleDollarSign className="w-5 h-5" /> */}
                         USDC
                       </Button>
                       <Button
@@ -542,7 +613,6 @@ export function MintModal({
                         }`}
                         onClick={() => setPaymentMethod("ETH")}
                       >
-                        {/* <Ethereum className="w-5 h-5" /> */}
                         ETH
                       </Button>
                     </div>

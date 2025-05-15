@@ -64,7 +64,7 @@ export const PlayerControls = ({
   return (
     <div className="w-full max-w-md flex flex-col items-center gap-6 mt-1">
       {/* Play Controls */}
-      <div className="flex justify-center items-center gap-12 mb-3">
+      <div className="flex justify-center items-center gap-12">
         <motion.div
           animate={backwardControls}
           whileTap={{ scale: 0.9 }}
