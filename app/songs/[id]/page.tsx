@@ -13,7 +13,7 @@ export async function generateMetadata({
 
   const frame = {
     version: "next",
-    imageUrl: `${appUrl}/images/feed.jpg`,
+    imageUrl: `${appUrl}/api/dynamic-image/${requestId}`,
     button: {
       title: "Launch App",
       action: {
