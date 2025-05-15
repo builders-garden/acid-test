@@ -28,10 +28,16 @@ export async function GET(
       const items = collectors.slice(startIndex, endIndex);
       const nextCursor = endIndex < collectors.length ? endIndex : undefined;
 
+      const totalMints = collectors.reduce(
+        (sum, collector) => sum + collector.amount,
+        0
+      );
+
       return NextResponse.json({
         items,
         nextCursor,
         total: collectors.length,
+        totalMints,
       });
     }
   } catch (error) {
@@ -39,7 +45,7 @@ export async function GET(
     const errorMessage =
       error instanceof Error ? error.message : "An unknown error occurred";
     return NextResponse.json(
-      { items: [], error: errorMessage },
+      { items: [], error: errorMessage, totalMints: 0 },
       { status: 500 }
     );
   }

@@ -3,7 +3,9 @@ import Image from "next/image";
 import QuestionMark from "@/public/images/question_mark.png";
 import { ReleaseBlock } from ".";
 import { Feat } from "@/components/ui/feat";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getFeaturingDetails } from "@/lib/utils";
+import { useTotalMints } from "@/hooks/use-get-collectors";
 
 interface ReleaseBlockCardProps {
   release: ReleaseBlock;
@@ -16,6 +18,9 @@ export function ReleaseBlockCard({
   onClick,
   asLink = false,
 }: ReleaseBlockCardProps) {
+  const { totalMints, isLoading } = useTotalMints(
+    release.status === "end" ? release.index : undefined
+  );
   const {
     name: featuringName,
     pfp: featuringPfp,
@@ -46,7 +51,13 @@ export function ReleaseBlockCard({
       ),
       right: (
         <div className="flex items-center gap-2">
-          <div className="font-mono text-sm leading-none">XXX mints</div>
+          <div className="font-mono text-sm leading-none">
+            {isLoading ? (
+              <Skeleton className="h-3 bg-white/30 w-16" />
+            ) : (
+              `${totalMints} mints`
+            )}
+          </div>
           {/* <div className="w-2 h-2 rounded-full bg-plum" /> */}
         </div>
       ),
