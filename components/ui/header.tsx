@@ -42,7 +42,7 @@ export const Header: React.FC<HeaderProps> = ({ userAddedFrameOnAction }) => {
   }, [userAddedFrame, isLoading, userAddedFrameOnAction, promptToAddFrame]);
 
   return (
-    <div className="w-full max-w-md flex justify-between items-center mb-6 h-[36.5px]">
+    <div className="w-full max-w-md flex justify-between items-center h-[36.5px]">
       <Link href="/?from=internal">
         <Image
           src={Logo}

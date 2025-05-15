@@ -388,7 +388,7 @@ export default function SongsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white font-mono p-4 flex flex-col items-center w-full">
+    <div className="min-h-screen bg-black text-white font-mono p-4 gap-6 flex flex-col items-center w-full">
       <Header />
 
       {/* Release Blocks */}

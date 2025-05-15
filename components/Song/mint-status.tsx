@@ -25,25 +25,6 @@ export const MintStatus = ({
 
   return (
     <div className="w-full max-w-md flex flex-col items-center gap-4 mb-6">
-      <div className="w-full flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          {status === "live" ? (
-            <>
-              <div className="w-2 h-2 rounded-full bg-mint animate-pulse" />
-              <span className="text-sm">Mint Open</span>
-            </>
-          ) : (
-            <>
-              <div className="w-2 h-2 rounded-full bg-white/40" />
-              <span className="text-sm">Mint Ended</span>
-            </>
-          )}
-        </div>
-        {status === "live" && (
-          <div className="text-sm font-mono">{formatCountdown(countdown)}</div>
-        )}
-      </div>
-
       {status === "live" ? (
         <Button
           className="w-full h-10 text-lg bg-mint text-black hover:bg-plum hover:text-black"
@@ -66,6 +47,24 @@ export const MintStatus = ({
           />
         </Button>
       )}
+      <div className="w-full flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          {status === "live" ? (
+            <>
+              <div className="w-2 h-2 rounded-full bg-mint animate-pulse" />
+              <span className="text-sm">Mint Open</span>
+            </>
+          ) : (
+            <>
+              <div className="w-2 h-2 rounded-full bg-white/40" />
+              <span className="text-sm">Mint Ended</span>
+            </>
+          )}
+        </div>
+        {status === "live" && (
+          <div className="text-sm font-mono">{formatCountdown(countdown)}</div>
+        )}
+      </div>
     </div>
   );
 };
