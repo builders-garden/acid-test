@@ -67,28 +67,34 @@ export const composeMintCastUrl = (
   };
 };
 
-export const copyToClipboard = (
+export const copyToClipboard = async (
   text: string | undefined,
   setShowCopied: React.Dispatch<React.SetStateAction<boolean>>
 ) => {
   if (!text) return;
 
-  const textArea = document.createElement("textarea");
-  textArea.value = text;
-  textArea.style.position = "fixed";
-  textArea.style.opacity = "0";
-  document.body.appendChild(textArea);
-
-  textArea.select();
   try {
-    document.execCommand("copy");
+    await navigator.clipboard.writeText(text);
     setShowCopied(true);
     setTimeout(() => setShowCopied(false), 750);
   } catch (err) {
-    console.error("Failed to copy text: ", err);
-  }
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.opacity = "0";
+    document.body.appendChild(textArea);
 
-  document.body.removeChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand("copy");
+      setShowCopied(true);
+      setTimeout(() => setShowCopied(false), 750);
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
+    }
+
+    document.body.removeChild(textArea);
+  }
 };
 
 /**

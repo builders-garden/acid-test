@@ -154,7 +154,9 @@ export default function About() {
               </span>
               <div className="relative flex items-center">
                 <button
-                  onClick={() => copyToClipboard(AcidTest_CA, setShowCopied)}
+                  onClick={async () =>
+                    await copyToClipboard(AcidTest_CA, setShowCopied)
+                  }
                   className="hover:opacity-70 transition-opacity w-6 h-6 mb-1 flex items-center justify-center"
                 >
                   <Image

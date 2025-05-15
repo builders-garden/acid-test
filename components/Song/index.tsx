@@ -299,7 +299,7 @@ export default function Song() {
 
         <div className="flex flex-col items-center gap-4 w-full max-w-lg">
           <div className="flex flex-col items-center gap-2 w-full">
-            {/* Song Title and Release Number */}
+            {/* Song Title, Release Number, Links */}
             <div className="grid grid-cols-6 w-full max-w-md">
               <div className="w-full"></div>
               <div className="flex flex-col gap-2 text-center col-span-4">
@@ -349,7 +349,7 @@ export default function Song() {
                             // User cancelled or error
                           }
                         } else {
-                          copyToClipboard(frameUrl, setLinkCopied);
+                          await copyToClipboard(frameUrl, setLinkCopied);
                         }
                       }}
                       className="gap-2"
@@ -358,9 +358,9 @@ export default function Song() {
                       Share to...
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onSelect={(e) => {
+                      onSelect={async (e) => {
                         e.preventDefault();
-                        copyToClipboard(frameUrl, setLinkCopied);
+                        await copyToClipboard(frameUrl, setLinkCopied);
                       }}
                       className="gap-2"
                     >
@@ -453,60 +453,6 @@ export default function Song() {
             tokenId={tokenId}
           />
         </div>
-
-        {/* Share Buttons */}
-        {/* <div className="flex gap-2 w-fit m-auto">
-          <button
-            onClick={handleShareSong}
-            className="p-2 border border-white hover:bg-white/10 transition-colors rounded"
-            aria-label="Share"
-          >
-            <Image
-              src="/images/farcaster.png"
-              alt="Share"
-              width={20}
-              height={20}
-            />
-          </button>
-          <button
-            onClick={() => copyToClipboard(frameUrl, setLinkCopied)}
-            className="p-2 border border-white hover:bg-white/10 transition-colors rounded"
-            aria-label="Copy link"
-          >
-            {linkCopied ? (
-              <Check
-                width={20}
-                height={20}
-              />
-            ) : (
-              <Image
-                src={copy}
-                alt="Copy"
-                width={20}
-                height={20}
-              />
-            )}
-          </button>
-          {status === "live" && (
-            <button
-              onClick={() =>
-                sdk.actions.openUrl(
-                  `https://opensea.io/assets/base/${CONTRACT_ADDRESS}/${tokenId}`
-                )
-              }
-              className="p-2 border border-white hover:bg-white/10 transition-colors rounded"
-              aria-label="View on OpenSea"
-            >
-              <Image
-                src="/images/opensea.png"
-                alt="OpenSea"
-                width={20}
-                height={20}
-                className="rounded-sm"
-              />
-            </button>
-          )}
-        </div> */}
 
         {/* Collectors Section */}
         <CollectorsSection
