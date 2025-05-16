@@ -1,15 +1,15 @@
 import { CHAIN } from "@/lib/constants";
-import { frameConnector } from "@/lib/frame-connector";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createConfig, http, WagmiProvider } from "wagmi";
 import { ChainHandler } from "./chain-handler";
+import { farcasterFrame } from "@farcaster/frame-wagmi-connector";
 
 export const config = createConfig({
   chains: [CHAIN],
   transports: {
     [CHAIN.id]: http("https://base.drpc.org"),
   },
-  connectors: [frameConnector()],
+  connectors: [farcasterFrame()],
 });
 
 const queryClient = new QueryClient();

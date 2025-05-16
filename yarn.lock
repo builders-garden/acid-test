@@ -671,10 +671,10 @@
     eventemitter3 "^5.0.1"
     ox "^0.4.4"
 
-"@farcaster/frame-wagmi-connector@^0.0.20":
-  version "0.0.20"
-  resolved "https://registry.yarnpkg.com/@farcaster/frame-wagmi-connector/-/frame-wagmi-connector-0.0.20.tgz#6b849b72769e4669a6315263df22073f2c9a6ddd"
-  integrity sha512-yTPlFfXIjM09N1QOfuLXn06Pqvu7BEWWRGD8Q+Dk3S7a6AxqwyJ6uWZ7uru0pb9m4pJO48R39Us8gfpUm9SDCg==
+"@farcaster/frame-wagmi-connector@^0.0.33":
+  version "0.0.33"
+  resolved "https://registry.yarnpkg.com/@farcaster/frame-wagmi-connector/-/frame-wagmi-connector-0.0.33.tgz#61e714ac0e5ab3fd3810eb27f0a2d657b33c5f27"
+  integrity sha512-rc/s29OtX1gLKFuYlRLNQX/G3lHtCdfIw2U3wFQ3TzE1pI5kuAywqC45sfRgnaMGa+1q6xtPf2xj6i5bKXfz7g==
 
 "@fastify/busboy@^2.0.0":
   version "2.1.1"
