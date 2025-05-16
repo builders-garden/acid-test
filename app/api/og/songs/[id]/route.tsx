@@ -1,21 +1,20 @@
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
 import { env } from "@/lib/env";
-import { loadGoogleFont, loadImage } from "@/lib/og-utils";
+import { loadLocalFont } from "@/lib/og-utils";
 import { fetchWithIPFSFallback } from "@/lib/utils";
 import { SongMetadata } from "@/types";
 import { ImageResponse } from "next/og";
 import { createPublicClient, http } from "viem";
 import { base } from "viem/chains";
-import { useReadContract } from "wagmi";
 
 // Force dynamic rendering to ensure fresh image generation on each request
 export const dynamic = "force-dynamic";
 
 // Define the dimensions for the generated OpenGraph image
 const size = {
-  width: 600,
-  height: 400,
+  width: 1200,
+  height: 800,
 };
 
 /**
@@ -56,13 +55,12 @@ export async function GET(
     const uri = getTokenInfosResult.uri;
 
     const metadata = await fetchWithIPFSFallback<SongMetadata>(uri);
-    const title = metadata.name || "";
-    const image = metadata.image || "";
+    const songArtwork = metadata.image || "";
 
-    // Load the image from the provided URI and get its data
-    const imageData = await loadImage(image);
-    const imageBuffer = Buffer.from(imageData);
-    const base64Image = imageBuffer.toString("base64");
+    // Load the custom font
+    const fontData = await loadLocalFont(
+      "fonts/SuisseIntlMono-Regular-WebS.ttf"
+    );
 
     // Generate and return the image response with the composed elements
     return new ImageResponse(
@@ -72,22 +70,60 @@ export async function GET(
             height: "100%",
             width: "100%",
             display: "flex",
+            flexDirection: "column",
             position: "relative",
             backgroundColor: "black",
           }}
         >
-          <img
-            src={`data:image/png;base64,${base64Image}`}
+          {/* Main artwork and title container */}
+          <div
             style={{
+              position: "relative",
               width: "100%",
               height: "100%",
-              objectFit: "contain",
+              display: "flex",
+              flexDirection: "column",
             }}
-          />
+          >
+            {/* Image container with proper positioning */}
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: "flex",
+                overflow: "hidden",
+                backgroundColor: "black" /* Ensure solid background */,
+              }}
+            >
+              <img
+                src={songArtwork}
+                style={{
+                  width: "100%",
+                  height: "auto",
+                  objectPosition: "top",
+                  marginBottom: "-33.33%",
+                  imageRendering:
+                    "crisp-edges" /* Improve rendering for high-resolution images */,
+                  boxShadow: "none" /* Remove any default shadow */,
+                  filter: "none" /* Remove any default filter */,
+                }}
+              />
+            </div>
+          </div>
         </div>
       ),
       {
         ...size,
+        fonts: [
+          {
+            name: "SuisseIntlMono",
+            data: fontData,
+            style: "normal",
+          },
+        ],
       }
     );
   } catch (e) {
