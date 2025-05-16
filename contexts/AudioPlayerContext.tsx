@@ -240,11 +240,14 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({
   const preloadSong = (metadata: SongMetadata) => {
     if (!audioRef.current) return;
 
-    // Only preload if it's a different song than the current one
-    if (currentSong.metadata?.animation_url !== metadata.animation_url) {
-      console.log("Preloading song:", metadata.name);
+    // Only preload if:
+    // 1. It's a different song than the current one
+    // 2. No song is currently playing (to avoid interrupting playback)
+    if (
+      currentSong.metadata?.animation_url !== metadata.animation_url &&
+      !isPlaying
+    ) {
       setupAudioWithFallback(metadata.animation_url, false);
-      // Don't update currentSong yet, that happens when play is called
     }
   };
 
