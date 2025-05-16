@@ -522,10 +522,7 @@ export function MintModal({
               {mintState === MintState.Initial && (
                 <div className="p-8 pt-4 space-y-8 max-w-sm w-full">
                   <div className="flex flex-col items-center gap-4">
-                    <div className="flex justify-between items-center w-full">
-                      <span className="text-sm"># of editions</span>
-                      <span className="text-sm">{mintQuantity}</span>
-                    </div>
+                    <span className="text-sm w-full"># of editions</span>
                     <div className="grid grid-cols-5 gap-2 w-full">
                       {presetQuantities.map((quantity) => (
                         <button
@@ -578,20 +575,27 @@ export function MintModal({
                         className="border-none"
                       >
                         <AccordionContent>
-                          <Slider
-                            min={WAY_MORE_MIN}
-                            max={WAY_MORE_MAX}
-                            step={1}
-                            value={[
-                              mintQuantity < WAY_MORE_MIN
-                                ? WAY_MORE_MIN
-                                : mintQuantity,
-                            ]}
-                            onValueChange={(value) => setMintQuantity(value[0])}
-                            className="w-full mt-2"
-                            onPointerDown={handleSliderPointerDown}
-                            onPointerUp={handleSliderPointerUp}
-                          />
+                          <div className="flex items-center gap-4 mt-2">
+                            <Slider
+                              min={WAY_MORE_MIN}
+                              max={WAY_MORE_MAX}
+                              step={1}
+                              value={[
+                                mintQuantity < WAY_MORE_MIN
+                                  ? WAY_MORE_MIN
+                                  : mintQuantity,
+                              ]}
+                              onValueChange={(value) =>
+                                setMintQuantity(value[0])
+                              }
+                              className="flex-1"
+                              onPointerDown={handleSliderPointerDown}
+                              onPointerUp={handleSliderPointerUp}
+                            />
+                            <span className="text-sm font-medium min-w-[40px] text-right">
+                              {mintQuantity}
+                            </span>
+                          </div>
                         </AccordionContent>
                       </AccordionItem>
                     </Accordion>
