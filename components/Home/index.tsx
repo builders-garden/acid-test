@@ -118,11 +118,24 @@ export default function Home() {
 
           // Only check for redirect if not coming from internal navigation
           // if (!fromInternalNav) {
-          const firstLiveSong = filteredReleases.find(
+          const liveSongs = filteredReleases.filter(
             (song) => song.status === "live"
           );
-          if (firstLiveSong) {
-            router.push(`/songs/${firstLiveSong.index}`);
+
+          // If there are multiple live songs, select the one with the latest salesStartDate
+          const latestLiveSong =
+            liveSongs.length > 0
+              ? liveSongs.reduce(
+                  (latest, current) =>
+                    current.salesStartDate > latest.salesStartDate
+                      ? current
+                      : latest,
+                  liveSongs[0]
+                )
+              : null;
+
+          if (latestLiveSong) {
+            router.push(`/songs/${latestLiveSong.index}`);
             return;
           }
           // }
