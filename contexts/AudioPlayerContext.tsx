@@ -8,6 +8,7 @@ import React, {
   useRef,
 } from "react";
 import { SongMetadata } from "@/types";
+import { getAudioWithFallback } from "@/lib/utils";
 
 interface AudioPlayerContextType {
   isPlaying: boolean;
@@ -53,6 +54,8 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  // Keep a reference to the current error handler for cleanup
+  const currentErrorHandler = useRef<((e: Event) => void) | null>(null);
 
   useEffect(() => {
     const audio = new Audio();
@@ -79,6 +82,12 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
       audio.removeEventListener("ended", handleEnded);
+
+      // Clean up any current error handler if it exists
+      if (currentErrorHandler.current) {
+        audio.removeEventListener("error", currentErrorHandler.current);
+        currentErrorHandler.current = null;
+      }
     };
   }, []);
 
@@ -87,7 +96,50 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({
 
     // If we're playing a different song, load the new one
     if (currentSong.metadata?.animation_url !== metadata.animation_url) {
-      audioRef.current.src = metadata.animation_url;
+      const urls = getAudioWithFallback(metadata.animation_url);
+
+      // Set up a persistent reference to track fallback attempts
+      const fallbackState = { currentUrlIndex: 0, urls };
+
+      // Create error handler function for fallback logic
+      const handleAudioError = (e: Event) => {
+        fallbackState.currentUrlIndex++;
+        if (fallbackState.currentUrlIndex < fallbackState.urls.length) {
+          console.log(
+            `Trying fallback audio URL (${fallbackState.currentUrlIndex}):`,
+            fallbackState.urls[fallbackState.currentUrlIndex]
+          );
+
+          if (audioRef.current) {
+            audioRef.current.src =
+              fallbackState.urls[fallbackState.currentUrlIndex];
+            audioRef.current.load();
+            audioRef.current
+              .play()
+              .catch((err) =>
+                console.error("Error playing fallback audio:", err)
+              );
+          }
+        } else {
+          console.error("All audio fallbacks failed");
+          // Keep the error handler attached for future errors
+        }
+      };
+
+      // Clean up previous error handler if it exists
+      if (audioRef.current && currentErrorHandler.current) {
+        audioRef.current.removeEventListener(
+          "error",
+          currentErrorHandler.current
+        );
+      }
+
+      // Store and attach the new error handler
+      currentErrorHandler.current = handleAudioError;
+      audioRef.current.addEventListener("error", handleAudioError);
+
+      // Set initial URL and load
+      audioRef.current.src = urls[0];
       audioRef.current.load();
       setCurrentSong({ metadata, tokenId });
     }
@@ -128,6 +180,15 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
+
+      // Remove error handler when resetting
+      if (currentErrorHandler.current) {
+        audioRef.current.removeEventListener(
+          "error",
+          currentErrorHandler.current
+        );
+        currentErrorHandler.current = null;
+      }
     }
     setIsPlaying(false);
     setCurrentSong({ metadata: null, tokenId: null });

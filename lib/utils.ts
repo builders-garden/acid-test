@@ -160,3 +160,47 @@ export const getFeaturingDetails = (
       return { name: "Unknown", pfp: "/images/unknown.png", fid: 1 };
   }
 };
+
+// Helper function to extract CID from an IPFS URL (similar to fetchWithIPFSFallback)
+export const extractCIDFromIPFSUrl = (url: string): string | null => {
+  try {
+    // Handle ipfs:// protocol
+    if (url.startsWith("ipfs://")) {
+      return url.substring(7);
+    }
+
+    // Handle gateway URLs that contain IPFS paths
+    const ipfsMatch = url.match(/\/ipfs\/([^/?#]+)/);
+    if (ipfsMatch && ipfsMatch[1]) {
+      return ipfsMatch[1];
+    }
+
+    // Handle URLs where CID is the last part of the path
+    const parts = url.split("/");
+    const potentialCid = parts[parts.length - 1].split("?")[0].split("#")[0];
+    if (potentialCid && potentialCid.length > 8) {
+      return potentialCid;
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error extracting CID:", error);
+    return null;
+  }
+};
+
+// Function to get alternative IPFS URLs for audio playback
+export const getAudioWithFallback = (url: string): string[] => {
+  const urls = [url]; // Original URL is always the first attempt
+
+  const cid = extractCIDFromIPFSUrl(url);
+  if (cid) {
+    // Add alternative gateways
+    urls.push(`https://${cid}.ipfs.dweb.link/#x-ipfs-companion-no-redirect`);
+    urls.push(`https://ipfs.io/ipfs/${cid}`);
+    urls.push(`https://gateway.pinata.cloud/ipfs/${cid}`);
+    urls.push(`https://cloudflare-ipfs.com/ipfs/${cid}`);
+  }
+
+  return urls;
+};
