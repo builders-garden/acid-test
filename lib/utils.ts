@@ -154,6 +154,8 @@ export const getFeaturingDetails = (
         fid: 3,
         text: "+ 42 others",
       };
+    case 4:
+      return { name: "phil", pfp: "/images/phil.png", fid: 129 };
     default:
       return { name: "Unknown", pfp: "/images/unknown.png", fid: 1 };
   }

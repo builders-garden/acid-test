@@ -42,7 +42,7 @@ export const Feat: React.FC<FeatProps> = ({
         >
           {featuringPfp && (
             <span
-              className={`inline-block ${imageContainerSize} rounded-full overflow-hidden align-middle`}
+              className={`inline-block ${imageContainerSize} rounded-full overflow-hidden align-middle border border-white/30`}
             >
               <Image
                 src={featuringPfp}
