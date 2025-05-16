@@ -36,7 +36,7 @@ export function ReleaseBlockCard({
       ),
       right: (
         <div className="flex items-center gap-2">
-          <div className="font-mono text-sm leading-none">Mint Open</div>
+          <div className="font-mono text-xs leading-none">MINT OPEN</div>
           <div className="w-2 h-2 rounded-full bg-mint animate-pulse" />
         </div>
       ),
@@ -51,11 +51,11 @@ export function ReleaseBlockCard({
       ),
       right: (
         <div className="flex items-center gap-2">
-          <div className="font-mono text-sm leading-none">
+          <div className="font-mono text-xs leading-none">
             {isLoading ? (
               <Skeleton className="h-3 bg-white/30 w-16" />
             ) : (
-              `${totalMints} mints`
+              `${totalMints} MINTS`
             )}
           </div>
           {/* <div className="w-2 h-2 rounded-full bg-plum" /> */}
@@ -72,7 +72,7 @@ export function ReleaseBlockCard({
       ),
       right: (
         <div className="flex items-center gap-2">
-          <div className="font-mono text-sm leading-none">Coming Soon</div>
+          <div className="font-mono text-xs leading-none">COMING SOON</div>
           <div className="w-2 h-2 rounded-full bg-white/40" />
         </div>
       ),
@@ -86,7 +86,7 @@ export function ReleaseBlockCard({
       ),
       right: (
         <div className="flex items-center gap-2 text-white/60">
-          <span className="font-mono text-sm leading-none">Coming Soon</span>
+          <span className="font-mono text-xs leading-none">COMING SOON</span>
           <div className="w-2 h-2 rounded-full bg-white/40" />
         </div>
       ),
