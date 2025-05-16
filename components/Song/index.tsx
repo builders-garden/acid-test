@@ -58,8 +58,16 @@ export default function Song() {
   } | null>(null);
 
   // Hooks
-  const { isPlaying, currentSong, play, pause, currentTime, duration, seek } =
-    useAudioPlayer();
+  const {
+    isPlaying,
+    currentSong,
+    play,
+    pause,
+    currentTime,
+    duration,
+    seek,
+    preloadSong,
+  } = useAudioPlayer();
   const { type: contextType, context } = useMiniAppContext();
   const { address } = useAccount();
   const pathname = usePathname();
@@ -163,6 +171,14 @@ export default function Song() {
 
     fetchMetadata();
   }, [getTokenInfoResult.data, router]);
+
+  // Preload the song audio when metadata is loaded
+  useEffect(() => {
+    if (metadata && !isLoading) {
+      console.log("Preloading song for token ID:", tokenId);
+      preloadSong(metadata);
+    }
+  }, [metadata, isLoading, preloadSong, tokenId]);
 
   // Countdown timer
   useEffect(() => {

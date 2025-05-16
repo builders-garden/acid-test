@@ -24,6 +24,7 @@ interface AudioPlayerContextType {
   toggle: () => void;
   seek: (time: number) => void;
   resetPlayer: () => void;
+  preloadSong: (metadata: SongMetadata) => void;
 }
 
 const AudioPlayerContext = createContext<AudioPlayerContextType | undefined>(
@@ -91,59 +92,99 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   }, []);
 
-  const play = (metadata: SongMetadata, tokenId: number) => {
+  // Helper function to setup audio with fallback mechanism
+  const setupAudioWithFallback = (
+    audioUrl: string,
+    autoplay: boolean = false,
+    playingContext?: { metadata: SongMetadata; tokenId: number }
+  ) => {
     if (!audioRef.current) return;
 
-    // If we're playing a different song, load the new one
-    if (currentSong.metadata?.animation_url !== metadata.animation_url) {
-      const urls = getAudioWithFallback(metadata.animation_url);
+    const urls = getAudioWithFallback(audioUrl);
 
-      // Set up a persistent reference to track fallback attempts
-      const fallbackState = { currentUrlIndex: 0, urls };
+    // Set up a persistent reference to track fallback attempts
+    const fallbackState = { currentUrlIndex: 0, urls };
 
-      // Create error handler function for fallback logic
-      const handleAudioError = (e: Event) => {
-        fallbackState.currentUrlIndex++;
-        if (fallbackState.currentUrlIndex < fallbackState.urls.length) {
-          console.log(
-            `Trying fallback audio URL (${fallbackState.currentUrlIndex}):`,
-            fallbackState.urls[fallbackState.currentUrlIndex]
-          );
+    // Create error handler function for fallback logic
+    const handleAudioError = (e: Event) => {
+      fallbackState.currentUrlIndex++;
+      if (fallbackState.currentUrlIndex < fallbackState.urls.length) {
+        console.log(
+          `Trying fallback audio URL ${autoplay ? "" : "for preloading "}(${
+            fallbackState.currentUrlIndex
+          }):`,
+          fallbackState.urls[fallbackState.currentUrlIndex]
+        );
 
-          if (audioRef.current) {
-            audioRef.current.src =
-              fallbackState.urls[fallbackState.currentUrlIndex];
-            audioRef.current.load();
+        if (audioRef.current) {
+          audioRef.current.src =
+            fallbackState.urls[fallbackState.currentUrlIndex];
+          audioRef.current.load();
+
+          // Only try to play if autoplay is requested
+          if (autoplay) {
             audioRef.current
               .play()
               .catch((err) =>
                 console.error("Error playing fallback audio:", err)
               );
           }
-        } else {
-          console.error("All audio fallbacks failed");
-          // Keep the error handler attached for future errors
         }
-      };
-
-      // Clean up previous error handler if it exists
-      if (audioRef.current && currentErrorHandler.current) {
-        audioRef.current.removeEventListener(
-          "error",
-          currentErrorHandler.current
+      } else {
+        console.error(
+          `All audio fallbacks failed${autoplay ? "" : " during preload"}`
         );
       }
+    };
 
-      // Store and attach the new error handler
-      currentErrorHandler.current = handleAudioError;
-      audioRef.current.addEventListener("error", handleAudioError);
-
-      // Set initial URL and load
-      audioRef.current.src = urls[0];
-      audioRef.current.load();
-      setCurrentSong({ metadata, tokenId });
+    // Clean up previous error handler if it exists
+    if (audioRef.current && currentErrorHandler.current) {
+      audioRef.current.removeEventListener(
+        "error",
+        currentErrorHandler.current
+      );
     }
 
+    // Store and attach the new error handler
+    currentErrorHandler.current = handleAudioError;
+    audioRef.current.addEventListener("error", handleAudioError);
+
+    // Set initial URL and load
+    audioRef.current.src = urls[0];
+    audioRef.current.load();
+
+    // Update current song if in playing context
+    if (playingContext) {
+      setCurrentSong(playingContext);
+    }
+  };
+
+  const play = (metadata: SongMetadata, tokenId: number) => {
+    if (!audioRef.current) return;
+
+    // If we're playing a different song than the current one
+    if (currentSong.metadata?.animation_url !== metadata.animation_url) {
+      // Check if the audio element already has this song loaded (from preload)
+      const isPreloaded =
+        audioRef.current.src &&
+        (audioRef.current.src === metadata.animation_url ||
+          getAudioWithFallback(metadata.animation_url).includes(
+            audioRef.current.src
+          ));
+
+      // If not already preloaded, set it up
+      if (!isPreloaded) {
+        setupAudioWithFallback(metadata.animation_url, true, {
+          metadata,
+          tokenId,
+        });
+      } else {
+        // Always update the current song when playing
+        setCurrentSong({ metadata, tokenId });
+      }
+    }
+
+    // Play the audio (whether preloaded or newly loaded)
     audioRef.current
       .play()
       .then(() => {
@@ -196,6 +237,17 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({
     setDuration(0);
   };
 
+  const preloadSong = (metadata: SongMetadata) => {
+    if (!audioRef.current) return;
+
+    // Only preload if it's a different song than the current one
+    if (currentSong.metadata?.animation_url !== metadata.animation_url) {
+      console.log("Preloading song:", metadata.name);
+      setupAudioWithFallback(metadata.animation_url, false);
+      // Don't update currentSong yet, that happens when play is called
+    }
+  };
+
   return (
     <AudioPlayerContext.Provider
       value={{
@@ -209,6 +261,7 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({
         toggle,
         seek,
         resetPlayer,
+        preloadSong,
       }}
     >
       {children}
