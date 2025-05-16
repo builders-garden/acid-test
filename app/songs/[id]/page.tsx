@@ -11,9 +11,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const requestId = params.id;
 
+  const imageUrl = new URL(`${appUrl}/api/og/songs/${requestId}`).toString();
+
   const frame = {
     version: "next",
-    imageUrl: `${appUrl}/api/dynamic-image/${requestId}`,
+    imageUrl,
     button: {
       title: "Launch App",
       action: {
@@ -32,6 +34,11 @@ export async function generateMetadata({
       title: "Acid Test",
       description:
         "ACIDTEST is an onchain radio show bringing music, conversation and creative energy to Farcaster. Hosted by chaim.eth.",
+      images: [
+        {
+          url: imageUrl,
+        },
+      ],
     },
     other: {
       "fc:frame": JSON.stringify(frame),

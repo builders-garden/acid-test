@@ -1,6 +1,13 @@
+import { AcidTestABI } from "@/lib/abi/AcidTestABI";
+import { CONTRACT_ADDRESS } from "@/lib/constants";
 import { env } from "@/lib/env";
 import { loadGoogleFont, loadImage } from "@/lib/og-utils";
+import { fetchWithIPFSFallback } from "@/lib/utils";
+import { SongMetadata } from "@/types";
 import { ImageResponse } from "next/og";
+import { createPublicClient, http } from "viem";
+import { base } from "viem/chains";
+import { useReadContract } from "wagmi";
 
 // Force dynamic rendering to ensure fresh image generation on each request
 export const dynamic = "force-dynamic";
@@ -34,11 +41,28 @@ export async function GET(
     // Get the application's base URL from environment variables
     const appUrl = env.NEXT_PUBLIC_URL;
 
-    // Load the logo image from the public directory
-    const logoImage = await loadImage(`${appUrl}/images/icon.png`);
+    const publicClient = createPublicClient({
+      chain: base,
+      transport: http(),
+    });
 
-    // Load and prepare the custom font with the text to be rendered
-    const fontData = await loadGoogleFont("Press+Start+2P", "Example ID:" + id);
+    // Load the uri from the smart contract
+    const getTokenInfosResult = await publicClient.readContract({
+      abi: AcidTestABI,
+      address: CONTRACT_ADDRESS,
+      functionName: "getTokenInfo",
+      args: [BigInt(id)],
+    });
+    const uri = getTokenInfosResult.uri;
+
+    const metadata = await fetchWithIPFSFallback<SongMetadata>(uri);
+    const title = metadata.name || "";
+    const image = metadata.image || "";
+
+    // Load the image from the provided URI and get its data
+    const imageData = await loadImage(image);
+    const imageBuffer = Buffer.from(imageData);
+    const base64Image = imageBuffer.toString("base64");
 
     // Generate and return the image response with the composed elements
     return new ImageResponse(
@@ -48,50 +72,22 @@ export async function GET(
             height: "100%",
             width: "100%",
             display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
             position: "relative",
-            backgroundColor: "white",
-            gap: "20px",
+            backgroundColor: "black",
           }}
         >
-          {/* Render the logo image */}
           <img
-            src={`data:image/png;base64,${Buffer.from(logoImage).toString(
-              "base64"
-            )}`}
+            src={`data:image/png;base64,${base64Image}`}
             style={{
-              width: "100px",
-              marginBottom: "20px",
-              borderRadius: "10px",
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
             }}
           />
-          {/* Display the example ID with custom styling */}
-          <div
-            style={{
-              position: "relative",
-              color: "black",
-              fontSize: 48,
-              fontFamily: "PressStart2P",
-              textAlign: "center",
-              display: "flex",
-            }}
-          >
-            Example ID: {id}
-          </div>
         </div>
       ),
       {
         ...size,
-        // Configure the custom font for use in the image
-        fonts: [
-          {
-            name: "PressStart2P",
-            data: fontData,
-            style: "normal",
-          },
-        ],
       }
     );
   } catch (e) {
