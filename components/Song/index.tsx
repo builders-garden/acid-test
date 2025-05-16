@@ -438,7 +438,6 @@ export default function Song() {
 
           {/* Player Controls */}
           <PlayerControls
-            metadata={metadata}
             isLoading={isLoading}
             isPlaying={isPlaying}
             isCurrentSong={isCurrentSong}

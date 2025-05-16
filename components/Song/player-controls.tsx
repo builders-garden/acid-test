@@ -1,10 +1,10 @@
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, RotateCcw, RotateCw } from "lucide-react";
+import { Play, Pause } from "lucide-react";
 import { motion, AnimatePresence, useAnimationControls } from "framer-motion";
+import Image from "next/image";
 
 type PlayerControlsProps = {
-  metadata: any | null;
   isLoading: boolean;
   isPlaying: boolean;
   isCurrentSong: boolean;
@@ -17,7 +17,6 @@ type PlayerControlsProps = {
 };
 
 export const PlayerControls = ({
-  metadata,
   isLoading,
   isPlaying,
   isCurrentSong,
@@ -41,23 +40,13 @@ export const PlayerControls = ({
     handleSliderCommit([Math.min(displayDuration, displayTime + 10)]);
   };
 
-  const handleBackwardClick = async () => {
+  const handleBackwardClick = () => {
     if (!isCurrentSong) return;
-    await backwardControls.start({
-      rotate: -360,
-      transition: { duration: 0.15, ease: "easeInOut" },
-    });
-    backwardControls.set({ rotate: 0 }); // Reset rotation
     handleSkipBack();
   };
 
-  const handleForwardClick = async () => {
+  const handleForwardClick = () => {
     if (!isCurrentSong) return;
-    await forwardControls.start({
-      rotate: 360,
-      transition: { duration: 0.15, ease: "easeInOut" },
-    });
-    forwardControls.set({ rotate: 0 }); // Reset rotation
     handleSkipForward();
   };
 
@@ -65,27 +54,31 @@ export const PlayerControls = ({
     <div className="w-full max-w-md flex flex-col items-center gap-6 mt-1">
       {/* Play Controls */}
       <div className="flex justify-center items-center gap-12">
-        <motion.div
-          animate={backwardControls}
-          whileTap={{ scale: 0.9 }}
-        >
+        <motion.div whileTap={{ scale: 0.9 }}>
           <Button
             onClick={handleBackwardClick}
-            className="w-8 h-8 rounded-full bg-black text-white hover:text-white/80 active:text-white/60 flex items-center justify-center p-0 relative"
+            className="w-10 h-10 rounded-full bg-black text-white hover:text-white/80 active:text-white/60 flex items-center justify-center p-0 relative"
             disabled={!isCurrentSong}
           >
             <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <span className="text-[10px] font-bold text-white drop-shadow-sm">
+              <span className="text-[13px] font-bold text-white drop-shadow-sm">
                 10
               </span>
             </span>
-            <RotateCcw className="!w-8 !h-8 relative z-10" />
+            <Image
+              src="/images/rotate-back.webp"
+              alt="Rotate Back"
+              width={35}
+              height={35}
+              className="absolute invert"
+              priority
+            />
           </Button>
         </motion.div>
 
         <motion.div whileTap={{ scale: 0.95 }}>
           <Button
-            className="w-12 h-12 rounded-full bg-black text-white hover:text-white/80 active:text-white/60 flex items-center justify-center p-0"
+            className="w-12 h-12 rounded-full bg-black text-white flex items-center justify-center p-0 hover:bg-transparent"
             onClick={handlePlayPause}
             disabled={isLoading}
           >
@@ -114,21 +107,25 @@ export const PlayerControls = ({
           </Button>
         </motion.div>
 
-        <motion.div
-          animate={forwardControls}
-          whileTap={{ scale: 0.9 }}
-        >
+        <motion.div whileTap={{ scale: 0.9 }}>
           <Button
             onClick={handleForwardClick}
-            className="w-8 h-8 rounded-full bg-black text-white hover:text-white/80 active:text-white/60 flex items-center justify-center p-0 relative"
+            className="w-10 h-10 rounded-full bg-black text-white hover:text-white/80 active:text-white/60 flex items-center justify-center p-0 relative"
             disabled={!isCurrentSong}
           >
             <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <span className="text-[10px] font-bold text-white drop-shadow-sm">
+              <span className="text-[13px] font-bold text-white drop-shadow-sm">
                 10
               </span>
             </span>
-            <RotateCw className="!w-8 !h-8 relative z-10" />
+            <Image
+              src="/images/rotate-forward.webp"
+              alt="Rotate Forward"
+              width={35}
+              height={35}
+              className="absolute invert"
+              priority
+            />
           </Button>
         </motion.div>
       </div>
