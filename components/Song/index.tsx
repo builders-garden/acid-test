@@ -26,7 +26,6 @@ import {
   composeSongCastUrl,
   copyToClipboard,
   fetchWithIPFSFallback,
-  formatSongId,
   getFeaturingDetails,
 } from "@/lib/utils";
 import { SongMetadata } from "@/types";
@@ -36,6 +35,7 @@ import Image from "next/image";
 import copy from "@/public/images/copy.svg";
 import { Header } from "../ui/header";
 import { trackEvent } from "@/lib/posthog/client";
+import { env } from "@/lib/env";
 
 export default function Song() {
   // State management
@@ -52,10 +52,10 @@ export default function Song() {
   const [ethUsd, setEthUsd] = useState(2325);
   const [userFid, setUserFid] = useState<number | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
-  const [frameUrl, setFrameUrl] = useState("");
-  const [castUrl, setCastUrl] = useState("");
-  const [userAddedFrameOnAction, setUserAddedFrameOnAction] =
-    useState<boolean>(false);
+  const [composeCastParams, setComposeCastParams] = useState<{
+    text: string;
+    embeds: [string];
+  } | null>(null);
 
   // Hooks
   const { isPlaying, currentSong, play, pause, currentTime, duration, seek } =
@@ -242,15 +242,18 @@ export default function Song() {
 
   useEffect(() => {
     if (metadata) {
-      const { frameUrl, castUrl } = composeSongCastUrl(tokenId, metadata.name);
-      setFrameUrl(frameUrl);
-      setCastUrl(castUrl);
+      const composeCastParams = composeSongCastUrl(tokenId, metadata.name);
+      setComposeCastParams(composeCastParams);
     }
   }, [metadata, tokenId]);
 
   const handleShareSong = () => {
-    if (contextType === "farcaster" && context?.user?.fid) {
-      sdk.actions.openUrl(castUrl);
+    if (
+      contextType === "farcaster" &&
+      context?.user?.fid &&
+      composeCastParams
+    ) {
+      sdk.actions.composeCast(composeCastParams);
     }
   };
 
@@ -277,9 +280,11 @@ export default function Song() {
     fid: featuringFid,
   } = getFeaturingDetails(tokenId);
 
+  const frameUrl = `${env.NEXT_PUBLIC_URL}/songs/${tokenId}`;
+
   return (
     <div className="min-h-screen bg-black text-white font-mono p-4 flex flex-col items-center w-full pb-8 gap-6">
-      <Header userAddedFrameOnAction={userAddedFrameOnAction} />
+      <Header />
 
       <div className="flex flex-col items-center gap-6 w-full">
         {/* Artwork */}
@@ -311,7 +316,7 @@ export default function Song() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
-                      className="hover:text-opacity-70 transition-opacity rounded"
+                      className="hover:text-opacity-70 transition-opacity rounded outline-none"
                       aria-label="Share options"
                     >
                       <Upload
@@ -382,7 +387,7 @@ export default function Song() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
-                      className="hover:text-opacity-70 transition-opacity rounded"
+                      className="hover:text-opacity-70 transition-opacity rounded outline-none"
                       aria-label="More options"
                     >
                       <Ellipsis
@@ -404,7 +409,7 @@ export default function Song() {
                         height={16}
                         className="rounded-sm"
                       />
-                      OpenSea link
+                      OpenSea
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={handleSplitsLink}
@@ -416,7 +421,7 @@ export default function Song() {
                         width={16}
                         height={16}
                       />
-                      Splits link
+                      Splits
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

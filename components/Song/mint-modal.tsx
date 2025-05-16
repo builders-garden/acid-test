@@ -75,7 +75,10 @@ export function MintModal({
 
   const [isSliderInteracting, setIsSliderInteracting] = useState(false);
   const [mintState, setMintState] = useState<MintState>(MintState.Initial);
-  const [castUrl, setCastUrl] = useState<string>("");
+  const [composeCastParams, setComposeCastParams] = useState<{
+    text: string;
+    embeds: [string];
+  } | null>(null);
   const [postMintExecuted, setPostMintExecuted] = useState(false);
   const [wayMoreAccordionValue, setWayMoreAccordionValue] =
     useState<string>("");
@@ -454,13 +457,17 @@ export function MintModal({
   ]);
 
   useEffect(() => {
-    const { castUrl } = composeMintCastUrl(tokenId, songName, mintQuantity);
-    setCastUrl(castUrl);
+    const composeCastParams = composeMintCastUrl(
+      tokenId,
+      songName,
+      mintQuantity
+    );
+    setComposeCastParams(composeCastParams);
   }, [songName, tokenId, mintQuantity]);
 
   const handleShareMintedSong = () => {
-    if (userFid) {
-      sdk.actions.openUrl(castUrl);
+    if (userFid && composeCastParams) {
+      sdk.actions.composeCast(composeCastParams);
     }
   };
 

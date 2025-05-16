@@ -37,15 +37,18 @@ export const formatCountdown = (seconds: number) => {
   }
 };
 
-export const composeSongCastUrl = (songId: number, songTitle: string) => {
+export const composeSongCastUrl = (
+  songId: number,
+  songTitle: string
+): {
+  text: string;
+  embeds: [string];
+} => {
   const frameUrl = `${env.NEXT_PUBLIC_URL}/songs/${songId}`;
   const text = `Listen to ${songTitle} by Acid Test 💿`;
-  const urlFriendlyText = encodeURIComponent(text);
   return {
-    frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
-      frameUrl
-    )}`,
+    text,
+    embeds: [frameUrl],
   };
 };
 
@@ -53,17 +56,17 @@ export const composeMintCastUrl = (
   songId: number,
   songTitle: string,
   mintQuantity: number
-) => {
+): {
+  text: string;
+  embeds: [string];
+} => {
   const frameUrl = `${env.NEXT_PUBLIC_URL}/songs/${songId}`;
   const text = `I just minted ${mintQuantity} ${
     mintQuantity === 1 ? "edition" : "editions"
   } of ${songTitle} by Acid Test 💿`;
-  const urlFriendlyText = encodeURIComponent(text);
   return {
-    frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
-      frameUrl
-    )}`,
+    text,
+    embeds: [frameUrl],
   };
 };
 
