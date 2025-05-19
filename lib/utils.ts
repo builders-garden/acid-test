@@ -204,3 +204,13 @@ export const getAudioWithFallback = (url: string): string[] => {
 
   return urls;
 };
+
+// Function to get a reliable image URL with fallbacks
+export const getReliableImageUrl = (url: string): string => {
+  if (!url) return "/favicon.ico";
+
+  const cid = extractCIDFromIPFSUrl(url);
+  if (!cid) return url; // If we can't extract a CID, return original
+
+  return `https://${cid}.ipfs.dweb.link/#x-ipfs-companion-no-redirect`;
+};
