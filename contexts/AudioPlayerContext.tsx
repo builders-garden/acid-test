@@ -64,6 +64,15 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const handleTimeUpdate = () => {
       setCurrentTime(audio.currentTime);
+
+      // Update playback position for media session
+      if ("mediaSession" in navigator && audio.duration) {
+        navigator.mediaSession.setPositionState({
+          duration: audio.duration,
+          playbackRate: audio.playbackRate,
+          position: audio.currentTime,
+        });
+      }
     };
 
     const handleLoadedMetadata = () => {
@@ -72,17 +81,38 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const handleEnded = () => {
       setIsPlaying(false);
+
+      // Clear playback state when the song ends
+      if ("mediaSession" in navigator) {
+        navigator.mediaSession.playbackState = "none";
+      }
+    };
+
+    const handlePlay = () => {
+      if ("mediaSession" in navigator) {
+        navigator.mediaSession.playbackState = "playing";
+      }
+    };
+
+    const handlePause = () => {
+      if ("mediaSession" in navigator) {
+        navigator.mediaSession.playbackState = "paused";
+      }
     };
 
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
     audio.addEventListener("ended", handleEnded);
+    audio.addEventListener("play", handlePlay);
+    audio.addEventListener("pause", handlePause);
 
     return () => {
       audio.pause();
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
       audio.removeEventListener("ended", handleEnded);
+      audio.removeEventListener("play", handlePlay);
+      audio.removeEventListener("pause", handlePause);
 
       // Clean up any current error handler if it exists
       if (currentErrorHandler.current) {
@@ -156,6 +186,50 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({
     // Update current song if in playing context
     if (playingContext) {
       setCurrentSong(playingContext);
+
+      // Also update media session metadata if we're setting up for playback
+      if (autoplay && "mediaSession" in navigator) {
+        updateMediaSessionMetadata(playingContext.metadata);
+      }
+    }
+  };
+
+  // Update Media Session metadata when a song is played
+  const updateMediaSessionMetadata = (metadata: SongMetadata) => {
+    if ("mediaSession" in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: metadata.name || "Unknown Title",
+        artist: "Acid Test",
+        album: "Acid Test",
+        artwork: [
+          { src: metadata.image, sizes: "512x512", type: "image/jpeg" },
+        ],
+      });
+
+      // Add action handlers for play/pause, etc.
+      navigator.mediaSession.setActionHandler("play", () => {
+        if (audioRef.current) {
+          audioRef.current.play().catch((error) => {
+            console.error("Media Session play error:", error);
+          });
+          setIsPlaying(true);
+        }
+      });
+
+      navigator.mediaSession.setActionHandler("pause", () => {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          setIsPlaying(false);
+        }
+      });
+
+      // Optional: Add seek handlers if needed
+      navigator.mediaSession.setActionHandler("seekto", (details) => {
+        if (audioRef.current && details.seekTime) {
+          audioRef.current.currentTime = details.seekTime;
+          setCurrentTime(details.seekTime);
+        }
+      });
     }
   };
 
@@ -182,6 +256,9 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({
         // Always update the current song when playing
         setCurrentSong({ metadata, tokenId });
       }
+
+      // Update Media Session metadata
+      updateMediaSessionMetadata(metadata);
     }
 
     // Play the audio (whether preloaded or newly loaded)
@@ -199,6 +276,11 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({
     if (audioRef.current && isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
+
+      // Update media session state
+      if ("mediaSession" in navigator) {
+        navigator.mediaSession.playbackState = "paused";
+      }
     }
   };
 
@@ -214,6 +296,15 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({
     if (audioRef.current) {
       audioRef.current.currentTime = time;
       setCurrentTime(time);
+
+      // Update media session position state
+      if ("mediaSession" in navigator && audioRef.current.duration) {
+        navigator.mediaSession.setPositionState({
+          duration: audioRef.current.duration,
+          playbackRate: audioRef.current.playbackRate,
+          position: time,
+        });
+      }
     }
   };
 
@@ -235,6 +326,12 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({
     setCurrentSong({ metadata: null, tokenId: null });
     setCurrentTime(0);
     setDuration(0);
+
+    // Clear media session metadata and state
+    if ("mediaSession" in navigator) {
+      navigator.mediaSession.metadata = null;
+      navigator.mediaSession.playbackState = "none";
+    }
   };
 
   const preloadSong = (metadata: SongMetadata) => {
