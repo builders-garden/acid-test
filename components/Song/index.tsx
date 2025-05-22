@@ -3,39 +3,31 @@
 import { useState, useMemo, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import axios from "axios";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { MintModal } from "@/components/Song/mint-modal";
 import { PlayerControls } from "./player-controls";
 import { MintStatus } from "./mint-status";
 import { CollectorsSection } from "./collectors-section";
+import { SongData } from "./song-data";
 import { Feat } from "../ui/feat";
 
 import { useAccount, useReadContract } from "wagmi";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
-import { useCollectors, useUserCollector } from "@/hooks/use-get-collectors";
+import {
+  useCollectors,
+  useUserCollector,
+  useTotalMints,
+} from "@/hooks/use-get-collectors";
 import { useMiniAppContext } from "@/hooks/use-miniapp-context";
 
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
-import {
-  composeSongCastUrl,
-  copyToClipboard,
-  fetchWithIPFSFallback,
-  getFeaturingDetails,
-} from "@/lib/utils";
+import { fetchWithIPFSFallback, getFeaturingDetails } from "@/lib/utils";
 import { SongMetadata } from "@/types";
 import sdk from "@farcaster/frame-sdk";
-import { Check, Ellipsis, Upload, Share2 } from "lucide-react";
 import Image from "next/image";
-import copy from "@/public/images/copy.svg";
 import { Header } from "../ui/header";
 import { trackEvent } from "@/lib/posthog/client";
-import { env } from "@/lib/env";
+import { TitleAndLinks } from "./title-and-links";
 
 export default function Song() {
   // State management
@@ -51,11 +43,6 @@ export default function Song() {
   const [usdPrice, setUsdPrice] = useState(0);
   const [ethUsd, setEthUsd] = useState(2325);
   const [userFid, setUserFid] = useState<number | null>(null);
-  const [linkCopied, setLinkCopied] = useState(false);
-  const [composeCastParams, setComposeCastParams] = useState<{
-    text: string;
-    embeds: [string];
-  } | null>(null);
 
   // Hooks
   const {
@@ -88,6 +75,7 @@ export default function Song() {
     hasNextPage,
     isFetchingNextPage,
     refetch: refetchCollectors,
+    total: totalCollectors,
   } = useCollectors(tokenId);
 
   // Contract interaction
@@ -256,38 +244,7 @@ export default function Song() {
     refetch: refetchUserCollector,
   } = useUserCollector(tokenId, userFid);
 
-  useEffect(() => {
-    if (metadata) {
-      const composeCastParams = composeSongCastUrl(tokenId, metadata.name);
-      setComposeCastParams(composeCastParams);
-    }
-  }, [metadata, tokenId]);
-
-  const handleShareSong = () => {
-    if (
-      contextType === "farcaster" &&
-      context?.user?.fid &&
-      composeCastParams
-    ) {
-      sdk.actions.composeCast(composeCastParams);
-    }
-  };
-
-  const handleOpenSeaLink = () => {
-    sdk.actions.openUrl(
-      `https://opensea.io/assets/base/${CONTRACT_ADDRESS}/${tokenId}`
-    );
-  };
-
-  const handleSplitsLink = () => {
-    if (getTokenInfoResult.data?.receiverAddress) {
-      sdk.actions.openUrl(
-        `https://app.splits.org/accounts/${getTokenInfoResult.data.receiverAddress}/?chainId=8453`
-      );
-    } else {
-      sdk.actions.openUrl(`https://app.splits.org/`);
-    }
-  };
+  const { totalMints, isLoading: totalMintsLoading } = useTotalMints(tokenId);
 
   const {
     name: featuringName,
@@ -295,8 +252,6 @@ export default function Song() {
     text: featuringText,
     fid: featuringFid,
   } = getFeaturingDetails(tokenId);
-
-  const frameUrl = `${env.NEXT_PUBLIC_URL}/songs/${tokenId}`;
 
   return (
     <div className="min-h-screen bg-black text-white font-mono p-4 flex flex-col items-center w-full pb-8 gap-6">
@@ -320,130 +275,11 @@ export default function Song() {
 
         <div className="flex flex-col items-center gap-4 w-full max-w-lg">
           <div className="flex flex-col items-center gap-2 w-full">
-            {/* Song Title, Release Number, Links */}
-            <div className="grid grid-cols-6 w-full max-w-md">
-              <div className="w-full"></div>
-              <div className="flex flex-col gap-2 text-center col-span-4">
-                <h2 className="text-[18px] font-bold leading-none">
-                  {metadata?.name || "LOADING"}
-                </h2>
-              </div>
-              <div className="flex justify-end items-start gap-4 h-fit">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      className="hover:text-opacity-70 transition-opacity rounded outline-none"
-                      aria-label="Share options"
-                    >
-                      <Upload
-                        width={20}
-                        height={20}
-                        className="text-white"
-                      />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent side="left">
-                    <DropdownMenuItem
-                      onClick={handleShareSong}
-                      className="gap-2"
-                    >
-                      <Image
-                        src="/images/farcaster.png"
-                        alt=""
-                        width={16}
-                        height={16}
-                      />
-                      Share via cast
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={async () => {
-                        if (navigator.share) {
-                          try {
-                            await navigator.share({
-                              title: metadata?.name || "Song",
-                              text: `Check out this song: ${
-                                metadata?.name || ""
-                              }`,
-                              url: frameUrl,
-                            });
-                          } catch (err) {
-                            // User cancelled or error
-                          }
-                        } else {
-                          await copyToClipboard(frameUrl, setLinkCopied);
-                        }
-                      }}
-                      className="gap-2"
-                    >
-                      <Share2 className="w-4 h-4" />
-                      Share to...
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onSelect={async (e) => {
-                        e.preventDefault();
-                        await copyToClipboard(frameUrl, setLinkCopied);
-                      }}
-                      className="gap-2"
-                    >
-                      {linkCopied ? (
-                        <Check className="w-4 h-4" />
-                      ) : (
-                        <Image
-                          src={copy}
-                          alt=""
-                          width={16}
-                          height={16}
-                        />
-                      )}
-                      Copy link
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      className="hover:text-opacity-70 transition-opacity rounded outline-none"
-                      aria-label="More options"
-                    >
-                      <Ellipsis
-                        width={20}
-                        height={20}
-                        className="text-white"
-                      />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent side="left">
-                    <DropdownMenuItem
-                      onClick={handleOpenSeaLink}
-                      className="gap-2"
-                    >
-                      <Image
-                        src="/images/opensea.png"
-                        alt=""
-                        width={16}
-                        height={16}
-                        className="rounded-sm"
-                      />
-                      OpenSea
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={handleSplitsLink}
-                      className="gap-2"
-                    >
-                      <Image
-                        src="/images/splits.svg"
-                        alt=""
-                        width={16}
-                        height={16}
-                      />
-                      Splits
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-            {/* Feat element below the grid, centered */}
+            <TitleAndLinks
+              metadata={metadata}
+              tokenId={tokenId}
+              splitsAddress={getTokenInfoResult.data?.receiverAddress}
+            />
             <Feat
               featuringName={featuringName}
               featuringPfp={featuringPfp}
@@ -473,6 +309,14 @@ export default function Song() {
             tokenId={tokenId}
           />
         </div>
+
+        {/* Song Data Section */}
+        <SongData
+          totalMints={totalMints}
+          totalCollectors={totalCollectors}
+          usdPrice={usdPrice}
+          isLoading={totalMintsLoading || collectorsLoading}
+        />
 
         {/* Collectors Section */}
         <CollectorsSection
