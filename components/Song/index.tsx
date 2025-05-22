@@ -8,6 +8,7 @@ import { PlayerControls } from "./player-controls";
 import { MintStatus } from "./mint-status";
 import { CollectorsSection } from "./collectors-section";
 import { SongData } from "./song-data";
+import { SongDescription } from "./song-description";
 import { Feat } from "../ui/feat";
 
 import { useAccount, useReadContract } from "wagmi";
@@ -316,6 +317,12 @@ export default function Song() {
           totalCollectors={totalCollectors}
           usdPrice={usdPrice}
           isLoading={totalMintsLoading || collectorsLoading}
+        />
+
+        {/* Description Section */}
+        <SongDescription
+          metadata={metadata}
+          isLoading={isLoading}
         />
 
         {/* Collectors Section */}

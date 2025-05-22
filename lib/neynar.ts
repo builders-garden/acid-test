@@ -9,7 +9,7 @@ export interface NeynarUser {
   verifications: string[];
 }
 
-export const fetchUser = async (fid: string): Promise<NeynarUser> => {
+export const fetchUserByFid = async (fid: string): Promise<NeynarUser> => {
   const response = await fetch(
     `https://api.neynar.com/v2/farcaster/user/bulk?fids=${fid}`,
     {
@@ -23,4 +23,22 @@ export const fetchUser = async (fid: string): Promise<NeynarUser> => {
   }
   const data = await response.json();
   return data.users[0];
+};
+
+export const fetchUserByUsername = async (
+  username: string
+): Promise<NeynarUser> => {
+  const response = await fetch(
+    `https://api.neynar.com/v2/farcaster/user/by_username?username=${username}`,
+    {
+      headers: {
+        "x-api-key": env.NEYNAR_API_KEY!,
+      },
+    }
+  );
+  if (!response.ok) {
+    throw new Error("Failed to fetch Farcaster user on Neynar");
+  }
+  const data = await response.json();
+  return data.user;
 };

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import * as jose from "jose";
 import { verifyMessage } from "viem";
-import { fetchUser } from "@/lib/neynar";
+import { fetchUserByFid } from "@/lib/neynar";
 import { env } from "@/lib/env";
 
 export const POST = async (req: NextRequest) => {
@@ -10,7 +10,7 @@ export const POST = async (req: NextRequest) => {
 
   // We don't have the user address in the Farcaster case
   if (!walletAddress) {
-    const user = await fetchUser(fid);
+    const user = await fetchUserByFid(fid);
     walletAddress = user.custody_address;
   }
 

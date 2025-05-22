@@ -1,4 +1,4 @@
-import { fetchUser } from "@/lib/neynar";
+import { fetchUserByFid } from "@/lib/neynar";
 import { trackEvent } from "@/lib/posthog/server";
 import {
   createUser,
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
 
     const user = await getUser(fid);
     if (!user) {
-      const neynarUser = await fetchUser(fid.toString());
+      const neynarUser = await fetchUserByFid(fid.toString());
       const newUser: InsertDbUser = {
         fid: Number(neynarUser.fid),
         username: neynarUser.username,
