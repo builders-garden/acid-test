@@ -24,7 +24,9 @@ export default function SongSaleForm({
   setModalStatus,
   setModalMessage,
 }: SongSaleFormProps) {
-  const [tokenCounter, setTokenCounter] = useState<number | undefined>(undefined);
+  const [tokenCounter, setTokenCounter] = useState<number | undefined>(
+    undefined
+  );
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [displayValues, setDisplayValues] = useState<{
     startDate: string;
@@ -129,14 +131,16 @@ export default function SongSaleForm({
         try {
           // Get all validated featuring users
           const validatedUsers = getValidatedFeaturingUsers();
-          const featData = validatedUsers ? {
-            users: validatedUsers.users.map((user) => ({
-              username: user.username,
-              fid: user.fid,
-              pfp: user.pfp,
-            })),
-            text: validatedUsers.text
-          } : null;
+          const featData = validatedUsers
+            ? {
+                users: validatedUsers.users.map((user) => ({
+                  username: user.username,
+                  fid: user.fid,
+                  pfp: user.pfp,
+                })),
+                text: validatedUsers.text,
+              }
+            : null;
 
           const songResponse = await fetch("/api/song", {
             method: "POST",
@@ -584,24 +588,29 @@ export default function SongSaleForm({
               htmlFor="featuringArtists"
               className="block mb-1 text-sm text-white/80"
             >
-              Featuring Artists (Farcaster usernames, comma separated)
+              Featuring Artists (Farcaster usernames, space separated)
             </label>
             <input
               type="text"
               name="featuringArtists"
-              value={formData.featuringUsernames.join(", ")}
+              value={formData.featuringUsernames.join(" ")}
               onChange={(e) => {
-                const usernames = e.target.value
-                  .split(",")
-                  .map((username) => username.trim())
-                  .filter((username) => username !== "");
+                const inputValue = e.target.value;
+                // Handle consecutive spaces as a single space
+                const normalizedInput = inputValue.replace(/\s+/g, " ");
+                // Split by space, but keep empty string at the end if user is typing
+                const usernames = normalizedInput.split(" ").filter(
+                  (username, index, array) =>
+                    // Keep non-empty usernames OR if it's the last item and user is typing
+                    username !== "" || index === array.length - 1
+                );
                 setFormData((prev) => ({
                   ...prev,
                   featuringUsernames: usernames,
                 }));
               }}
               className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white"
-              placeholder="e.g. user1, user2, user3"
+              placeholder="e.g. user1 user2 user3"
             />
             {renderFeaturingValidation()}
           </div>
