@@ -177,7 +177,7 @@ export async function GET(
                           borderRadius: "50%",
                           border: "2px solid #FFFFFF",
                           overflow: "hidden",
-                          marginLeft: index > 0 ? "-15px" : "0",
+                          marginLeft: index > 0 ? "-25px" : "0",
                           boxShadow: "0 0 5px rgba(0, 0, 0, 0.3)",
                           zIndex: 5 - index,
                           backgroundColor: "#FFFFFF",
