@@ -1,6 +1,5 @@
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
-import { env } from "@/lib/env";
 import { loadLocalFont } from "@/lib/og-utils";
 import { fetchWithIPFSFallback } from "@/lib/utils";
 import { getCollectorsBySongId } from "@/lib/prisma/queries";
@@ -64,7 +63,7 @@ export async function GET(
     // Sort collectors by amount and get top 5
     const sortedCollectors = collectors.sort((a, b) => b.amount - a.amount);
     const totalCollectors = collectors.length;
-    const topCollectors = sortedCollectors.slice(0, 5);
+    const topCollectors = sortedCollectors.slice(0, 10);
 
     // Load the custom font
     const fontData = await loadLocalFont(
@@ -173,12 +172,12 @@ export async function GET(
                           display: "flex",
                           justifyContent: "center",
                           alignItems: "center",
-                          width: "100px",
-                          height: "100px",
+                          width: "60px",
+                          height: "60px",
                           borderRadius: "50%",
                           border: "2px solid #FFFFFF",
                           overflow: "hidden",
-                          marginLeft: index > 0 ? "-18px" : "0",
+                          marginLeft: index > 0 ? "-15px" : "0",
                           boxShadow: "0 0 5px rgba(0, 0, 0, 0.3)",
                           zIndex: 5 - index,
                           backgroundColor: "#FFFFFF",
@@ -189,10 +188,10 @@ export async function GET(
                             collector.user?.avatarUrl ||
                             `https://ui-avatars.com/api/?name=${
                               collector.user?.username || "User"
-                            }&background=random&size=100`
+                            }&background=random&size=60`
                           }
-                          width="100"
-                          height="100"
+                          width="60"
+                          height="60"
                           style={{
                             objectFit: "cover",
                           }}

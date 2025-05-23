@@ -22,7 +22,8 @@ import { useMiniAppContext } from "@/hooks/use-miniapp-context";
 
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
-import { fetchWithIPFSFallback, getFeaturingDetails } from "@/lib/utils";
+import { fetchWithIPFSFallback } from "@/lib/utils";
+import { useFeaturingDetails } from "@/hooks/use-featuring-details";
 import { SongMetadata } from "@/types";
 import sdk from "@farcaster/frame-sdk";
 import Image from "next/image";
@@ -31,6 +32,27 @@ import { trackEvent } from "@/lib/posthog/client";
 import { TitleAndLinks } from "./title-and-links";
 
 export default function Song() {
+  // Get pathname and set up router
+  const pathname = usePathname();
+  const router = useRouter();
+
+  // Extract token ID from URL path
+  const tokenId = useMemo(() => {
+    const pathSegments = pathname.split("/");
+    const lastSegment = pathSegments[pathSegments.length - 1];
+    const parsedId = parseInt(lastSegment);
+    return isNaN(parsedId) ? 1 : parsedId;
+  }, [pathname]);
+
+  // Get song data and featuring details from API
+  const { data: featuringResponse, isLoading: featuringLoading } =
+    useFeaturingDetails(tokenId);
+
+  // Get featuring details from the API response with built-in fallback
+  const featuringDetails = useMemo(() => {
+    return featuringResponse?.data;
+  }, [featuringResponse?.data]);
+
   // State management
   const [mintQuantity, setMintQuantity] = useState(1);
   const [isMintModalOpen, setIsMintModalOpen] = useState(false);
@@ -58,16 +80,6 @@ export default function Song() {
   } = useAudioPlayer();
   const { type: contextType, context } = useMiniAppContext();
   const { address } = useAccount();
-  const pathname = usePathname();
-  const router = useRouter();
-
-  // Extract token ID from URL path
-  const tokenId = useMemo(() => {
-    const pathSegments = pathname.split("/");
-    const lastSegment = pathSegments[pathSegments.length - 1];
-    const parsedId = parseInt(lastSegment);
-    return isNaN(parsedId) ? 1 : parsedId;
-  }, [pathname]);
 
   const {
     collectors,
@@ -150,7 +162,6 @@ export default function Song() {
           getTokenInfoResult.data.uri
         );
         setMetadata(data);
-
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching metadata:", error);
@@ -247,13 +258,6 @@ export default function Song() {
 
   const { totalMints, isLoading: totalMintsLoading } = useTotalMints(tokenId);
 
-  const {
-    name: featuringName,
-    pfp: featuringPfp,
-    text: featuringText,
-    fid: featuringFid,
-  } = getFeaturingDetails(tokenId);
-
   return (
     <div className="min-h-screen bg-black text-white font-mono p-4 flex flex-col items-center w-full pb-8 gap-6">
       <Header />
@@ -282,10 +286,9 @@ export default function Song() {
               splitsAddress={getTokenInfoResult.data?.receiverAddress}
             />
             <Feat
-              featuringName={featuringName}
-              featuringPfp={featuringPfp}
-              featuringText={featuringText}
-              featuringFid={featuringFid}
+              featuringUsers={featuringDetails?.users}
+              featuringText={featuringDetails?.text}
+              isLoading={featuringLoading}
             />
           </div>
 

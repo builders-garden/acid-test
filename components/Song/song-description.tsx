@@ -51,8 +51,6 @@ export function SongDescription({ metadata, isLoading }: SongDescriptionProps) {
     return null;
   }
 
-  console.log("metadata.description", metadata.description);
-
   // Get the first 100 characters for the short description
   const fullDescription = metadata.description;
   const hasMore = fullDescription.length > 100;

@@ -77,8 +77,10 @@ export const getUsersNotificationDetails = async (
   return notificationDetails as FrameNotificationDetails[];
 };
 
-export const getSong = async (id: number) => {
-  return await prisma.song.findUnique({
+export const getSong = async (
+  id: number
+): Promise<DbSongWithCollectors | null> => {
+  const song = await prisma.song.findUnique({
     where: { id },
     include: {
       collectors: {
@@ -88,12 +90,20 @@ export const getSong = async (id: number) => {
       },
     },
   });
+
+  if (!song) return null;
+
+  return {
+    ...song,
+    feat: song.feat ? JSON.parse(song.feat) : null,
+    collectors: song.collectors,
+  };
 };
 
 export const getAllSongsAndCollectors = async (): Promise<
   DbSongWithCollectors[]
 > => {
-  return await prisma.song.findMany({
+  const songs = await prisma.song.findMany({
     include: {
       collectors: {
         include: {
@@ -102,6 +112,12 @@ export const getAllSongsAndCollectors = async (): Promise<
       },
     },
   });
+
+  return songs.map((song) => ({
+    ...song,
+    feat: song.feat ? JSON.parse(song.feat) : null,
+    collectors: song.collectors,
+  }));
 };
 
 export const createSong = async (song: InsertDbSong): Promise<DbSong> => {
@@ -111,6 +127,7 @@ export const createSong = async (song: InsertDbSong): Promise<DbSong> => {
       title: song.title,
       startDate: song.startDate ?? "",
       endDate: song.endDate ?? "",
+      feat: song.feat ?? null,
     },
   });
 };

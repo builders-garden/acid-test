@@ -4,8 +4,9 @@ import QuestionMark from "@/public/images/question_mark.png";
 import { ReleaseBlock } from ".";
 import { Feat } from "@/components/ui/feat";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getFeaturingDetails } from "@/lib/utils";
 import { useTotalMints } from "@/hooks/use-get-collectors";
+import { useFeaturingDetails } from "@/hooks/use-featuring-details";
+import { useMemo } from "react";
 
 interface ReleaseBlockCardProps {
   release: ReleaseBlock;
@@ -21,12 +22,19 @@ export function ReleaseBlockCard({
   const { totalMints, isLoading } = useTotalMints(
     release.status === "end" ? release.index : undefined
   );
-  const {
-    name: featuringName,
-    pfp: featuringPfp,
-    text: featuringText,
-    fid: featuringFid,
-  } = getFeaturingDetails(release.index);
+
+  const { data: featuringResponse, isLoading: featuringLoading } =
+    useFeaturingDetails(
+      release.status !== "redacted" ? release.index : undefined
+    );
+
+  // Get featuring details from response with built-in fallback
+  const featuringDetails = useMemo(() => {
+    if (release.status === "redacted") {
+      return undefined;
+    }
+    return featuringResponse?.data;
+  }, [featuringResponse?.data, release.status]);
 
   // Config for status-dependent content
   const statusConfig = {
@@ -169,11 +177,10 @@ export function ReleaseBlockCard({
             </h3>
           ) : (
             <Feat
-              featuringName={featuringName}
-              featuringPfp={featuringPfp}
-              featuringText={featuringText}
-              featuringFid={featuringFid}
+              featuringUsers={featuringDetails?.users}
+              featuringText={featuringDetails?.text}
               size="sm"
+              isLoading={featuringLoading}
             />
           )}
         </div>

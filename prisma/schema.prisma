@@ -26,6 +26,7 @@ model Song {
   title      String
   startDate  String
   endDate    String
+  feat       String? // JSON string containing featuring artists array
   createdAt  DateTime     @default(now())
   collectors Collection[]
 

@@ -13,6 +13,7 @@ export interface DbSong {
   title: string;
   startDate: string | null;
   endDate: string | null;
+  feat: string | null;
   createdAt: Date;
 }
 
@@ -33,8 +34,18 @@ export interface DbSongWithCollectors {
   title: string;
   startDate: string | null;
   endDate: string | null;
+  feat: string | null;
   createdAt: Date;
   collectors: (DbCollection & {
     user: DbUser;
   })[];
+}
+
+export interface FeatArtist {
+  users: {
+    username: string;
+    fid: number;
+    pfp: string;
+  }[];
+  text?: string;
 }

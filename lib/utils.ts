@@ -139,25 +139,35 @@ export const handleAddFrame = async () => {
   }
 };
 
-export const getFeaturingDetails = (
+// Function moved to useFeaturingDetails hook
+
+// Fallback function for backward compatibility
+export const getFallbackFeaturingDetails = (
   songId: number
-): { name: string; pfp: string; fid: number; text?: string } => {
+): {
+  users: { username: string; pfp: string; fid: number }[];
+  text?: string;
+} => {
   switch (songId) {
     case 1:
-      return { name: "jc4p", pfp: "/images/jc4p.avif", fid: 977233 };
+      return {
+        users: [{ username: "jc4p", pfp: "/images/jc4p.avif", fid: 977233 }],
+      };
     case 2:
-      return { name: "ted", pfp: "/images/ted.png", fid: 239 };
+      return { users: [{ username: "ted", pfp: "/images/ted.png", fid: 239 }] };
     case 3:
       return {
-        name: "dwr.eth",
-        pfp: "/images/dwr.png",
-        fid: 3,
+        users: [{ username: "dwr.eth", pfp: "/images/dwr.png", fid: 3 }],
         text: "+ 42 others",
       };
     case 4:
-      return { name: "phil", pfp: "/images/phil.png", fid: 129 };
+      return {
+        users: [{ username: "phil", pfp: "/images/phil.png", fid: 129 }],
+      };
     default:
-      return { name: "Unknown", pfp: "/images/unknown.png", fid: 1 };
+      return {
+        users: [{ username: "Unknown", pfp: "/images/unknown.png", fid: 1 }],
+      };
   }
 };
 

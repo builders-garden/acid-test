@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     const requestJson = await request.json();
 
     // Extract song details from the request
-    const { tokenId, title, startDate, endDate } = requestJson;
+    const { tokenId, title, startDate, endDate, feat } = requestJson;
 
     // Validate required fields
     if (!tokenId || !title) {
@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
       title,
       startDate: startDate || "",
       endDate: endDate || "",
+      feat: feat ? JSON.stringify(feat) : null,
     });
 
     return Response.json({ success: true, data: song });

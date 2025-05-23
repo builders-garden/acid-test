@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { FileIcon, DollarSignIcon } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { FileIcon, DollarSignIcon, CheckCircle, XCircle } from "lucide-react";
 import { formatUnits, parseUnits } from "viem";
+import Image from "next/image";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { useReadContract } from "wagmi";
 import { Checkbox } from "@/components/ui/checkbox";
 import { upload } from "@vercel/blob/client";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
+import { useUsersByUsernames } from "@/hooks/use-users-by-usernames";
 
 interface SongSaleFormProps {
   setModalOpen: (open: boolean) => void;
@@ -22,9 +24,20 @@ export default function SongSaleForm({
   setModalStatus,
   setModalMessage,
 }: SongSaleFormProps) {
-  const [tokenCounter, setTokenCounter] = useState<number | undefined>(
-    undefined
-  );
+  const [tokenCounter, setTokenCounter] = useState<number | undefined>(undefined);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [displayValues, setDisplayValues] = useState<{
+    startDate: string;
+    endDate: string;
+    price: string;
+    redactedUntil: string;
+  }>({
+    startDate: "",
+    endDate: "",
+    price: "",
+    redactedUntil: "",
+  });
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const getIdCounter = useReadContract({
     abi: AcidTestABI,
@@ -64,6 +77,8 @@ export default function SongSaleForm({
     audioFile: File | null;
     coverImage: File | null;
     isNewRedactedSong: boolean;
+    featuringUsernames: string[]; // This remains an array
+    featuringText?: string; // Add this new field
   }>({
     title: "",
     description: "",
@@ -76,34 +91,64 @@ export default function SongSaleForm({
     audioFile: null,
     coverImage: null,
     isNewRedactedSong: false,
+    featuringUsernames: [],
+    featuringText: "",
   });
 
-  const [displayValues, setDisplayValues] = useState({
-    price: "",
-    startDate: "",
-    endDate: "",
-    redactedUntil: "",
-  });
+  // Get users data for featuring artists
+  const { data: userData, isLoading: isLoadingUsers } = useUsersByUsernames(
+    formData.featuringUsernames.length > 0 ? formData.featuringUsernames : null
+  );
 
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [validationError, setValidationError] = useState<string | null>(null);
+  // Get validated users for featuring
+  const getValidatedFeaturingUsers = useCallback(() => {
+    if (!userData?.users) return null;
+    // Filter out invalid users and map to required format
+    const validUsers = userData.users
+      .filter((user) => user.success && user.fid)
+      .map((user) => ({
+        username: user.username,
+        fid: parseInt(user.fid!), // We know fid exists because of the filter
+        pfp: user.pfpUrl || "",
+      }));
+
+    if (validUsers.length === 0) return null;
+
+    return {
+      users: validUsers,
+      text: formData.featuringText || undefined,
+    };
+  }, [userData, formData.featuringText]);
 
   useEffect(() => {
-    if (isCreateConfirmed && tokenCounter) {
+    if (isCreateConfirmed) {
       setModalStatus("success");
       setModalMessage("Transaction successful");
       const setNotifications = async () => {
+        if (!tokenCounter) return;
         try {
+          // Get all validated featuring users
+          const validatedUsers = getValidatedFeaturingUsers();
+          const featData = validatedUsers ? {
+            users: validatedUsers.users.map((user) => ({
+              username: user.username,
+              fid: user.fid,
+              pfp: user.pfp,
+            })),
+            text: validatedUsers.text
+          } : null;
+
           const songResponse = await fetch("/api/song", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              tokenId: tokenCounter + 1,
+              tokenId: tokenCounter !== undefined ? tokenCounter + 1 : 0,
               title: formData.title,
               startDate: formData.startDate.toString(),
               endDate: formData.endDate.toString(),
+              feat: featData && featData.users.length > 0 ? featData : null,
             }),
           });
 
@@ -155,6 +200,12 @@ export default function SongSaleForm({
     createTxHash,
     setModalStatus,
     setModalMessage,
+    tokenCounter,
+    formData.title,
+    formData.startDate,
+    formData.endDate,
+    formData.price,
+    getValidatedFeaturingUsers,
   ]);
 
   // Cleanup preview URL when component unmounts
@@ -282,6 +333,9 @@ export default function SongSaleForm({
     }
 
     try {
+      // Prepare featuring data with the new format
+      const featData = getValidatedFeaturingUsers();
+
       // Upload audio file to Vercel Blob
       setModalMessage("Uploading audio file...");
       const audioBlob = await upload(
@@ -331,6 +385,29 @@ export default function SongSaleForm({
       const uploadResult = await uploadResponse.json();
       console.log("Upload result:", JSON.stringify(uploadResult, null, 2));
       console.log("Metadata URL:", uploadResult.metadataUrl);
+
+      // Create the song with featuring data
+      const songResponse = await fetch("/api/song", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          tokenId: tokenCounter !== undefined ? tokenCounter + 1 : 0,
+          title: formData.title,
+          startDate: formData.startDate.toString(),
+          endDate: formData.endDate.toString(),
+          feat: featData ? JSON.stringify(featData) : null,
+        }),
+      });
+
+      if (!songResponse.ok) {
+        const errorData = await songResponse.json();
+        setModalStatus("error");
+        setModalMessage(errorData.error || "Error creating song");
+        return;
+      }
+
       setModalStatus("success");
       setModalMessage("Upload successful!");
 
@@ -385,6 +462,47 @@ export default function SongSaleForm({
       setModalStatus("error");
       setModalMessage(`Error during upload process: ${error}`);
     }
+  };
+
+  // Add user validation status display
+  const renderFeaturingValidation = () => {
+    if (!formData.featuringUsernames.length) return null;
+    if (isLoadingUsers)
+      return (
+        <div className="mt-2 text-sm text-white/60">
+          Validating usernames...
+        </div>
+      );
+
+    return (
+      <div className="mt-2 space-y-1">
+        {formData.featuringUsernames.map((username) => {
+          const user = userData?.users.find((u) => u.username === username);
+          const isValid = user?.success && user?.fid;
+
+          return (
+            <div
+              key={username}
+              className="flex items-center gap-2 text-sm"
+            >
+              {isValid ? (
+                <CheckCircle className="w-4 h-4 text-green-500" />
+              ) : (
+                <XCircle className="w-4 h-4 text-red-500" />
+              )}
+              <span className={isValid ? "text-white" : "text-red-500"}>
+                {username}
+              </span>
+              {!isValid && (
+                <span className="text-red-500 text-xs">
+                  {user ? "Invalid Farcaster account" : "Username not found"}
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
   return (
@@ -458,6 +576,55 @@ export default function SongSaleForm({
               required
               className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white"
               rows={3}
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="featuringArtists"
+              className="block mb-1 text-sm text-white/80"
+            >
+              Featuring Artists (Farcaster usernames, comma separated)
+            </label>
+            <input
+              type="text"
+              name="featuringArtists"
+              value={formData.featuringUsernames.join(", ")}
+              onChange={(e) => {
+                const usernames = e.target.value
+                  .split(",")
+                  .map((username) => username.trim())
+                  .filter((username) => username !== "");
+                setFormData((prev) => ({
+                  ...prev,
+                  featuringUsernames: usernames,
+                }));
+              }}
+              className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white"
+              placeholder="e.g. user1, user2, user3"
+            />
+            {renderFeaturingValidation()}
+          </div>
+
+          <div>
+            <label
+              htmlFor="featuringText"
+              className="block mb-1 text-sm text-white/80"
+            >
+              Additional Featuring Text (optional)
+            </label>
+            <input
+              type="text"
+              name="featuringText"
+              value={formData.featuringText}
+              onChange={(e) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  featuringText: e.target.value,
+                }));
+              }}
+              className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white"
+              placeholder="e.g. + 3 others"
             />
           </div>
 
@@ -617,10 +784,12 @@ export default function SongSaleForm({
             </div>
             {imagePreview && (
               <div className="mt-2 flex justify-center border-2 border-white/20 p-2">
-                <img
+                <Image
                   src={imagePreview}
                   alt="Cover preview"
-                  className="max-w-[200px] max-h-[200px] object-contain"
+                  width={200}
+                  height={200}
+                  className="object-contain"
                 />
               </div>
             )}

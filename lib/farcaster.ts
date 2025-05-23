@@ -32,13 +32,13 @@ export async function getFarcasterManifest() {
       splashImageUrl: `${appUrl}/images/icon.png`,
       splashBackgroundColor: "#000000",
       webhookUrl: `${appUrl}/api/webhook`,
-      // Metadata https://github.com/farcasterxyz/miniapps/discussions/191
+      // Metadata https://miniapps.farcaster.xyz/docs/specification#frame
       subtitle: "Mint new episodes weekly", // 30 characters, no emojis or special characters, short description under app name
       description: "A radio show for Farcaster", // 170 characters, no emojis or special characters, promotional message displayed on Mini App Page
-      // primaryCategory: "music",
-      // tags: ["music", "acid", "song"], // up to 5 tags, filtering/search tags
+      primaryCategory: "news-media",
+      tags: ["music", "podcast", "interviews", "radio", "chaim"], // up to 5 tags, filtering/search tags
       tagline: "Mint new episodes weekly", // 30 characters, marketing tagline should be punchy and descriptive
-      // ogTitle: "", // 30 characters, app name + short tag, Title case, no emojis
+      ogTitle: "Acid Test | Mint new episodes weekly", // 30 characters, app name + short tag, Title case, no emojis
       ogDescription: "A radio show for Farcaster", // 100 characters, summarize core benefits in 1-2 lines
       // screenshotUrls: [
       //   // 1284 x 2778, visual previews of the app, max 3 screenshots
@@ -46,8 +46,8 @@ export async function getFarcasterManifest() {
       //   `${env.NEXT_PUBLIC_URL}/images/screenshots/2.png`,
       //   `${env.NEXT_PUBLIC_URL}/images/screenshots/3.png`,
       // ],
-      // heroImageUrl: `${env.NEXT_PUBLIC_URL}/images/hero.jpg`, // 1200 x 630px (1.91:1), promotional display image on top of the mini app store
-      // ogImageUrl: `${env.NEXT_PUBLIC_URL}/images/hero.jpg`, // 1200 x 630px (1.91:1), promotional image, same as app hero image
+      heroImageUrl: `${env.NEXT_PUBLIC_URL}/images/promo.jpg`, // 1200 x 630px (1.91:1), promotional display image on top of the mini app store
+      ogImageUrl: `${env.NEXT_PUBLIC_URL}/images/promo.jpg`, // 1200 x 630px (1.91:1), promotional image, same as app hero image
     },
   };
 }
