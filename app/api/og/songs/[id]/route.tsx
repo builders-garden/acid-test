@@ -210,7 +210,7 @@ export async function GET(
                     display: "flex",
                   }}
                 >
-                  +{totalCollectors}{" "}
+                  {totalCollectors}{" "}
                   {totalCollectors === 1 ? "COLLECTOR" : "COLLECTORS"}
                 </div>
               </div>
