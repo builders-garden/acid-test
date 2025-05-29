@@ -30,6 +30,7 @@ import Image from "next/image";
 import { Header } from "../ui/header";
 import { trackEvent } from "@/lib/posthog/client";
 import { TitleAndLinks } from "./title-and-links";
+import { ChevronUp } from "lucide-react";
 
 export default function Song() {
   // Get pathname and set up router
@@ -66,6 +67,7 @@ export default function Song() {
   const [usdPrice, setUsdPrice] = useState(0);
   const [ethUsd, setEthUsd] = useState(2325);
   const [userFid, setUserFid] = useState<number | null>(null);
+  const [showScrollToTopButton, setShowScrollToTopButton] = useState(false);
 
   // Hooks
   const {
@@ -90,6 +92,20 @@ export default function Song() {
     refetch: refetchCollectors,
     total: totalCollectors,
   } = useCollectors(tokenId);
+
+  // Scroll to top button visibility
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setShowScrollToTopButton(true);
+      } else {
+        setShowScrollToTopButton(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Contract interaction
   const getTokenInfoResult = useReadContract({
@@ -200,6 +216,13 @@ export default function Song() {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
   const handleSliderValueChange = (value: number[]) => {
@@ -362,6 +385,16 @@ export default function Song() {
           />
         )}
       </div>
+
+      {showScrollToTopButton && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 bg-zinc-800 hover:bg-zinc-800/80 text-white p-3 rounded-lg shadow-lg transition-colors duration-300 z-50"
+          aria-label="Scroll to top"
+        >
+          <ChevronUp className="w-6 h-6" />
+        </button>
+      )}
     </div>
   );
 }
