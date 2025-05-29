@@ -48,6 +48,7 @@ export async function getFarcasterManifest() {
       // ],
       heroImageUrl: `${env.NEXT_PUBLIC_URL}/images/promo.jpg`, // 1200 x 630px (1.91:1), promotional display image on top of the mini app store
       ogImageUrl: `${env.NEXT_PUBLIC_URL}/images/promo.jpg`, // 1200 x 630px (1.91:1), promotional image, same as app hero image
+      noIndex: !appUrl.includes("app.acidtest.xyz"),
     },
   };
 }

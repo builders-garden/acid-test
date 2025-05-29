@@ -1,25 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import * as jose from "jose";
-import { verifyMessage } from "viem";
-import { fetchUserByFid } from "@/lib/neynar";
 import { env } from "@/lib/env";
+import { createAppClient, viemConnector } from "@farcaster/auth-client";
+
+const appClient = createAppClient({
+  relay: "https://relay.farcaster.xyz",
+  ethereum: viemConnector({
+    rpcUrls: [
+      "https://mainnet.optimism.io",
+      "https://1rpc.io/op",
+      "https://optimism-rpc.publicnode.com",
+      "https://optimism.drpc.org",
+    ],
+  }),
+});
 
 export const POST = async (req: NextRequest) => {
-  let { fid, walletAddress, signature, message } = await req.json();
+  let { nonce, signature, message } = await req.json();
 
-  // We don't have the user address in the Farcaster case
-  if (!walletAddress) {
-    const user = await fetchUserByFid(fid);
-    walletAddress = user.custody_address;
-  }
-
-  // Verify signature matches custody address
-  const isValidSignature = await verifyMessage({
-    address: walletAddress as `0x${string}`,
+  // Verify signature matches custody address and auth address
+  const { data, success, fid } = await appClient.verifySignInMessage({
+    domain: new URL(env.NEXT_PUBLIC_URL).hostname,
+    nonce,
     message,
     signature,
+    acceptAuthAddress: true,
   });
+  let isValidSignature = success;
 
   if (!isValidSignature) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
@@ -27,10 +34,14 @@ export const POST = async (req: NextRequest) => {
 
   // Generate JWT token
   const secret = new TextEncoder().encode(env.JWT_SECRET);
-  const token = await new jose.SignJWT({ fid, walletAddress })
+  const token = await new jose.SignJWT({
+    fid,
+    walletAddress: data.address,
+    timestamp: Date.now(),
+  })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("7d")
+    .setExpirationTime("30 days")
     .sign(secret);
 
   // Create the response

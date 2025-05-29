@@ -71,10 +71,9 @@ export const useSignIn = () => {
           "No FID found. Please make sure you're logged into Warpcast."
         );
       }
-      let referrerFid: number | null = null;
       let result: { message: string; signature: string; address?: string };
+      const nonce = Math.random().toString(36).substring(2);
       if (contextType === ContextType.Worldcoin) {
-        const nonce = Math.random().toString(36).substring(2);
         const message = `Sign in to MiniApp. Nonce: ${nonce}`;
         const miniKitResult = await MiniKit.commandsAsync.signMessage({
           message,
@@ -89,16 +88,13 @@ export const useSignIn = () => {
         };
       } else {
         result = await sdk.actions.signIn({
-          nonce: Math.random().toString(36).substring(2),
+          nonce,
           notBefore: new Date().toISOString(),
           expirationTime: new Date(
             Date.now() + MESSAGE_EXPIRATION_TIME
           ).toISOString(),
+          acceptAuthAddress: true,
         });
-        referrerFid =
-          context.location?.type === "cast_embed"
-            ? context.location.cast.fid
-            : null;
       }
 
       const res = await fetch("/api/auth/sign-in", {
@@ -108,13 +104,10 @@ export const useSignIn = () => {
         },
         credentials: "include",
         body: JSON.stringify({
+          nonce,
           signature: result.signature,
           message: result.message,
-          ...(contextType === ContextType.Farcaster && {
-            fid: context.user.fid,
-          }),
           ...(result.address && { walletAddress: result.address }),
-          referrerFid,
         }),
       });
 
