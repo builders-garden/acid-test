@@ -3,7 +3,10 @@ import {
   sendNotificationResponseSchema,
 } from "@farcaster/frame-sdk";
 import { env } from "./env";
-import { getUsersNotificationDetails } from "./prisma/queries";
+import {
+  getUsersNotificationDetails,
+  UserFrameNotificationDetails,
+} from "./prisma/queries";
 
 const appUrl = env.NEXT_PUBLIC_URL || "";
 
@@ -56,49 +59,121 @@ export async function sendFrameNotification({
   return finalResult;
 }
 
+// function sanitize(text: string): string {
+//   // Remove special characters and emojis, keep alphanumeric and spaces
+//   return text.replace(/[^\w\s]/gi, "").replace(/\s+/g, "-");
+// }
+
 async function sendBatchNotification(
   fids: number[],
   title: string,
   body: string
 ): Promise<SendFrameNotificationResult> {
-  const notificationDetails = await getUsersNotificationDetails(fids);
+  const allNotificationDetails = await getUsersNotificationDetails(fids);
 
-  if (!notificationDetails.length) {
+  if (!allNotificationDetails.length) {
     return { state: "no_token" };
   }
 
-  // the url is the same for all users
-  const response = await fetch(notificationDetails[0].url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      notificationId: crypto.randomUUID(),
-      title,
-      body,
-      targetUrl: appUrl,
-      tokens: notificationDetails.map((detail) => detail.token),
-    } satisfies SendNotificationRequest),
-  });
-
-  const responseJson = await response.json();
-
-  if (response.status === 200) {
-    const responseBody = sendNotificationResponseSchema.safeParse(responseJson);
-    if (responseBody.success === false) {
-      // Malformed response
-      return { state: "error", error: responseBody.error.errors };
+  // Group details by URL to handle different notification services
+  const detailsByUrl = new Map<
+    string,
+    Array<UserFrameNotificationDetails> // Updated type
+  >();
+  for (const detail of allNotificationDetails) {
+    if (!detailsByUrl.has(detail.url)) {
+      detailsByUrl.set(detail.url, []);
     }
-
-    if (responseBody.data.result.rateLimitedTokens.length) {
-      // Rate limited
-      return { state: "rate_limit" };
-    }
-
-    return { state: "success" };
-  } else {
-    // Error response
-    return { state: "error", error: responseJson };
+    detailsByUrl.get(detail.url)!.push(detail);
   }
+
+  let overallResultState: SendFrameNotificationResult = { state: "success" };
+
+  // Convert Map entries to an array for iteration to avoid downlevelIteration issues
+  for (const [url, specificNotificationDetails] of Array.from(
+    detailsByUrl.entries()
+  )) {
+    if (specificNotificationDetails.length === 0) {
+      continue;
+    }
+
+    const tokensForThisUrl = specificNotificationDetails.map(
+      (detail) => detail.token // Keep this as is, only tokens are needed for the API
+    );
+
+    // Generate notificationId based on fids and sanitized body
+    // const firstFid = specificNotificationDetails[0].fid;
+    // const lastFid =
+    //   specificNotificationDetails[specificNotificationDetails.length - 1].fid;
+    // const sanitizedBody = sanitize(body);
+    let notificationId = `${new Date().toISOString()}`;
+    if (notificationId.length > 128) {
+      notificationId = notificationId.substring(0, 128);
+    }
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        notificationId,
+        title,
+        body,
+        targetUrl: appUrl,
+        tokens: tokensForThisUrl,
+      } satisfies SendNotificationRequest),
+    });
+
+    const responseJson = await response.json();
+    let currentGroupResult: SendFrameNotificationResult;
+
+    if (response.status === 200) {
+      const responseBody =
+        sendNotificationResponseSchema.safeParse(responseJson);
+      if (responseBody.success === false) {
+        currentGroupResult = {
+          state: "error",
+          error: responseBody.error.errors,
+        };
+      } else {
+        // Check if 'result' and 'rateLimitedTokens' exist, matching the original logic's expectation
+        if (
+          responseBody.data &&
+          responseBody.data.result &&
+          Array.isArray(responseBody.data.result.rateLimitedTokens) &&
+          responseBody.data.result.rateLimitedTokens.length > 0
+        ) {
+          currentGroupResult = { state: "rate_limit" };
+        } else {
+          currentGroupResult = { state: "success" };
+        }
+      }
+    } else {
+      currentGroupResult = { state: "error", error: responseJson };
+    }
+
+    // Aggregate results: error > rate_limit > success
+    if (currentGroupResult.state === "error") {
+      if (overallResultState.state !== "error") {
+        // Store the first error
+        overallResultState = currentGroupResult;
+      }
+    } else if (
+      currentGroupResult.state === "rate_limit" &&
+      overallResultState.state !== "error"
+    ) {
+      overallResultState = currentGroupResult;
+    } else if (currentGroupResult.state === "success") {
+      // Only update to success if not already error or rate_limit
+      if (
+        overallResultState.state !== "error" &&
+        overallResultState.state !== "rate_limit"
+      ) {
+        // overallResultState remains { state: "success" } or becomes it
+      }
+    }
+  }
+
+  return overallResultState;
 }

@@ -10,6 +10,13 @@ import {
 } from "../types";
 import { prisma } from "./client";
 
+// Define a new type that includes fid with notification details
+export type UserFrameNotificationDetails = {
+  fid: number;
+  url: string;
+  token: string;
+};
+
 export const getUser = async (fid: number) => {
   const user = await prisma.user.findUnique({
     where: {
@@ -56,12 +63,12 @@ export const deleteUserNotificationDetails = async (fid: number) => {
 };
 
 export const getUsersNotificationDetails = async (
-  fid: number[]
-): Promise<FrameNotificationDetails[]> => {
+  fids: number[]
+): Promise<UserFrameNotificationDetails[]> => {
   const users = await prisma.user.findMany({
     where: {
       fid: {
-        in: fid,
+        in: fids,
       },
     },
   });
@@ -71,10 +78,22 @@ export const getUsersNotificationDetails = async (
       if (!user.notificationDetails) {
         return null;
       }
-      return JSON.parse(user.notificationDetails) as FrameNotificationDetails;
+      // Parse the stored JSON string which should match FrameNotificationDetails structure
+      const parsedDetails = JSON.parse(user.notificationDetails) as {
+        url: string;
+        token: string;
+      };
+      return {
+        fid: user.fid, // Include the user's FID
+        url: parsedDetails.url,
+        token: parsedDetails.token,
+      };
     })
-    .filter((details) => details !== null);
-  return notificationDetails as FrameNotificationDetails[];
+    .filter(
+      (details): details is UserFrameNotificationDetails => details !== null
+    ); // Type guard for filtering out nulls
+
+  return notificationDetails;
 };
 
 export const getSong = async (
