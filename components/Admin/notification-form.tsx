@@ -250,19 +250,13 @@ export default function NotificationForm({
       >
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="test">Test Mode</TabsTrigger>
-          <TabsTrigger
-            value="prod"
-            className="text-red-500"
-          >
+          <TabsTrigger value="prod" className="text-red-500">
             Production Mode
           </TabsTrigger>
         </TabsList>
       </Tabs>
 
-      <form
-        onSubmit={handleSubmit}
-        className="w-full space-y-4"
-      >
+      <form onSubmit={handleSubmit} className="w-full space-y-4">
         {mode === "prod" && (
           <Tabs
             value={prodTab}
@@ -288,19 +282,13 @@ export default function NotificationForm({
 
             <Card className="mt-4 border-white/60 bg-black text-white">
               <CardContent className="pt-4">
-                <TabsContent
-                  value="announce"
-                  className="mt-0"
-                >
+                <TabsContent value="announce" className="mt-0">
                   <p className="text-sm text-white/70">
                     This will send a notification to ALL users of the platform.
                   </p>
                 </TabsContent>
 
-                <TabsContent
-                  value="holders"
-                  className="mt-0 space-y-4"
-                >
+                <TabsContent value="holders" className="mt-0 space-y-4">
                   <p className="text-sm text-white/70">
                     Select songs to send notifications to their collectors.
                     Duplicate collectors will receive only one notification.
@@ -312,10 +300,7 @@ export default function NotificationForm({
                       onCheckedChange={handleSelectAllToggle}
                       id="select-all"
                     />
-                    <label
-                      htmlFor="select-all"
-                      className="text-sm font-medium"
-                    >
+                    <label htmlFor="select-all" className="text-sm font-medium">
                       Select All Songs
                     </label>
                   </div>
@@ -334,10 +319,7 @@ export default function NotificationForm({
                           disabled={selectAllSongs}
                           id={`song-${song.id}`}
                         />
-                        <label
-                          htmlFor={`song-${song.id}`}
-                          className="text-sm"
-                        >
+                        <label htmlFor={`song-${song.id}`} className="text-sm">
                           {song.title} ({song.collectors?.length || 0}{" "}
                           collectors)
                         </label>
@@ -346,10 +328,7 @@ export default function NotificationForm({
                   </div>
                 </TabsContent>
 
-                <TabsContent
-                  value="custom"
-                  className="mt-0 space-y-4"
-                >
+                <TabsContent value="custom" className="mt-0 space-y-4">
                   <p className="text-sm text-white/70">
                     Upload a CSV file with one FID per line to send a
                     notification to custom users.
@@ -398,10 +377,7 @@ export default function NotificationForm({
         )}
 
         <div>
-          <label
-            htmlFor="title"
-            className="block mb-1 text-sm text-white/80"
-          >
+          <label htmlFor="title" className="block mb-1 text-sm text-white/80">
             Notification Title
           </label>
           <div className="relative">
@@ -418,10 +394,7 @@ export default function NotificationForm({
         </div>
 
         <div>
-          <label
-            htmlFor="body"
-            className="block mb-1 text-sm text-white/80"
-          >
+          <label htmlFor="body" className="block mb-1 text-sm text-white/80">
             Notification Body
           </label>
           <textarea
@@ -446,7 +419,16 @@ export default function NotificationForm({
             value={formData.scheduledDate}
             onChange={handleChange}
             required
-            min={new Date().toISOString().slice(0, 16)}
+            min={(() => {
+              const now = new Date();
+              const localISOTime = new Date(
+                now.getTime() - now.getTimezoneOffset() * 60000
+              )
+                .toISOString()
+                .slice(0, 16);
+
+              return localISOTime;
+            })()}
             className="w-full p-2 border-2 border-white/60 bg-black text-white rounded-none focus:outline-none focus:border-white [color-scheme:dark]"
           />
         </div>
