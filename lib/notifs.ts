@@ -7,6 +7,7 @@ import {
   getUsersNotificationDetails,
   UserFrameNotificationDetails,
 } from "./prisma/queries";
+import { createHash } from "crypto";
 
 const appUrl = env.NEXT_PUBLIC_URL || "";
 
@@ -101,12 +102,13 @@ async function sendBatchNotification(
       (detail) => detail.token // Keep this as is, only tokens are needed for the API
     );
 
-    // Generate notificationId based on fids and sanitized body
-    // const firstFid = specificNotificationDetails[0].fid;
-    // const lastFid =
-    //   specificNotificationDetails[specificNotificationDetails.length - 1].fid;
-    // const sanitizedBody = sanitize(body);
-    let notificationId = `${new Date().toISOString()}`;
+    // Generate notificationId based on title and body combined
+    const combinedText = `${title} ${body}`;
+    let notificationId = createHash("sha256")
+      .update(combinedText)
+      .digest("hex")
+      .substring(0, 128); // Use first 32 characters for a clean, consistent ID
+
     if (notificationId.length > 128) {
       notificationId = notificationId.substring(0, 128);
     }
