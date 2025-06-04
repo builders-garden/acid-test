@@ -52,7 +52,7 @@ export default function SongSaleForm({
   });
 
   useEffect(() => {
-    if (getIdCounter.data) {
+    if (getIdCounter.data !== undefined) {
       setTokenCounter(Number(getIdCounter.data));
     }
   }, [getIdCounter.data]);
@@ -129,39 +129,6 @@ export default function SongSaleForm({
       const setNotifications = async () => {
         if (!tokenCounter) return;
         try {
-          // Get all validated featuring users
-          const validatedUsers = getValidatedFeaturingUsers();
-          const featData = validatedUsers
-            ? {
-                users: validatedUsers.users.map((user) => ({
-                  username: user.username,
-                  fid: user.fid,
-                  pfp: user.pfp,
-                })),
-                text: validatedUsers.text,
-              }
-            : null;
-
-          const songResponse = await fetch("/api/song", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              tokenId: tokenCounter !== undefined ? tokenCounter + 1 : 0,
-              title: formData.title,
-              startDate: formData.startDate.toString(),
-              endDate: formData.endDate.toString(),
-              feat: featData && featData.users.length > 0 ? featData : null,
-            }),
-          });
-
-          // Check if the request was successful
-          if (!songResponse.ok) {
-            const errorData = await songResponse.json(); // Parse error response
-            throw new Error(errorData.error || "Failed to upload song");
-          }
-
           const setupNotisResponse = await fetch("/api/setup-notifications", {
             method: "POST",
             headers: {
@@ -290,6 +257,13 @@ export default function SongSaleForm({
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    if (tokenCounter === undefined) {
+      console.error("Token counter is not initialized");
+      setModalStatus("error");
+      setModalMessage("Token counter is not initialized");
+      return;
+    }
+
     e.preventDefault();
 
     setModalOpen(true);
