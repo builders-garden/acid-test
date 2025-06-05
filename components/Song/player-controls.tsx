@@ -139,7 +139,7 @@ export const PlayerControls = ({
       >
         <Slider
           value={[isCurrentSong ? displayTime : 0]}
-          max={isCurrentSong ? displayDuration || 100 : 100}
+          max={isCurrentSong ? displayDuration || 100 : displayDuration || 100}
           step={0.1}
           onValueChange={handleSliderValueChange}
           onValueCommit={handleSliderCommit}
@@ -148,7 +148,7 @@ export const PlayerControls = ({
         />
         <div className="flex justify-between text-xs text-white">
           <span>{isCurrentSong ? formatTime(displayTime) : "0:00"}</span>
-          <span>{isCurrentSong ? formatTime(displayDuration) : "0:00"}</span>
+          <span>{formatTime(displayDuration)}</span>
         </div>
       </motion.div>
     </div>

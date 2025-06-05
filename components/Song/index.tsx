@@ -67,6 +67,7 @@ export default function Song() {
   const [usdPrice, setUsdPrice] = useState(0);
   const [ethUsd, setEthUsd] = useState(2325);
   const [userFid, setUserFid] = useState<number | null>(null);
+  const [songDuration, setSongDuration] = useState(0);
   const [showScrollToTopButton, setShowScrollToTopButton] = useState(false);
 
   // Hooks
@@ -188,13 +189,31 @@ export default function Song() {
     fetchMetadata();
   }, [getTokenInfoResult.data, router]);
 
+  // Derived state
+  const isCurrentSong = currentSong.tokenId === tokenId;
+  const displayTime = isDragging ? seekValue : isCurrentSong ? currentTime : 0;
+  // Always show duration for the current page's song, whether it's playing or not
+  const displayDuration = isCurrentSong ? duration : songDuration;
+
   // Preload the song audio when metadata is loaded
   useEffect(() => {
     if (metadata && !isLoading) {
       console.log("Preloading song for token ID:", tokenId);
       preloadSong(metadata);
+
+      // Get duration from audio element if we're currently playing this song
+      if (isCurrentSong && duration > 0) {
+        setSongDuration(duration);
+      }
     }
-  }, [metadata, isLoading, preloadSong, tokenId]);
+  }, [metadata, isLoading, preloadSong, tokenId, isCurrentSong, duration]);
+
+  // Update song duration when this becomes the current song
+  useEffect(() => {
+    if (isCurrentSong && duration > 0) {
+      setSongDuration(duration);
+    }
+  }, [isCurrentSong, duration]);
 
   // Countdown timer
   useEffect(() => {
@@ -210,6 +229,37 @@ export default function Song() {
 
     return () => clearInterval(timer);
   }, []);
+
+  // Use hidden audio element to get song duration even when not playing
+  useEffect(() => {
+    let audio: HTMLAudioElement | null = null;
+
+    if (metadata?.animation_url && !isCurrentSong && songDuration === 0) {
+      audio = new Audio(metadata.animation_url);
+
+      const handleLoadedMetadata = () => {
+        if (audio && audio.duration && audio.duration !== Infinity) {
+          console.log(`Got duration for song ${tokenId}:`, audio.duration);
+          setSongDuration(audio.duration);
+        }
+      };
+
+      const handleError = (e: ErrorEvent) => {
+        console.error(`Error loading audio for song ${tokenId}:`, e);
+      };
+
+      audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+      audio.addEventListener("error", handleError);
+
+      return () => {
+        if (audio) {
+          audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+          audio.removeEventListener("error", handleError);
+          audio = null;
+        }
+      };
+    }
+  }, [metadata?.animation_url, isCurrentSong, songDuration, tokenId]);
 
   // Utility functions
   const formatTime = (time: number) => {
@@ -261,11 +311,6 @@ export default function Song() {
       await sdk.actions.viewProfile({ fid });
     }
   };
-
-  // Derived state
-  const isCurrentSong = currentSong.tokenId === tokenId;
-  const displayTime = isDragging ? seekValue : isCurrentSong ? currentTime : 0;
-  const displayDuration = isCurrentSong ? duration : 0;
 
   // Sort collectors by amount
   const sortedCollectors = useMemo(() => {
