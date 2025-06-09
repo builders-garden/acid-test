@@ -16,7 +16,7 @@ export function SongData({
   const totalEarned = totalMints * usdPrice;
 
   return (
-    <div className="w-full max-w-lg border border-white/20 bg-white/10 rounded-lg p-4 mb-4">
+    <div className="w-full max-w-lg border border-white/20 bg-white/10 rounded-lg p-4">
       <div className="flex justify-between items-center">
         <div className="flex flex-col items-center w-full">
           <span className="text-lg font-bold">

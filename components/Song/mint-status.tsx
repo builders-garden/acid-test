@@ -24,7 +24,7 @@ export const MintStatus = ({
   };
 
   return (
-    <div className="w-full max-w-md flex flex-col items-center gap-4 mb-6">
+    <div className="w-full max-w-md flex flex-col items-center gap-4 mb-4">
       {status === "live" ? (
         <Button
           className="w-full h-10 text-lg bg-mint text-black hover:bg-plum hover:text-black"
