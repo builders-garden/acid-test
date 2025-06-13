@@ -83,8 +83,6 @@ export function MintModal({
   const [postMintExecuted, setPostMintExecuted] = useState(false);
   const [wayMoreAccordionValue, setWayMoreAccordionValue] =
     useState<string>("");
-  const [sendToDifferentReceiver, setSendToDifferentReceiver] = useState(false);
-  const [receiverAddress, setReceiverAddress] = useState("");
 
   const presetQuantities = [1, 2, 5, 10];
   const modalRef = useRef<HTMLDivElement>(null);
@@ -172,16 +170,11 @@ export function MintModal({
     try {
       if (userAddress) {
         setPostMintExecuted(false);
-        const targetAddress =
-          sendToDifferentReceiver && isAddress(receiverAddress)
-            ? (receiverAddress as `0x${string}`)
-            : userAddress;
-
         writeContractMint({
           address: CONTRACT_ADDRESS,
           abi: AcidTestABI,
           functionName: "mint",
-          args: [targetAddress, BigInt(tokenId), BigInt(amount), isWETH],
+          args: [userAddress, BigInt(tokenId), BigInt(amount), isWETH],
           value:
             paymentMethod === "ETH"
               ? BigInt(Math.ceil(safePrice * amount * 10 ** 18))
@@ -485,11 +478,6 @@ export function MintModal({
     }
   }, [isOpen]);
 
-  const isValidReceiverAddress = () => {
-    if (!sendToDifferentReceiver) return true;
-    return receiverAddress.trim() !== "" && isAddress(receiverAddress);
-  };
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -583,7 +571,10 @@ export function MintModal({
                       onValueChange={setWayMoreAccordionValue}
                       className="w-full"
                     >
-                      <AccordionItem value="more" className="border-none">
+                      <AccordionItem
+                        value="more"
+                        className="border-none"
+                      >
                         <AccordionContent>
                           <div className="flex items-center gap-4 mt-2">
                             <Slider
@@ -639,67 +630,18 @@ export function MintModal({
                     </div>
                   </div>
 
-                  <div className="space-y-3 !mt-4">
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="checkbox"
-                        id="different-receiver"
-                        checked={sendToDifferentReceiver}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                          setSendToDifferentReceiver(e.target.checked);
-                          if (!e.target.checked) {
-                            setReceiverAddress("");
-                          }
-                        }}
-                        className="w-4 h-4 rounded border-2 border-white/20 bg-transparent checked:bg-white checked:border-white focus:ring-0 focus:ring-offset-0"
-                      />
-                      <label
-                        htmlFor="different-receiver"
-                        className="text-sm text-white cursor-pointer"
-                      >
-                        Send to a different receiver
-                      </label>
-                    </div>
-
-                    {sendToDifferentReceiver && (
-                      <div className="space-y-2">
-                        <input
-                          type="text"
-                          placeholder="Enter receiver address (0x...)"
-                          value={receiverAddress}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                            setReceiverAddress(e.target.value)
-                          }
-                          className={`w-full px-3 py-2 bg-black border-2 text-white placeholder:text-white/40 rounded-md focus:outline-none focus:ring-0 focus:ring-offset-0 ${
-                            receiverAddress && !isAddress(receiverAddress)
-                              ? "border-red-500 focus:border-red-500"
-                              : "border-white/20 focus:border-white"
-                          }`}
-                        />
-                        {receiverAddress && !isAddress(receiverAddress) && (
-                          <p className="text-xs text-red-400">
-                            Please enter a valid Ethereum address
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
                   {paymentMethod === "ETH" ? (
                     <Button
                       className="w-full h-8py-6 text-lg bg-mint text-black hover:bg-plum hover:text-black disabled:bg-gray-500 disabled:text-white/60"
                       onClick={() => handleMint(mintQuantity, false)}
                       disabled={
                         !hasEnoughEthBalance() ||
-                        !isValidReceiverAddress() ||
                         mintStatus === "pending" ||
                         (mintTxHash && mintTxResult.isPending)
                       }
                     >
                       {!hasEnoughEthBalance()
                         ? "INSUFFICIENT ETH BALANCE"
-                        : !isValidReceiverAddress()
-                        ? "INVALID RECEIVER ADDRESS"
                         : "MINT WITH ETH"}
                     </Button>
                   ) : (
@@ -714,7 +656,6 @@ export function MintModal({
                       }}
                       disabled={
                         !hasEnoughUsdcBalance() ||
-                        !isValidReceiverAddress() ||
                         allowanceStatus === "pending" ||
                         mintStatus === "pending" ||
                         (allowanceTxHash && allowanceTxResult.isPending)
@@ -722,8 +663,6 @@ export function MintModal({
                     >
                       {!hasEnoughUsdcBalance()
                         ? "INSUFFICIENT USDC BALANCE"
-                        : !isValidReceiverAddress()
-                        ? "INVALID RECEIVER ADDRESS"
                         : allowanceStatus === "pending" ||
                           (allowanceTxHash && allowanceTxResult.isPending)
                         ? "APPROVING"
