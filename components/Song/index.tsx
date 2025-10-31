@@ -206,14 +206,15 @@ export default function Song() {
         setSongDuration(duration);
       }
     }
-  }, [metadata, isLoading, preloadSong, tokenId, isCurrentSong, duration]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [metadata?.animation_url, isLoading, tokenId]);
 
   // Update song duration when this becomes the current song
   useEffect(() => {
-    if (isCurrentSong && duration > 0) {
+    if (isCurrentSong && duration > 0 && songDuration !== duration) {
       setSongDuration(duration);
     }
-  }, [isCurrentSong, duration]);
+  }, [isCurrentSong, duration, songDuration]);
 
   // Countdown timer
   useEffect(() => {
