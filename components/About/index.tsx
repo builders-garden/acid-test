@@ -7,10 +7,9 @@ import candles from "@/public/images/candles_icon.svg";
 import acid_test from "@/public/images/acid_test_sm_icon.svg";
 import copy from "@/public/images/copy_icon.svg";
 import { useState, useEffect } from "react";
-import { copyToClipboard } from "@/lib/utils";
+import { copyToClipboard, viewAcidToken } from "@/lib/utils";
+import { ACID_TOKEN_ADDRESS } from "@/lib/constants";
 import sdk from "@farcaster/frame-sdk";
-
-const AcidTest_CA = "0xf7d696B5BED117731B8A71Db264333C8Ec261b07";
 
 interface DexScreenerData {
   marketCap: number;
@@ -30,7 +29,7 @@ export default function About() {
     const fetchMarketData = async () => {
       try {
         const response = await fetch(
-          `https://api.dexscreener.com/latest/dex/search?q=${AcidTest_CA}`
+          `https://api.dexscreener.com/latest/dex/search?q=${ACID_TOKEN_ADDRESS}`
         );
         const data = await response.json();
 
@@ -80,7 +79,10 @@ export default function About() {
         {/* Token Info Box */}
         <div className="border border-white/50 rounded-lg p-4">
           <div className="flex items-start justify-between mb-4">
-            <div className="flex items-start gap-2">
+            <button
+              onClick={viewAcidToken}
+              className="flex items-start gap-2"
+            >
               <Image
                 src={acid_test}
                 alt="acid_test_small_icon"
@@ -89,7 +91,7 @@ export default function About() {
                 className=""
               />
               <span className="text-xl">$ACID</span>
-            </div>
+            </button>
             <div className="flex -mt-1">
               <button
                 onClick={() =>
@@ -126,7 +128,7 @@ export default function About() {
               <button
                 onClick={() =>
                   sdk.actions.openUrl(
-                    "https://basescan.org/token/0xf7d696B5BED117731B8A71Db264333C8Ec261b07"
+                    `https://basescan.org/token/${ACID_TOKEN_ADDRESS}`
                   )
                 }
                 className="p-1 rounded bg-black hover:bg-[#AD82CD4D] transition-colors"
@@ -144,18 +146,24 @@ export default function About() {
 
           <div className="space-y-4">
             <div className="flex text-sm items-center gap-2">
-              <span className="text-white/60 text-[10.5px] flex items-center">
-                CA:
-              </span>
-              <span className="text-md flex items-center">
-                {`${AcidTest_CA?.slice(0, 8)}...${AcidTest_CA?.slice(
-                  -6
-                )}`.toLowerCase()}
-              </span>
+              <button
+                onClick={viewAcidToken}
+                className="flex items-center gap-1"
+              >
+                <span className="text-white/60 text-[10.5px] flex items-center">
+                  CA:
+                </span>
+                <span className="text-md flex items-center">
+                  {`${ACID_TOKEN_ADDRESS?.slice(
+                    0,
+                    8
+                  )}...${ACID_TOKEN_ADDRESS?.slice(-6)}`.toLowerCase()}
+                </span>
+              </button>
               <div className="relative flex items-center">
                 <button
                   onClick={async () =>
-                    await copyToClipboard(AcidTest_CA, setShowCopied)
+                    await copyToClipboard(ACID_TOKEN_ADDRESS, setShowCopied)
                   }
                   className="hover:opacity-70 transition-opacity w-6 h-6 mb-1 flex items-center justify-center"
                 >
@@ -175,7 +183,10 @@ export default function About() {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <button
+              onClick={viewAcidToken}
+              className="grid grid-cols-3 gap-4 w-full text-start"
+            >
               <div>
                 <div className="text-white/60 text-sm">MKT CAP</div>
                 <div className="text-lg">
@@ -194,7 +205,7 @@ export default function About() {
                   {formatNumber(marketData.liquidity)}
                 </div>
               </div>
-            </div>
+            </button>
           </div>
         </div>
 
@@ -242,7 +253,7 @@ export default function About() {
                 <button
                   onClick={() =>
                     sdk.actions.openUrl(
-                      "https://basescan.org/token/0xf7d696B5BED117731B8A71Db264333C8Ec261b07"
+                      `https://basescan.org/token/${ACID_TOKEN_ADDRESS}`
                     )
                   }
                   className="text-white hover:text-white/80 no-underline"
@@ -276,7 +287,7 @@ export default function About() {
               <button
                 onClick={() =>
                   sdk.actions.openUrl(
-                    "https://www.clanker.world/clanker/0xf7d696B5BED117731B8A71Db264333C8Ec261b07"
+                    `https://www.clanker.world/clanker/${ACID_TOKEN_ADDRESS}`
                   )
                 }
                 className="block text-white hover:text-white/80 no-underline"

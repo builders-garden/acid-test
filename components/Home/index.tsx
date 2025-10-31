@@ -7,7 +7,11 @@ import { useState, useEffect } from "react";
 import { useReadContract } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
-import { formatSongId, fetchWithIPFSFallback } from "@/lib/utils";
+import {
+  formatSongId,
+  fetchWithIPFSFallback,
+  viewAcidToken,
+} from "@/lib/utils";
 import { SongMetadata } from "@/types";
 import { usePrelaunchState } from "@/hooks/use-prelaunch-state";
 import { useRouter } from "next/navigation";
@@ -214,11 +218,7 @@ export default function Home() {
               )}
 
               <Button
-                onClick={() =>
-                  sdk.actions.openUrl(
-                    "https://dexscreener.com/base/0x4e3676c16c0ef1138d1efabfee8a657fdefb0555"
-                  )
-                }
+                onClick={viewAcidToken}
                 className="w-full h-10 text-lg bg-mint text-black hover:bg-plum transition-colors"
               >
                 $ACID

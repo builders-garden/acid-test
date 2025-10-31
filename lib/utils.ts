@@ -3,10 +3,17 @@ import { twMerge } from "tailwind-merge";
 import { env } from "./env";
 import axios from "axios";
 import sdk from "@farcaster/frame-sdk";
+import { ACID_TOKEN_ADDRESS } from "./constants";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+export const viewAcidToken = async () => {
+  await sdk.actions.viewToken({
+    token: `eip155:8453/erc20:${ACID_TOKEN_ADDRESS}`,
+  });
+};
 
 export const formatSongId = (id: number) => {
   return "AT" + id.toString().padStart(3, "0");
