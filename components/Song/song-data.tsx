@@ -34,7 +34,7 @@ export function SongData({
 
         <div className="flex flex-col items-center w-full">
           <span className="text-lg font-bold">
-            {isLoading ? "..." : `$${totalEarned}`}
+            {isLoading ? "..." : `$${totalEarned.toFixed(0)}`}
           </span>
           <span className="text-sm">EARNED</span>
         </div>
