@@ -16,6 +16,15 @@ export async function GET(request: NextRequest) {
     const secret = new TextEncoder().encode(env.JWT_SECRET);
     const { payload } = await jose.jwtVerify(token, secret);
 
+    // Validate that the token contains a valid fid
+    if (!payload.fid || payload.fid === undefined) {
+      console.error("Token missing valid fid:", payload);
+      return NextResponse.json(
+        { error: "Invalid token - missing fid" },
+        { status: 401 }
+      );
+    }
+
     return NextResponse.json({
       authenticated: true,
       user: {

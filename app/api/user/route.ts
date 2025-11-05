@@ -14,10 +14,10 @@ export async function GET(request: NextRequest) {
     const fid = requestHeaders.get("x-user-fid");
 
     // Validate required fields
-    if (fid === null) {
+    if (!fid || fid === "undefined" || fid === "null") {
       return Response.json(
-        { success: false, error: "fid is required" },
-        { status: 400 }
+        { success: false, error: "Authentication required - fid missing" },
+        { status: 401 }
       );
     }
 

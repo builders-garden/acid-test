@@ -17,9 +17,15 @@ const appClient = createAppClient({
 });
 
 export const POST = async (req: NextRequest) => {
-  let { nonce, signature, message, walletAddress } = await req.json();
+  let {
+    nonce,
+    signature,
+    message,
+    walletAddress,
+    fid: providedFid,
+  } = await req.json();
 
-  let fid: number | undefined;
+  let fid: number | undefined = providedFid;
   let address: string | undefined;
   let isValidSignature = false;
 

@@ -33,6 +33,8 @@ export const useSignIn = () => {
 
   // Check for existing auth token on mount
   useEffect(() => {
+    let mounted = true;
+
     const checkAuthToken = async () => {
       try {
         // Make a request to a protected endpoint to verify the token
@@ -40,21 +42,25 @@ export const useSignIn = () => {
           credentials: "include",
         });
 
-        if (res.ok) {
+        if (mounted && res.ok) {
           setIsSignedIn(true);
         }
       } catch (error) {
         console.error("Error checking auth status:", error);
         // Don't update isSignedIn, leave as false
       } finally {
-        setIsLoading(false);
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     };
 
-    if (!isSignedIn) {
-      checkAuthToken();
-    }
-  }, [isSignedIn]);
+    checkAuthToken();
+
+    return () => {
+      mounted = false;
+    };
+  }, []); // Only run once on mount
 
   const signIn = useCallback(async () => {
     try {
@@ -97,6 +103,11 @@ export const useSignIn = () => {
         });
       }
 
+      const fid =
+        contextType === ContextType.Farcaster && "user" in context
+          ? context.user?.fid
+          : undefined;
+
       const res = await fetch("/api/auth/sign-in", {
         method: "POST",
         headers: {
@@ -107,6 +118,7 @@ export const useSignIn = () => {
           nonce,
           signature: result.signature,
           message: result.message,
+          fid,
           ...(result.address && { walletAddress: result.address }),
         }),
       });
