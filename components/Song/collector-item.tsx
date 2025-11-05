@@ -27,7 +27,7 @@ export const CollectorItem = ({
   return (
     <div
       className={`flex items-center justify-between p-2 rounded border ${
-        isUser ? "border-white/90 bg-[#FFFFFF33]/20" : "border-white/100"
+        isUser ? "border-white/90 bg-white/20" : "border-white"
       }`}
     >
       <div

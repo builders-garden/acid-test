@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --font-mono: var(--font-suisse-intl-mono), monospace;
+  --font-mono: "var(--font-suisse-intl-mono)", monospace;
 
   --color-background: hsl(0 0% 100%);
   --color-foreground: hsl(0 0% 3.9%);
@@ -34,6 +34,48 @@
   --color-brown: #3d3433;
 
   --radius: 0.5rem;
+
+  --animate-fade-out: fadeOut 0.6s ease-out forwards;
+  --animate-fade-in-out: fadeIn 0.15s ease-out forwards,
+    fadeOut 0.6s ease-out 0.15s forwards;
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
 }
 
 :root {
