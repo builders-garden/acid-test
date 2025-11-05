@@ -33,10 +33,27 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // song.feat is already parsed by getSong, no need to parse again
+    // song.feat might be double-stringified in some cases
+    // Handle both cases: already parsed object or still a string
+    let featData = song.feat;
+
+    // If it's a string, try to parse it
+    if (typeof featData === "string") {
+      try {
+        featData = JSON.parse(featData);
+        // Check if it's still a string (double-stringified)
+        if (typeof featData === "string") {
+          featData = JSON.parse(featData);
+        }
+      } catch (e) {
+        console.error("Error parsing feat data:", e);
+        featData = null;
+      }
+    }
+
     return Response.json({
       success: true,
-      data: song.feat, // Already parsed object or null
+      data: featData, // Parsed object or null
     });
   } catch (error) {
     console.error("Error retrieving featuring details:", error);

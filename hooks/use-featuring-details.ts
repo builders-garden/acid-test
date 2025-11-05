@@ -39,10 +39,12 @@ export const useFeaturingDetails = (songId: number | undefined) => {
 
     // Otherwise use fallback data if we have a songId
     return songId ? getFallbackFeaturingDetails(songId) : undefined;
-  }, [query.data?.data, query.isLoading, songId]);
+  }, [query.data, query.isLoading, songId]);
 
   return {
     ...query,
-    data: featuringDetails ? { success: true, data: featuringDetails } : undefined
+    data: featuringDetails
+      ? { success: true, data: featuringDetails }
+      : undefined,
   };
 };

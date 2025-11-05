@@ -81,7 +81,7 @@ export default function About() {
           <div className="flex items-start justify-between mb-4">
             <button
               onClick={viewAcidToken}
-              className="flex items-start gap-2"
+              className="flex items-start gap-2 cursor-pointer"
             >
               <Image
                 src={acid_test}
@@ -99,7 +99,7 @@ export default function About() {
                     "https://dexscreener.com/base/0x4e3676c16c0ef1138d1efabfee8a657fdefb0555"
                   )
                 }
-                className="p-1 rounded bg-black hover:bg-[#AD82CD4D] transition-colors"
+                className="p-1 rounded bg-black hover:bg-[#AD82CD4D] transition-colors cursor-pointer"
               >
                 <Image
                   src={dexscreener}
@@ -115,7 +115,7 @@ export default function About() {
                     "https://www.clanker.world/clanker/0xf7d696B5BED117731B8A71Db264333C8Ec261b07"
                   )
                 }
-                className="p-1 rounded bg-black hover:bg-[#AD82CD4D] transition-colors"
+                className="p-1 rounded bg-black hover:bg-[#AD82CD4D] transition-colors cursor-pointer"
               >
                 <Image
                   src={candles}
@@ -131,7 +131,7 @@ export default function About() {
                     `https://basescan.org/token/${ACID_TOKEN_ADDRESS}`
                   )
                 }
-                className="p-1 rounded bg-black hover:bg-[#AD82CD4D] transition-colors"
+                className="p-1 rounded bg-black hover:bg-[#AD82CD4D] transition-colors cursor-pointer"
               >
                 <Image
                   src={base}
@@ -148,7 +148,7 @@ export default function About() {
             <div className="flex text-sm items-center gap-2">
               <button
                 onClick={viewAcidToken}
-                className="flex items-center gap-1"
+                className="flex items-center gap-1 cursor-pointer"
               >
                 <span className="text-white/60 text-[10.5px] flex items-center">
                   CA:
@@ -165,7 +165,7 @@ export default function About() {
                   onClick={async () =>
                     await copyToClipboard(ACID_TOKEN_ADDRESS, setShowCopied)
                   }
-                  className="hover:opacity-70 transition-opacity w-6 h-6 mb-1 flex items-center justify-center"
+                  className="hover:opacity-70 transition-opacity w-6 h-6 mb-1 flex items-center justify-center cursor-pointer"
                 >
                   <Image
                     src={copy}
@@ -185,7 +185,7 @@ export default function About() {
 
             <button
               onClick={viewAcidToken}
-              className="grid grid-cols-3 gap-4 w-full text-start"
+              className="grid grid-cols-3 gap-4 w-full text-start cursor-pointer"
             >
               <div>
                 <div className="text-white/60 text-sm">MKT CAP</div>
@@ -220,7 +220,7 @@ export default function About() {
                     "https://bafybeiagxkucxpfudahtxd7gokgkvp5kdorfq57g7pt6uzqyi2xyuzjpbe.ipfs.dweb.link/#x-ipfs-companion-no-redirect"
                   )
                 }
-                className="block text-white hover:text-white/80 no-underline"
+                className="block text-white hover:text-white/80 no-underline cursor-pointer"
               >
                 ACIDPAPER
               </button>
@@ -230,7 +230,7 @@ export default function About() {
                     "https://opensea.io/collection/acid-test-3"
                   )
                 }
-                className="block text-white hover:text-white/80 no-underline"
+                className="block text-white hover:text-white/80 no-underline cursor-pointer"
               >
                 OPENSEA
               </button>
@@ -241,7 +241,7 @@ export default function About() {
                       "https://basescan.org/address/0x3ddfcf51d4d955fb8436699b8f30d9d9fe442038"
                     )
                   }
-                  className="text-white hover:text-white/80 no-underline"
+                  className="text-white hover:text-white/80 no-underline cursor-pointer"
                 >
                   BASESCAN
                 </button>
@@ -256,7 +256,7 @@ export default function About() {
                       `https://basescan.org/token/${ACID_TOKEN_ADDRESS}`
                     )
                   }
-                  className="text-white hover:text-white/80 no-underline"
+                  className="text-white hover:text-white/80 no-underline cursor-pointer"
                 >
                   BASESCAN
                 </button>
@@ -270,7 +270,7 @@ export default function About() {
                 onClick={() =>
                   sdk.actions.openUrl("https://x.com/acid____test")
                 }
-                className="block text-white hover:text-white/80 no-underline"
+                className="block text-white hover:text-white/80 no-underline cursor-pointer"
               >
                 TWITTER
               </button>
@@ -280,7 +280,7 @@ export default function About() {
                     "https://dexscreener.com/base/0x4e3676c16c0ef1138d1efabfee8a657fdefb0555"
                   )
                 }
-                className="block text-white hover:text-white/80 no-underline"
+                className="block text-white hover:text-white/80 no-underline cursor-pointer"
               >
                 DEXSCREENER
               </button>
@@ -290,7 +290,7 @@ export default function About() {
                     `https://www.clanker.world/clanker/${ACID_TOKEN_ADDRESS}`
                   )
                 }
-                className="block text-white hover:text-white/80 no-underline"
+                className="block text-white hover:text-white/80 no-underline cursor-pointer"
               >
                 CLANKER
               </button>
