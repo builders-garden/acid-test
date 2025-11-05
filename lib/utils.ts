@@ -2,7 +2,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { env } from "./env";
 import axios from "axios";
-import sdk from "@farcaster/frame-sdk";
+import sdk from "@farcaster/miniapp-sdk";
 import { ACID_TOKEN_ADDRESS } from "./constants";
 
 export function cn(...inputs: ClassValue[]) {
@@ -136,7 +136,7 @@ export async function fetchWithIPFSFallback<T>(
   }
 }
 
-export const handleAddFrame = async () => {
+export const handleAddMiniApp = async () => {
   try {
     const result = await sdk.actions.addFrame();
     return result.notificationDetails;

@@ -1,17 +1,16 @@
-import { FrameNotificationDetails } from "@farcaster/frame-sdk";
+import { MiniAppNotificationDetails } from "@farcaster/miniapp-sdk";
 import {
   DbUser,
   InsertDbUser,
   DbSong,
   InsertDbSong,
   DbCollection,
-  InsertDbCollection,
   DbSongWithCollectors,
 } from "../types";
 import { prisma } from "./client";
 
 // Define a new type that includes fid with notification details
-export type UserFrameNotificationDetails = {
+export type UserMiniAppNotificationDetails = {
   fid: number;
   url: string;
   token: string;
@@ -39,7 +38,7 @@ export const createUser = async (user: InsertDbUser): Promise<DbUser> => {
 
 export const setUserNotificationDetails = async (
   fid: number,
-  notificationDetails: FrameNotificationDetails
+  notificationDetails: MiniAppNotificationDetails
 ) => {
   return await prisma.user.update({
     where: {
@@ -64,7 +63,7 @@ export const deleteUserNotificationDetails = async (fid: number) => {
 
 export const getUsersNotificationDetails = async (
   fids: number[]
-): Promise<UserFrameNotificationDetails[]> => {
+): Promise<UserMiniAppNotificationDetails[]> => {
   const users = await prisma.user.findMany({
     where: {
       fid: {
@@ -90,7 +89,7 @@ export const getUsersNotificationDetails = async (
       };
     })
     .filter(
-      (details): details is UserFrameNotificationDetails => details !== null
+      (details): details is UserMiniAppNotificationDetails => details !== null
     ); // Type guard for filtering out nulls
 
   return notificationDetails;

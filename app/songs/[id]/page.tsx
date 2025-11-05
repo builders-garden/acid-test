@@ -7,19 +7,23 @@ const appUrl = env.NEXT_PUBLIC_URL;
 export async function generateMetadata({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const requestId = params.id;
+  const { id: requestId } = await params;
 
-  const imageUrl = new URL(`${appUrl}/api/og/songs/${requestId}`).toString();
+  // Add timestamp as query parameter to bust cache every minute
+  const timestamp = Math.floor(Date.now() / 60000); // Changes every minute
+  const imageUrl = new URL(
+    `${appUrl}/api/og/songs/${requestId}?t=${timestamp}`
+  ).toString();
 
-  const frame = {
+  const miniapp = {
     version: "next",
     imageUrl,
     button: {
       title: "Launch App",
       action: {
-        type: "launch_frame",
+        type: "launch_miniapp",
         name: "Acid Test",
         url: `${appUrl}/songs/${requestId}`,
         splashImageUrl: `${appUrl}/images/icon.png`,
@@ -41,7 +45,7 @@ export async function generateMetadata({
       ],
     },
     other: {
-      "fc:frame": JSON.stringify(frame),
+      "fc:miniapp": JSON.stringify(miniapp),
     },
   };
 }

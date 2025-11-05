@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import MiniKitProvider from "@/components/minikit-provider";
-import dynamic from "next/dynamic";
-import { FrameProvider } from "@/components/farcaster-provider";
+import { ErudaProvider } from "@/components/Eruda/eruda-dynamic";
+import { FarcasterProvider } from "@/components/farcaster-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
-import { FrameStatusProvider } from "@/contexts/FrameStatusContext";
 import localFont from "next/font/local";
 import { AppWrapper } from "@/components/app-wrapper";
 import { PostHogProvider } from "@/components/posthog-provider";
+import { MiniAppStatusProvider } from "@/contexts/MiniAppStatusContext";
 
 const suisseIntlMono = localFont({
   src: "../public/fonts/SuisseIntlMono-Regular-WebS.ttf",
@@ -24,27 +24,21 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const ErudaProvider = dynamic(
-    () => import("../components/Eruda").then((c) => c.ErudaProvider),
-    {
-      ssr: false,
-    }
-  );
   return (
     <html lang="en">
       <body className={`${suisseIntlMono.variable} font-mono`}>
         <ErudaProvider>
           <PostHogProvider>
-            <FrameProvider>
+            <FarcasterProvider addMiniAppOnLoad={true}>
               <MiniKitProvider>
                 <AudioPlayerProvider>
-                  <FrameStatusProvider>
+                  <MiniAppStatusProvider>
                     <AppWrapper>{children}</AppWrapper>
                     <Toaster />
-                  </FrameStatusProvider>
+                  </MiniAppStatusProvider>
                 </AudioPlayerProvider>
               </MiniKitProvider>
-            </FrameProvider>
+            </FarcasterProvider>
           </PostHogProvider>
         </ErudaProvider>
       </body>

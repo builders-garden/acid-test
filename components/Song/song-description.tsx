@@ -3,7 +3,7 @@
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { SongMetadata } from "@/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import sdk from "@farcaster/frame-sdk";
+import sdk from "@farcaster/miniapp-sdk";
 import { useUsersByUsernames } from "@/hooks/use-users-by-usernames";
 
 interface SongDescriptionProps {

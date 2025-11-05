@@ -7,10 +7,11 @@ export const config = {
   matcher: ["/api/:path*"],
 };
 
-export default async function middleware(req: NextRequest) {
-  // Skip auth check for sign-in endpoint
+export default async function proxy(req: NextRequest) {
+  // Skip auth check for sign-in and verify endpoints
   if (
     req.nextUrl.pathname === "/api/auth/sign-in" ||
+    req.nextUrl.pathname === "/api/auth/verify" ||
     req.nextUrl.pathname.includes("/api/og") ||
     req.nextUrl.pathname.includes("/api/webhook")
   ) {

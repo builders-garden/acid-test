@@ -25,7 +25,7 @@ import { CONTRACT_ADDRESS } from "@/lib/constants";
 import { fetchWithIPFSFallback } from "@/lib/utils";
 import { useFeaturingDetails } from "@/hooks/use-featuring-details";
 import { SongMetadata } from "@/types";
-import sdk from "@farcaster/frame-sdk";
+import sdk from "@farcaster/miniapp-sdk";
 import Image from "next/image";
 import { Header } from "../ui/header";
 import { trackEvent } from "@/lib/posthog/client";

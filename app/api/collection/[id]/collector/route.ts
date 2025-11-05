@@ -3,10 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const songId = parseInt(params.id);
+    const { id } = await params;
+    const songId = parseInt(id);
     const searchParams = new URL(request.url).searchParams;
     const fid = searchParams.get("fid");
     const amount = searchParams.get("amount");

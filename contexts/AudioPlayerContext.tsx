@@ -18,7 +18,7 @@ interface AudioPlayerContextType {
   };
   currentTime: number;
   duration: number;
-  audioRef: React.RefObject<HTMLAudioElement>;
+  audioRef: React.RefObject<HTMLAudioElement | null>;
   play: (metadata: SongMetadata, tokenId: number) => void;
   pause: () => void;
   toggle: () => void;

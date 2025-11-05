@@ -1,84 +1,169 @@
 "use client";
 
-import { FrameContext } from "@farcaster/frame-core/dist/context";
-import sdk from "@farcaster/frame-sdk";
+import type {
+  MiniAppContext,
+  SafeAreaInsets,
+} from "@farcaster/miniapp-core/dist/context";
+import {
+  type MiniAppHostCapability,
+  sdk as miniappSdk,
+} from "@farcaster/miniapp-sdk";
 import {
   createContext,
-  ReactNode,
+  type ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useState,
 } from "react";
 import FrameWalletProvider from "./frame-wallet-provider";
-import { env } from "@/lib/env";
 
-interface FrameContextValue {
-  context: FrameContext | null;
-  isSDKLoaded: boolean;
+type FarcasterContextType = {
+  isMiniAppReady: boolean;
+  isInMiniApp: boolean;
+  context: MiniAppContext | null;
+  capabilities: MiniAppHostCapability[] | null;
+  safeAreaInsets: SafeAreaInsets;
   error: string | null;
-  actions: typeof sdk.actions | null;
-}
+};
 
-const FrameProviderContext = createContext<FrameContextValue | undefined>(
+export const FarcasterContext = createContext<FarcasterContextType | undefined>(
   undefined
 );
 
-export function useFrame() {
-  const context = useContext(FrameProviderContext);
+export function useFarcaster() {
+  const context = useContext(FarcasterContext);
   if (context === undefined) {
-    throw new Error("useFrame must be used within a FrameProvider");
+    throw new Error("useFarcaster must be used within a FarcasterProvider");
   }
   return context;
 }
 
-interface FrameProviderProps {
-  children: ReactNode;
+// Keep old hook name for backwards compatibility
+export function useFrame() {
+  return useFarcaster();
 }
 
-export function FrameProvider({ children }: FrameProviderProps) {
-  const [context, setContext] = useState<FrameContext | null>(null);
-  const [actions, setActions] = useState<typeof sdk.actions | null>(null);
-  const [isSDKLoaded, setIsSDKLoaded] = useState(false);
+export function FarcasterProvider({
+  addMiniAppOnLoad,
+  children,
+}: {
+  addMiniAppOnLoad?: boolean;
+  children: ReactNode;
+}) {
+  const [isInMiniApp, setIsInMiniApp] = useState(false);
+  const [context, setContext] = useState<MiniAppContext | null>(null);
+  const [isMiniAppReady, setIsMiniAppReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [capabilities, setCapabilities] = useState<
+    MiniAppHostCapability[] | null
+  >(null);
+
+  const [safeAreaInsets, setSafeAreaInsets] = useState<SafeAreaInsets>({
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  });
+
+  const loadMiniApp = useCallback(async () => {
+    try {
+      // first thing first, call ready on the miniapp sdk
+      await miniappSdk.actions.ready();
+
+      // check if the app is in the miniapp
+      const tmpIsInMiniApp = await miniappSdk.isInMiniApp();
+      setIsInMiniApp(tmpIsInMiniApp);
+
+      // then get the context
+      const tmpContext = await miniappSdk.context;
+
+      // if the context is not null, set the context
+      if (tmpContext) {
+        setContext(tmpContext as MiniAppContext);
+        // then get the safe area insets
+        if (tmpContext.client.safeAreaInsets) {
+          setSafeAreaInsets(tmpContext.client.safeAreaInsets);
+        }
+        setIsMiniAppReady(true);
+
+        if (addMiniAppOnLoad) {
+          await miniappSdk.actions.addMiniApp();
+        }
+
+        try {
+          const tmpCapabilities = await miniappSdk.getCapabilities();
+          setCapabilities(tmpCapabilities);
+        } catch (err) {
+          console.error("Failed to get capabilities", err);
+          setError(
+            err instanceof Error ? err.message : "Failed to get capabilities"
+          );
+        }
+      } else {
+        setError("Failed to load Farcaster context");
+        setIsInMiniApp(false);
+      }
+    } catch (err) {
+      console.error("SDK initialization error:", err);
+      setError(err instanceof Error ? err.message : "Failed to initialize SDK");
+    }
+  }, [addMiniAppOnLoad]);
+
+  const handleAddMiniApp = useCallback(async () => {
+    try {
+      const result = await miniappSdk.actions.addMiniApp();
+      if (result) {
+        return result;
+      }
+      return null;
+    } catch (error1) {
+      console.error("[error] adding miniapp", error1);
+      return null;
+    }
+  }, []);
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const context = await sdk.context;
-        if (context) {
-          setContext(context as FrameContext);
-          setActions(sdk.actions);
-        } else {
-          setError("Failed to load Farcaster context");
-        }
-        await sdk.actions.ready({
-          disableNativeGestures: true,
-        });
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to initialize SDK"
-        );
-        console.error("SDK initialization error:", err);
-      }
-    };
+    // on load, set the miniapp as ready
+    if (
+      isMiniAppReady &&
+      context &&
+      !context?.client?.added &&
+      addMiniAppOnLoad
+    ) {
+      handleAddMiniApp();
+    }
+  }, [
+    isMiniAppReady,
+    context?.client?.added,
+    handleAddMiniApp,
+    addMiniAppOnLoad,
+    context,
+  ]);
 
-    if (sdk && !isSDKLoaded) {
-      load().then(() => {
-        setIsSDKLoaded(true);
+  useEffect(() => {
+    if (!isMiniAppReady) {
+      loadMiniApp().then(() => {
+        console.log("MiniApp loaded");
       });
     }
-  }, [isSDKLoaded]);
-
-  const value = {
-    context,
-    actions,
-    isSDKLoaded,
-    error,
-  };
+  }, [isMiniAppReady, loadMiniApp]);
 
   return (
-    <FrameProviderContext.Provider value={value}>
+    <FarcasterContext.Provider
+      value={{
+        isInMiniApp,
+        isMiniAppReady,
+        context,
+        capabilities,
+        safeAreaInsets,
+        error,
+      }}
+    >
       <FrameWalletProvider>{children}</FrameWalletProvider>
-    </FrameProviderContext.Provider>
+    </FarcasterContext.Provider>
   );
 }
+
+// Keep old name for backwards compatibility
+export const FrameProvider = FarcasterProvider;

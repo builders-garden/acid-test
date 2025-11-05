@@ -17,7 +17,7 @@ import { usePrelaunchState } from "@/hooks/use-prelaunch-state";
 import { useRouter } from "next/navigation";
 import { LoadingScreen } from "../ui/loading-screen";
 import { Header } from "../ui/header";
-import sdk from "@farcaster/frame-sdk";
+import sdk from "@farcaster/miniapp-sdk";
 import { useSearchParams } from "next/navigation";
 
 interface TokenInfo {

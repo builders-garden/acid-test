@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { formatCountdown } from "@/lib/utils";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
-import sdk from "@farcaster/frame-sdk";
+import sdk from "@farcaster/miniapp-sdk";
 import Image from "next/image";
 
 type MintStatusProps = {

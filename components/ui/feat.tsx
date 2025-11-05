@@ -1,5 +1,5 @@
 import Image from "next/image";
-import sdk from "@farcaster/frame-sdk";
+import sdk from "@farcaster/miniapp-sdk";
 import React from "react";
 import { Skeleton } from "./skeleton";
 

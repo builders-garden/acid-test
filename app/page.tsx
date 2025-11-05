@@ -4,13 +4,13 @@ import { env } from "@/lib/env";
 
 const appUrl = env.NEXT_PUBLIC_URL;
 
-const frame = {
+const miniapp = {
   version: "next",
   imageUrl: `${appUrl}/images/feed.jpg`,
   button: {
     title: "Launch App",
     action: {
-      type: "launch_frame",
+      type: "launch_miniapp",
       name: "Acid Test",
       url: appUrl,
       splashImageUrl: `${appUrl}/images/icon.png`,
@@ -28,7 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
         "ACIDTEST is an onchain radio show bringing music, conversation and creative energy to Farcaster. Hosted by chaim.eth.",
     },
     other: {
-      "fc:frame": JSON.stringify(frame),
+      "fc:miniapp": JSON.stringify(miniapp),
     },
   };
 }

@@ -1,5 +1,5 @@
 import { MESSAGE_EXPIRATION_TIME } from "@/lib/constants";
-import { sdk } from "@farcaster/frame-sdk";
+import { sdk } from "@farcaster/miniapp-sdk";
 import { MiniKit } from "@worldcoin/minikit-js";
 import { useCallback, useState, useEffect } from "react";
 import { ContextType, useMiniAppContext } from "./use-miniapp-context";

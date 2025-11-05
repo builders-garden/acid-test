@@ -21,9 +21,8 @@ import { useWaitForTransactionReceipt } from "wagmi";
 import { useMiniAppContext } from "@/hooks/use-miniapp-context";
 import { erc20Abi } from "viem";
 import { composeMintCastUrl, formatSongId } from "@/lib/utils";
-import sdk from "@farcaster/frame-sdk";
+import sdk from "@farcaster/miniapp-sdk";
 import { trackEvent } from "@/lib/posthog/client";
-import { useFrameStatus } from "@/contexts/FrameStatusContext";
 import {
   Accordion,
   AccordionContent,
@@ -31,6 +30,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { isAddress } from "viem";
+import { useMiniAppStatus } from "@/contexts/MiniAppStatusContext";
 
 interface MintModalProps {
   isOpen: boolean;
@@ -276,7 +276,7 @@ export function MintModal({
     }
   }, [mintStatus]);
 
-  const { promptToAddFrame } = useFrameStatus();
+  const { promptToAddMiniApp } = useMiniAppStatus();
 
   useEffect(() => {
     const postMint = async () => {
@@ -288,7 +288,7 @@ export function MintModal({
       ) {
         setPostMintExecuted(true);
         try {
-          await promptToAddFrame();
+          await promptToAddMiniApp();
         } catch (error) {}
 
         setMintState(MintState.Success);
@@ -446,7 +446,7 @@ export function MintModal({
     mintState,
     songName,
     tokenId,
-    promptToAddFrame,
+    promptToAddMiniApp,
     context,
     contextType,
     paymentMethod,

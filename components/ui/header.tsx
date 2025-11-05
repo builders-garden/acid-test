@@ -7,9 +7,9 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { usePrelaunchState } from "@/hooks/use-prelaunch-state";
 import { Button } from "./button";
-import { useFrameStatus } from "@/contexts/FrameStatusContext";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import About from "../About";
+import { useMiniAppStatus } from "@/contexts/MiniAppStatusContext";
 
 interface HeaderProps {
   userAddedFrameOnAction?: boolean;
@@ -20,26 +20,30 @@ export const Header: React.FC<HeaderProps> = ({ userAddedFrameOnAction }) => {
   const isSongsPage = pathname === "/songs";
   const isHomePage = pathname === "/";
   const { isPrelaunch } = usePrelaunchState();
-  const { userAddedFrame, setUserAddedFrame, isLoading, promptToAddFrame } =
-    useFrameStatus();
+  const {
+    userAddedMiniApp,
+    setUserAddedMiniApp,
+    isLoading,
+    promptToAddMiniApp,
+  } = useMiniAppStatus();
 
   useEffect(() => {
     if (userAddedFrameOnAction) {
-      setUserAddedFrame(true);
+      setUserAddedMiniApp(true);
     }
-  }, [userAddedFrameOnAction, setUserAddedFrame]);
+  }, [userAddedFrameOnAction, setUserAddedMiniApp]);
 
   useEffect(() => {
-    if (!userAddedFrame && !isLoading && !userAddedFrameOnAction) {
+    if (!userAddedMiniApp && !isLoading && !userAddedFrameOnAction) {
       const hasPromptedThisSession = localStorage.getItem(
-        "hasPromptedForFrame"
+        "hasPromptedForMiniApp"
       );
       if (!hasPromptedThisSession) {
-        promptToAddFrame();
-        localStorage.setItem("hasPromptedForFrame", "true");
+        promptToAddMiniApp();
+        localStorage.setItem("hasPromptedForMiniApp", "true");
       }
     }
-  }, [userAddedFrame, isLoading, userAddedFrameOnAction, promptToAddFrame]);
+  }, [userAddedMiniApp, isLoading, userAddedFrameOnAction, promptToAddMiniApp]);
 
   return (
     <div className="w-full max-w-md flex justify-between items-center h-[36.5px]">
@@ -56,7 +60,7 @@ export const Header: React.FC<HeaderProps> = ({ userAddedFrameOnAction }) => {
             <div className="w-9 h-9 bg-white/10 animate-pulse rounded-md"></div>
             <div className="w-9 h-9 bg-white/10 animate-pulse rounded-md"></div>
           </div>
-        ) : userAddedFrame || !isHomePage ? (
+        ) : userAddedMiniApp || !isHomePage ? (
           isPrelaunch ? (
             <></>
           ) : (
@@ -100,7 +104,7 @@ export const Header: React.FC<HeaderProps> = ({ userAddedFrameOnAction }) => {
           )
         ) : (
           <Button
-            onClick={promptToAddFrame}
+            onClick={promptToAddMiniApp}
             variant="outline"
             size="icon"
             className="w-full h-7 px-2 py-1 rounded-md border-[0.5px] border-white/60 bg-black hover:bg-[#AD82CD4D] hover:text-white"

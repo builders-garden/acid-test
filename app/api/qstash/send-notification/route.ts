@@ -1,4 +1,4 @@
-import { sendFrameNotification } from "@/lib/notifs";
+import { sendMiniAppNotification } from "@/lib/notifs";
 import { z } from "zod";
 
 const requestSchema = z.object({
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   }
   const { fids, title, text } = parsedBody.data;
   try {
-    let result = await sendFrameNotification({
+    let result = await sendMiniAppNotification({
       fids: fids,
       title,
       body: text,

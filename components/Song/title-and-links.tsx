@@ -9,7 +9,7 @@ import Image from "next/image";
 import { composeSongCastUrl, copyToClipboard } from "@/lib/utils";
 import { SongMetadata } from "@/types";
 import { useEffect, useState } from "react";
-import sdk from "@farcaster/frame-sdk";
+import sdk from "@farcaster/miniapp-sdk";
 import { useMiniAppContext } from "@/hooks/use-miniapp-context";
 import { env } from "@/lib/env";
 import copy from "@/public/images/copy.svg";

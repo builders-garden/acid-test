@@ -2,14 +2,14 @@ import { CHAIN } from "@/lib/constants";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createConfig, http, WagmiProvider } from "wagmi";
 import { ChainHandler } from "./chain-handler";
-import { farcasterFrame } from "@farcaster/frame-wagmi-connector";
+import { farcasterMiniApp as miniAppConnector } from "@farcaster/miniapp-wagmi-connector";
 
 export const config = createConfig({
   chains: [CHAIN],
   transports: {
     [CHAIN.id]: http("https://base.drpc.org"),
   },
-  connectors: [farcasterFrame()],
+  connectors: [miniAppConnector()],
 });
 
 const queryClient = new QueryClient();

@@ -1,17 +1,17 @@
 import {
   SendNotificationRequest,
   sendNotificationResponseSchema,
-} from "@farcaster/frame-sdk";
+} from "@farcaster/miniapp-sdk";
 import { env } from "./env";
 import {
   getUsersNotificationDetails,
-  UserFrameNotificationDetails,
+  UserMiniAppNotificationDetails,
 } from "./prisma/queries";
 import { createHash } from "crypto";
 
 const appUrl = env.NEXT_PUBLIC_URL || "";
 
-type SendFrameNotificationResult =
+type SendMiniAppNotificationResult =
   | {
       state: "error";
       error: unknown;
@@ -20,7 +20,7 @@ type SendFrameNotificationResult =
   | { state: "rate_limit" }
   | { state: "success" };
 
-export async function sendFrameNotification({
+export async function sendMiniAppNotification({
   fids,
   title,
   body,
@@ -28,10 +28,10 @@ export async function sendFrameNotification({
   fids: number[];
   title: string;
   body: string;
-}): Promise<SendFrameNotificationResult> {
+}): Promise<SendMiniAppNotificationResult> {
   // Process fids in batches of 100
   const batchSize = 100;
-  let finalResult: SendFrameNotificationResult = { state: "success" };
+  let finalResult: SendMiniAppNotificationResult = { state: "success" };
 
   for (let i = 0; i < fids.length; i += batchSize) {
     const batchFids = fids.slice(i, i + batchSize);
@@ -69,7 +69,7 @@ async function sendBatchNotification(
   fids: number[],
   title: string,
   body: string
-): Promise<SendFrameNotificationResult> {
+): Promise<SendMiniAppNotificationResult> {
   const allNotificationDetails = await getUsersNotificationDetails(fids);
 
   if (!allNotificationDetails.length) {
@@ -79,7 +79,7 @@ async function sendBatchNotification(
   // Group details by URL to handle different notification services
   const detailsByUrl = new Map<
     string,
-    Array<UserFrameNotificationDetails> // Updated type
+    Array<UserMiniAppNotificationDetails> // Updated type
   >();
   for (const detail of allNotificationDetails) {
     if (!detailsByUrl.has(detail.url)) {
@@ -88,7 +88,7 @@ async function sendBatchNotification(
     detailsByUrl.get(detail.url)!.push(detail);
   }
 
-  let overallResultState: SendFrameNotificationResult = { state: "success" };
+  let overallResultState: SendMiniAppNotificationResult = { state: "success" };
 
   // Convert Map entries to an array for iteration to avoid downlevelIteration issues
   for (const [url, specificNotificationDetails] of Array.from(
@@ -128,7 +128,7 @@ async function sendBatchNotification(
     });
 
     const responseJson = await response.json();
-    let currentGroupResult: SendFrameNotificationResult;
+    let currentGroupResult: SendMiniAppNotificationResult;
 
     if (response.status === 200) {
       const responseBody =

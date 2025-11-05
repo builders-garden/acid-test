@@ -1,4 +1,4 @@
-import { sendFrameNotification } from "@/lib/notifs";
+import { sendMiniAppNotification } from "@/lib/notifs";
 import { prisma } from "@/lib/prisma/client";
 import { z } from "zod";
 
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   try {
     const users = await prisma.user.findMany();
 
-    let result = await sendFrameNotification({
+    let result = await sendMiniAppNotification({
       fids: users.map((user) => user.fid),
       title,
       body: text,

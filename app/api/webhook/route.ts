@@ -1,5 +1,5 @@
 import { fetchUserByFid } from "@/lib/neynar";
-import { sendFrameNotification } from "@/lib/notifs";
+import { sendMiniAppNotification } from "@/lib/notifs";
 import { trackEvent } from "@/lib/posthog/server";
 import {
   createUser,
@@ -12,7 +12,7 @@ import {
   ParseWebhookEvent,
   parseWebhookEvent,
   verifyAppKeyWithNeynar,
-} from "@farcaster/frame-node";
+} from "@farcaster/miniapp-node";
 import { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
   const event = data.event;
 
   switch (event.event) {
-    case "frame_added":
+    case "miniapp_added":
       if (event.notificationDetails) {
         const user = await getUser(fid);
         if (!user) {
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
         } else {
           await setUserNotificationDetails(fid, event.notificationDetails);
         }
-        await sendFrameNotification({
+        await sendMiniAppNotification({
           fids: [fid],
           title: "Welcome to Acid Test!",
           body: "Cast any feedback to @chaim.eth",
@@ -79,25 +79,20 @@ export async function POST(request: NextRequest) {
       } else {
         await deleteUserNotificationDetails(fid);
       }
-      // TODO: Track frame added event
       break;
-    case "frame_removed":
+    case "miniapp_removed":
       await deleteUserNotificationDetails(fid);
-      // TODO: Track event
       break;
     case "notifications_enabled":
-      // TODO: Set user notification details
       await setUserNotificationDetails(fid, event.notificationDetails);
-      await sendFrameNotification({
+      await sendMiniAppNotification({
         fids: [fid],
         title: "Ding ding ding",
         body: "Notifications for Acid Test are now enabled",
       });
-      // TODO: Track event
       break;
     case "notifications_disabled":
       await deleteUserNotificationDetails(fid);
-      // TODO: Track event
       break;
   }
 
