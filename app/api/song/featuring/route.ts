@@ -33,9 +33,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // song.feat is already parsed by getSong, no need to parse again
     return Response.json({
       success: true,
-      data: song.feat ? JSON.parse(song.feat) : null,
+      data: song.feat, // Already parsed object or null
     });
   } catch (error) {
     console.error("Error retrieving featuring details:", error);

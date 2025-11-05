@@ -1,6 +1,12 @@
 "use client";
 
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { SongMetadata } from "@/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import sdk from "@farcaster/miniapp-sdk";
@@ -20,7 +26,14 @@ export function SongDescription({ metadata, isLoading }: SongDescriptionProps) {
 
     const tagRegex = /@([a-zA-Z0-9._-]+)/g;
     const matches = Array.from(metadata.description.matchAll(tagRegex));
-    return matches.map((match) => match[1]);
+    return matches.map((match) => {
+      // Strip trailing punctuation from usernames
+      let username = match[1];
+      while (username.length > 0 && /[.,!?;:]$/.test(username)) {
+        username = username.slice(0, -1);
+      }
+      return username;
+    });
   }, [metadata?.description]);
 
   // Fetch user data for all tags in the description
@@ -78,6 +91,12 @@ export function SongDescription({ metadata, isLoading }: SongDescriptionProps) {
                 </button>
               </DialogTrigger>
               <DialogContent className="bg-black text-white border-white/20 p-6 max-h-[80vh] overflow-y-auto max-w-[85%] rounded-lg">
+                <DialogTitle className="text-xl font-semibold mb-4">
+                  Description
+                </DialogTitle>
+                <DialogDescription className="sr-only">
+                  Full song description with links and mentions
+                </DialogDescription>
                 <DescriptionContent
                   description={metadata.description}
                   userMap={userMap}
@@ -128,8 +147,7 @@ function DescriptionContent({
 
   const parseTagsInText = useCallback(
     (text: string) => {
-      // Updated regex to match @ followed by alphanumeric chars & common username chars like dots,
-      // but exclude trailing punctuation
+      // Regex to match @ followed by username chars, but we'll trim trailing punctuation manually
       const tagRegex = /@([a-zA-Z0-9._-]+)/g;
       const parts: React.ReactNode[] = [];
 
@@ -142,8 +160,19 @@ function DescriptionContent({
           parts.push(text.substring(lastIndex, match.index));
         }
 
+        // Remove trailing punctuation that's not part of the username
+        // Keep internal dots (like in chaim.eth) but remove trailing ones
+        let username = match[1];
+        let trailingPunctuation = "";
+
+        // Strip trailing periods, commas, exclamation marks, etc.
+        while (username.length > 0 && /[.,!?;:]$/.test(username)) {
+          trailingPunctuation =
+            username[username.length - 1] + trailingPunctuation;
+          username = username.slice(0, -1);
+        }
+
         // Add the tag as a clickable element
-        const username = match[1]; // Just the username without the @ symbol
         parts.push(
           <a
             key={`tag-${match.index}`}
@@ -153,6 +182,11 @@ function DescriptionContent({
             @{username}
           </a>
         );
+
+        // Add back the trailing punctuation as regular text
+        if (trailingPunctuation) {
+          parts.push(trailingPunctuation);
+        }
 
         lastIndex = match.index + match[0].length;
       }
@@ -225,8 +259,7 @@ function DescriptionContent({
 
   return (
     <div className="whitespace-pre-wrap w-full">
-      <h2 className="text-xl font-semibold mb-4">Description</h2>
-      <div className="text-sm break-words">{parsedDescription}</div>
+      <div className="text-sm wrap-break-word">{parsedDescription}</div>
     </div>
   );
 }

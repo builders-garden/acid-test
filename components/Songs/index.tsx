@@ -6,7 +6,11 @@ import { useReadContract } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
 import { SongMetadata } from "@/types";
-import { fetchWithIPFSFallback, formatSongId } from "@/lib/utils";
+import {
+  fetchWithIPFSFallback,
+  formatSongId,
+  getFallbackFeaturingDetails,
+} from "@/lib/utils";
 import { Header } from "../ui/header";
 import { trackEvent } from "@/lib/posthog/client";
 import { ContextType, useMiniAppContext } from "@/hooks/use-miniapp-context";
@@ -24,6 +28,17 @@ interface RedactedSong {
   createdAt: number;
 }
 
+interface FeatUser {
+  username: string;
+  pfp: string;
+  fid: number;
+}
+
+interface FeaturingDetails {
+  users: FeatUser[];
+  text?: string;
+}
+
 export interface ReleaseBlock {
   index: number;
   id: string;
@@ -32,12 +47,27 @@ export interface ReleaseBlock {
   countdown: number;
   image: string;
   salesStartDate: number;
+  totalMints?: number;
+  feat?: FeaturingDetails;
+}
+
+interface SongSummary {
+  id: number;
+  title: string;
+  startDate: string;
+  endDate: string;
+  feat: FeaturingDetails | null;
+  totalMints: number;
+}
+
+interface SongsSummaryResponse {
+  songs: SongSummary[];
+  redactedSongs: RedactedSong[];
 }
 
 export default function SongsPage() {
   const [releases, setReleases] = useState<ReleaseBlock[]>([]);
   const [metadataLoading, setMetadataLoading] = useState(true);
-  const [redactedSongs, setRedactedSongs] = useState<RedactedSong[]>([]);
   const { type: contextType, context } = useMiniAppContext();
 
   const userFid =
@@ -50,23 +80,6 @@ export default function SongsPage() {
     args: [BigInt(1), BigInt(20)],
   });
 
-  // Fetch redacted songs from the database
-  useEffect(() => {
-    const fetchRedactedSongs = async () => {
-      try {
-        const response = await fetch("/api/redacted-songs");
-        if (response.ok) {
-          const data = await response.json();
-          setRedactedSongs(data);
-        }
-      } catch (error) {
-        console.error("Error fetching redacted songs:", error);
-      }
-    };
-
-    fetchRedactedSongs();
-  }, []);
-
   useEffect(() => {
     if (getTokenInfosResult.data) {
       const allContractReleases =
@@ -78,14 +91,22 @@ export default function SongsPage() {
       const fetchReleasesData = async () => {
         setMetadataLoading(true);
         try {
+          // Fetch songs summary with all the data we need in one call
+          const summaryResponse = await fetch("/api/songs/summary");
+          const summaryData: SongsSummaryResponse =
+            await summaryResponse.json();
+
           const releasesData = await Promise.all(
             contractReleases.map(async (release, i) => {
               const songId = i + 1;
               const songCid = release.uri.split("/").pop() || "";
               const now = Math.floor(Date.now() / 1000);
 
+              // Get song data from summary
+              const songData = summaryData.songs.find((s) => s.id === songId);
+
               // Regular song processing for all contract songs
-              let title = formatSongId(songId);
+              let title = songData?.title || formatSongId(songId);
               let image = "";
 
               try {
@@ -122,6 +143,8 @@ export default function SongsPage() {
                 countdown: release.salesExpirationDate - now,
                 image,
                 salesStartDate: release.salesStartDate,
+                totalMints: songData?.totalMints,
+                feat: songData?.feat ?? getFallbackFeaturingDetails(songId),
               } as ReleaseBlock;
             })
           );
@@ -131,7 +154,7 @@ export default function SongsPage() {
           );
 
           // Add redacted song placeholders to the releases list
-          redactedSongs.forEach((redactedSong, i) => {
+          summaryData.redactedSongs.forEach((redactedSong, i) => {
             filteredReleases.push({
               id: formatSongId(contractReleases.length + i + 1),
               title: "REDACTED",
@@ -162,7 +185,7 @@ export default function SongsPage() {
 
       fetchReleasesData();
     }
-  }, [getTokenInfosResult.data, redactedSongs]);
+  }, [getTokenInfosResult.data]);
 
   useEffect(() => {
     if (releases.length === 0) return;
@@ -195,7 +218,7 @@ export default function SongsPage() {
                 className="border border-white/20 rounded-lg p-4 h-[124px] w-full"
               >
                 <div className="flex items-start gap-4">
-                  <Skeleton className="w-20 h-20 bg-white/10 rounded-lg relative flex-shrink-0 " />
+                  <Skeleton className="w-20 h-20 bg-white/10 rounded-lg relative shrink-0" />
                   <div className="flex-1 min-w-0">
                     <Skeleton className="h-4 bg-white/10 rounded w-2/3 mb-2" />
                     <Skeleton className="h-3 bg-white/10 rounded w-1/4 mb-4" />

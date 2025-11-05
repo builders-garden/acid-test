@@ -1,6 +1,5 @@
 import { MESSAGE_EXPIRATION_TIME } from "@/lib/constants";
 import { sdk } from "@farcaster/miniapp-sdk";
-import { MiniKit } from "@worldcoin/minikit-js";
 import { useCallback, useState, useEffect } from "react";
 import { ContextType, useMiniAppContext } from "./use-miniapp-context";
 import posthog from "posthog-js";
@@ -79,29 +78,15 @@ export const useSignIn = () => {
       }
       let result: { message: string; signature: string; address?: string };
       const nonce = Math.random().toString(36).substring(2);
-      if (contextType === ContextType.Worldcoin) {
-        const message = `Sign in to MiniApp. Nonce: ${nonce}`;
-        const miniKitResult = await MiniKit.commandsAsync.signMessage({
-          message,
-        });
-        if (miniKitResult.finalPayload.status !== "success") {
-          throw new Error("[MiniKit] Failed to sign message");
-        }
-        result = {
-          message: miniKitResult.commandPayload!.message,
-          signature: miniKitResult.finalPayload.signature,
-          address: miniKitResult.finalPayload.address,
-        };
-      } else {
-        result = await sdk.actions.signIn({
-          nonce,
-          notBefore: new Date().toISOString(),
-          expirationTime: new Date(
-            Date.now() + MESSAGE_EXPIRATION_TIME
-          ).toISOString(),
-          acceptAuthAddress: true,
-        });
-      }
+
+      result = await sdk.actions.signIn({
+        nonce,
+        notBefore: new Date().toISOString(),
+        expirationTime: new Date(
+          Date.now() + MESSAGE_EXPIRATION_TIME
+        ).toISOString(),
+        acceptAuthAddress: true,
+      });
 
       const fid =
         contextType === ContextType.Farcaster && "user" in context

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import MiniKitProvider from "@/components/minikit-provider";
 import { ErudaProvider } from "@/components/Eruda/eruda-dynamic";
 import { FarcasterProvider } from "@/components/farcaster-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -30,14 +29,12 @@ export default function RootLayout({
         <ErudaProvider>
           <PostHogProvider>
             <FarcasterProvider addMiniAppOnLoad={true}>
-              <MiniKitProvider>
-                <AudioPlayerProvider>
-                  <MiniAppStatusProvider>
-                    <AppWrapper>{children}</AppWrapper>
-                    <Toaster />
-                  </MiniAppStatusProvider>
-                </AudioPlayerProvider>
-              </MiniKitProvider>
+              <AudioPlayerProvider>
+                <MiniAppStatusProvider>
+                  <AppWrapper>{children}</AppWrapper>
+                  <Toaster />
+                </MiniAppStatusProvider>
+              </AudioPlayerProvider>
             </FarcasterProvider>
           </PostHogProvider>
         </ErudaProvider>

@@ -4,8 +4,6 @@ import QuestionMark from "@/public/images/question_mark.png";
 import { ReleaseBlock } from ".";
 import { Feat } from "@/components/ui/feat";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useTotalMints } from "@/hooks/use-get-collectors";
-import { useFeaturingDetails } from "@/hooks/use-featuring-details";
 import { useMemo } from "react";
 
 interface ReleaseBlockCardProps {
@@ -19,22 +17,19 @@ export function ReleaseBlockCard({
   onClick,
   asLink = false,
 }: ReleaseBlockCardProps) {
-  const { totalMints, isLoading } = useTotalMints(
-    release.status === "end" ? release.index : undefined
-  );
+  // Use the totalMints from the release prop if available
+  const totalMints = release.totalMints ?? 0;
+  const isLoading = false; // No longer loading since we have the data
 
-  const { data: featuringResponse, isLoading: featuringLoading } =
-    useFeaturingDetails(
-      release.status !== "redacted" ? release.index : undefined
-    );
-
-  // Get featuring details from response with built-in fallback
+  // Use featuring details from the release prop
   const featuringDetails = useMemo(() => {
     if (release.status === "redacted") {
       return undefined;
     }
-    return featuringResponse?.data;
-  }, [featuringResponse?.data, release.status]);
+    return release.feat;
+  }, [release.feat, release.status]);
+
+  const featuringLoading = false; // No longer loading since we have the data
 
   // Config for status-dependent content
   const statusConfig = {
@@ -115,6 +110,7 @@ export function ReleaseBlockCard({
           src={QuestionMark}
           alt={"Redacted"}
           fill
+          sizes="80px"
           className="object-cover"
         />
       </div>
@@ -125,6 +121,7 @@ export function ReleaseBlockCard({
         src={release.image}
         alt={release.title}
         fill
+        sizes="80px"
         className="object-cover"
       />
     );
@@ -149,7 +146,7 @@ export function ReleaseBlockCard({
   let titleContent;
   if (release.status === "redacted") {
     titleContent = (
-      <h2 className="text-xl text-mono leading-none bg-white/60 text-transparent select-none rounded-[1px] w-[100%]">
+      <h2 className="text-xl text-mono leading-none bg-white/60 text-transparent select-none rounded-[1px] w-full">
         _
       </h2>
     );
@@ -164,7 +161,7 @@ export function ReleaseBlockCard({
   const cardBody = (
     <div className="flex gap-4 relative">
       <div
-        className={`w-20 h-20 bg-black ${cfg.borderClass} rounded relative flex-shrink-0 overflow-hidden`}
+        className={`w-20 h-20 bg-black ${cfg.borderClass} rounded relative shrink-0 overflow-hidden`}
       >
         {imageContent}
       </div>

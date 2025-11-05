@@ -1,5 +1,4 @@
 import { useFarcaster } from "../components/farcaster-provider";
-import { MiniKit } from "@worldcoin/minikit-js";
 import { MiniAppContext } from "@farcaster/miniapp-core/dist/context";
 
 export enum ContextType {
@@ -14,12 +13,6 @@ interface FarcasterContextResult {
   actions: null;
 }
 
-interface WorldcoinContextResult {
-  type: ContextType.Worldcoin;
-  context: MiniKit;
-  actions: null;
-}
-
 interface NoContextResult {
   type: null;
   context: null;
@@ -27,10 +20,7 @@ interface NoContextResult {
 }
 
 // Union type of all possible results
-type ContextResult =
-  | FarcasterContextResult
-  | WorldcoinContextResult
-  | NoContextResult;
+type ContextResult = FarcasterContextResult | NoContextResult;
 
 export const useMiniAppContext = (): ContextResult => {
   // Try to get Farcaster context
@@ -45,15 +35,6 @@ export const useMiniAppContext = (): ContextResult => {
     }
   } catch (e) {
     // Ignore error if not in Farcaster context
-  }
-
-  // Check for Worldcoin/MiniKit context
-  if (typeof window !== "undefined" && MiniKit.isInstalled()) {
-    return {
-      type: ContextType.Worldcoin,
-      context: MiniKit,
-      actions: null,
-    } as WorldcoinContextResult;
   }
 
   // No context found

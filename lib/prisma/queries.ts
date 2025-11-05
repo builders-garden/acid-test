@@ -131,11 +131,14 @@ export const getAllSongsAndCollectors = async (): Promise<
     },
   });
 
-  return songs.map((song) => ({
-    ...song,
-    feat: song.feat ? JSON.parse(song.feat) : null,
-    collectors: song.collectors,
-  }));
+  return songs.map((song) => {
+    const parsedFeat = song.feat ? JSON.parse(song.feat) : null;
+    return {
+      ...song,
+      feat: parsedFeat,
+      collectors: song.collectors,
+    };
+  });
 };
 
 export const createSong = async (song: InsertDbSong): Promise<DbSong> => {

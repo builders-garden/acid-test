@@ -1,14 +1,12 @@
 import Link from "next/link";
 import Logo from "@/public/images/logo.svg";
 import DiscIcon from "@/public/images/disc.svg";
-import QuestionIcon from "@/public/images/question.svg";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { usePrelaunchState } from "@/hooks/use-prelaunch-state";
 import { Button } from "./button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import About from "../About";
+import { AboutDialog } from "./about-dialog";
 import { useMiniAppStatus } from "@/contexts/MiniAppStatusContext";
 
 interface HeaderProps {
@@ -82,24 +80,7 @@ export const Header: React.FC<HeaderProps> = ({ userAddedFrameOnAction }) => {
                   />
                 </Button>
               </Link>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="w-9 h-9 rounded-md border-[0.5px] border-white/60 bg-black hover:bg-[#AD82CD4D]"
-                  >
-                    <Image
-                      src={QuestionIcon}
-                      alt="About"
-                      className="w-6 h-6"
-                    />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="bg-black text-white border-white/20 p-0 max-h-[90vh] overflow-y-auto max-w-[90%] rounded-lg">
-                  <About />
-                </DialogContent>
-              </Dialog>
+              <AboutDialog />
             </>
           )
         ) : (
