@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { pinata } from "../../../lib/pinata";
+import { env } from "../../../lib/env";
 
 export async function POST(request: NextRequest) {
   try {
@@ -47,12 +48,12 @@ export async function POST(request: NextRequest) {
         // Upload audio file to Pinata
         const audioUploadData = await pinata.upload.file(audioFile);
         const audioCID = audioUploadData.IpfsHash;
-        const audioUrl = `https://gateway.pinata.cloud/ipfs/${audioCID}`;
+        const audioUrl = `https://${env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${audioCID}`;
 
         // Upload image file to Pinata
         const imageUploadData = await pinata.upload.file(imageFile);
         const imageCID = imageUploadData.IpfsHash;
-        const imageUrl = `https://gateway.pinata.cloud/ipfs/${imageCID}`;
+        const imageUrl = `https://${env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${imageCID}`;
 
         // Create metadata JSON
         const metadata = {
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
 
         const metadataUploadData = await pinata.upload.file(metadataFile);
         const metadataCID = metadataUploadData.IpfsHash;
-        const metadataUrl = `https://gateway.pinata.cloud/ipfs/${metadataCID}`;
+        const metadataUrl = `https://${env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${metadataCID}`;
 
         return NextResponse.json(
           {

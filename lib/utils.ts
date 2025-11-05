@@ -116,19 +116,46 @@ export async function fetchWithIPFSFallback<T>(
   uri: string,
   timeout: number = 10000
 ): Promise<T> {
+  // First, try to fix any old gateway URLs
+  const fixedUri = replaceGatewayUrl(uri);
+  
   try {
-    // First attempt with original URI
-    const response = await axios.get<T>(uri, { timeout });
+    // First attempt with fixed/original URI
+    const response = await axios.get<T>(fixedUri, { timeout });
+    
+    // If the response contains metadata with image/animation URLs, fix those too
+    if (typeof response.data === 'object' && response.data !== null) {
+      const data = response.data as any;
+      if (data.image) {
+        data.image = replaceGatewayUrl(data.image);
+      }
+      if (data.animation_url) {
+        data.animation_url = replaceGatewayUrl(data.animation_url);
+      }
+    }
+    
     return response.data;
   } catch (error) {
     // If original request fails, try dweb.link gateway
     try {
       // Extract CID from Pinata URL
-      const cid = uri.split("/").pop();
+      const cid = fixedUri.split("/").pop();
       if (!cid) throw new Error("Invalid IPFS URI");
 
       const dwebUrl = `https://${cid}.ipfs.dweb.link/#x-ipfs-companion-no-redirect`;
       const fallbackResponse = await axios.get<T>(dwebUrl, { timeout });
+      
+      // Fix gateway URLs in the fallback response too
+      if (typeof fallbackResponse.data === 'object' && fallbackResponse.data !== null) {
+        const data = fallbackResponse.data as any;
+        if (data.image) {
+          data.image = replaceGatewayUrl(data.image);
+        }
+        if (data.animation_url) {
+          data.animation_url = replaceGatewayUrl(data.animation_url);
+        }
+      }
+      
       return fallbackResponse.data;
     } catch (fallbackError) {
       throw new Error(`Failed to fetch from both gateways: ${fallbackError}`);
@@ -206,16 +233,30 @@ export const extractCIDFromIPFSUrl = (url: string): string | null => {
   }
 };
 
+// Function to replace old Pinata gateway with the working dedicated gateway
+export const replaceGatewayUrl = (url: string): string => {
+  if (!url) return url;
+  
+  // Replace the old gateway.pinata.cloud with the dedicated gateway
+  if (url.includes("gateway.pinata.cloud")) {
+    return url.replace("gateway.pinata.cloud", env.NEXT_PUBLIC_GATEWAY_URL);
+  }
+  
+  return url;
+};
+
 // Function to get alternative IPFS URLs for audio playback
 export const getAudioWithFallback = (url: string): string[] => {
-  const urls = [url]; // Original URL is always the first attempt
+  // First, try to use the dedicated gateway if it's a gateway.pinata.cloud URL
+  const fixedUrl = replaceGatewayUrl(url);
+  const urls = [fixedUrl];
 
-  const cid = extractCIDFromIPFSUrl(url);
+  const cid = extractCIDFromIPFSUrl(fixedUrl);
   if (cid) {
     // Add alternative gateways
     urls.push(`https://${cid}.ipfs.dweb.link/#x-ipfs-companion-no-redirect`);
     urls.push(`https://ipfs.io/ipfs/${cid}`);
-    urls.push(`https://gateway.pinata.cloud/ipfs/${cid}`);
+    urls.push(`https://${env.NEXT_PUBLIC_GATEWAY_URL}/ipfs/${cid}`);
     urls.push(`https://cloudflare-ipfs.com/ipfs/${cid}`);
   }
 
