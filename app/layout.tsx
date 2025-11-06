@@ -25,7 +25,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${suisseIntlMono.variable} font-mono`}>
+      <body className={`${suisseIntlMono.variable} font-mono bg-black`}>
         <ErudaProvider>
           <PostHogProvider>
             <FarcasterProvider addMiniAppOnLoad={true}>
