@@ -325,7 +325,11 @@ export default function Song() {
     refetch: refetchUserCollector,
   } = useUserCollector(tokenId, userFid);
 
-  const { totalMints, isLoading: totalMintsLoading } = useTotalMints(tokenId);
+  const {
+    totalMints,
+    isLoading: totalMintsLoading,
+    refetch: refetchTotalMints,
+  } = useTotalMints(tokenId);
 
   return (
     <div className="min-h-screen bg-black text-white font-mono p-4 flex flex-col items-center w-full pb-8 gap-6">
@@ -428,6 +432,7 @@ export default function Song() {
             image={metadata?.image}
             refetchCollectors={refetchCollectors}
             refetchUserCollector={refetchUserCollector}
+            refetchTotalMints={refetchTotalMints}
           />
         )}
       </div>

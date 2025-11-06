@@ -39,7 +39,17 @@ export const useApiMutation = <TData, TVariables = unknown>(
         throw new Error(`API Error: ${response.status}`);
       }
 
-      return response.json();
+      // Check if response has JSON content
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        return response.json();
+      }
+
+      // For non-JSON responses, return text or void
+      const text = await response.text();
+      return text
+        ? (text as unknown as TData)
+        : (undefined as unknown as TData);
     },
   });
 };

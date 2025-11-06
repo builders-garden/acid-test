@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-  useCallback,
-  useRef,
-  SetStateAction,
-  Dispatch,
-} from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -16,11 +9,7 @@ import { Loader2, X } from "lucide-react";
 import { useBalance, useReadContract, useWriteContract } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { toast } from "sonner";
-import {
-  CONTRACT_ADDRESS,
-  USDC_CONTRACT_ADDRESS,
-  CHAIN,
-} from "@/lib/constants";
+import { CONTRACT_ADDRESS, USDC_CONTRACT_ADDRESS } from "@/lib/constants";
 import { useWaitForTransactionReceipt } from "wagmi";
 import { useMiniAppContext } from "@/hooks/use-miniapp-context";
 import { erc20Abi } from "viem";
@@ -31,12 +20,14 @@ import {
   Accordion,
   AccordionContent,
   AccordionItem,
-  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { encodeFunctionData } from "viem";
 import { useMiniAppStatus } from "@/contexts/MiniAppStatusContext";
 import { sendCalls, getCallsStatus } from "@wagmi/core";
 import { config } from "../frame-wallet-provider";
+import { useCreateUser } from "@/hooks/use-create-user";
+import { useSendNotification } from "@/hooks/use-send-notification";
+import { useCreateCollection } from "@/hooks/use-create-collection";
 
 interface MintModalProps {
   isOpen: boolean;
@@ -53,6 +44,7 @@ interface MintModalProps {
   refetchCollectors: () => void;
   image?: string;
   refetchUserCollector: () => void;
+  refetchTotalMints: () => void;
 }
 
 enum MintState {
@@ -76,6 +68,7 @@ export function MintModal({
   refetchCollectors,
   image,
   refetchUserCollector,
+  refetchTotalMints,
 }: MintModalProps) {
   const WAY_MORE_MIN = 11;
   const WAY_MORE_MAX = 100;
@@ -101,6 +94,11 @@ export function MintModal({
   const { type: contextType, context } = useMiniAppContext();
 
   const userFid = contextType === "farcaster" ? context.user.fid : undefined;
+
+  // API mutation hooks
+  const createUserMutation = useCreateUser();
+  const sendNotificationMutation = useSendNotification();
+  const createCollectionMutation = useCreateCollection();
 
   const { data: balanceData } = useBalance({ address: userAddress });
 
@@ -188,6 +186,10 @@ export function MintModal({
           if (status.status === "success") {
             setIsSendCallsPending(false);
             refetchAllowance();
+
+            // Execute post-mint logic for sendCalls
+            await executePostMintLogic();
+
             setMintState(MintState.Success);
           } else if (status.status === "pending") {
             setTimeout(checkCallsStatus, 2000);
@@ -341,6 +343,113 @@ export function MintModal({
 
   const { promptToAddMiniApp } = useMiniAppStatus();
 
+  // Shared post-mint logic
+  const executePostMintLogic = useCallback(async () => {
+    if (!userFid || postMintExecuted) return;
+
+    setPostMintExecuted(true);
+
+    try {
+      await promptToAddMiniApp();
+    } catch (error) {
+      // Silent fail for mini app prompt
+    }
+
+    const signUpUser = async () => {
+      if (userFid) {
+        try {
+          await createUserMutation.mutateAsync({ fid: userFid });
+        } catch (error) {
+          toast("Error signing up user");
+        }
+      }
+    };
+
+    const createCollection = async (): Promise<{
+      position: number | null;
+      amount: number | null;
+    } | null> => {
+      try {
+        const collectionDetails = await createCollectionMutation.mutateAsync({
+          userId: userFid,
+          songId: tokenId,
+          amount: mintQuantity,
+        });
+
+        refetchCollectors();
+        refetchUserCollector();
+        refetchTotalMints();
+
+        return collectionDetails;
+      } catch (error: unknown) {
+        toast("Error creating collection");
+        return null;
+      }
+    };
+
+    const sendNotification = async (
+      collectionDetails: {
+        position: number | null;
+        amount: number | null;
+      } | null
+    ) => {
+      if (!userFid) return;
+
+      const newUserPosition = collectionDetails?.position;
+      try {
+        const leaderboardText = newUserPosition
+          ? `You're in ${newUserPosition}${
+              newUserPosition % 10 === 1 && newUserPosition % 100 !== 11
+                ? "st"
+                : newUserPosition % 10 === 2 && newUserPosition % 100 !== 12
+                ? "nd"
+                : newUserPosition % 10 === 3 && newUserPosition % 100 !== 13
+                ? "rd"
+                : "th"
+            } place on the leaderboard`
+          : "You're now on the leaderboard";
+
+        await sendNotificationMutation.mutateAsync({
+          title: `You minted ${mintQuantity} ${
+            mintQuantity > 1 ? "editions" : "edition"
+          } of ${songName}!`,
+          text: leaderboardText,
+          delay: 0,
+          fids: [userFid],
+        });
+      } catch (error) {
+        toast("Error sending notification");
+      }
+    };
+
+    await signUpUser();
+    const collectionDetails = await createCollection();
+    await sendNotification(collectionDetails);
+
+    trackEvent("mint", {
+      fid: userFid,
+      songId: tokenId,
+      quantity: mintQuantity,
+      paymentMethod: paymentMethod,
+      totalUsd: usdPrice * mintQuantity,
+    });
+  }, [
+    userFid,
+    postMintExecuted,
+    promptToAddMiniApp,
+    createUserMutation,
+    createCollectionMutation,
+    tokenId,
+    mintQuantity,
+    refetchCollectors,
+    refetchUserCollector,
+    refetchTotalMints,
+    sendNotificationMutation,
+    songName,
+    paymentMethod,
+    usdPrice,
+  ]);
+
   useEffect(() => {
     const postMint = async () => {
       if (
@@ -349,142 +458,8 @@ export function MintModal({
         mintState !== MintState.Success &&
         !postMintExecuted
       ) {
-        setPostMintExecuted(true);
-        try {
-          await promptToAddMiniApp();
-        } catch (error) {}
-
         setMintState(MintState.Success);
-
-        const signUpUser = async () => {
-          if (userFid) {
-            try {
-              const response = await fetch("/api/user", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  fid: userFid,
-                }),
-              });
-
-              if (!response.ok) {
-                throw new Error("Failed to sign up user");
-              }
-            } catch (error) {
-              toast("Error signing up user");
-            }
-          }
-        };
-
-        const sendNotification = async (
-          collectionDetails: {
-            position: number | null;
-            amount: number | null;
-          } | null
-        ) => {
-          if (userFid) {
-            const newUserPosition = collectionDetails?.position;
-            const totalQuantityHeld = collectionDetails?.amount;
-            try {
-              const leaderboardText = newUserPosition
-                ? `You're in ${newUserPosition}${
-                    newUserPosition % 10 === 1 && newUserPosition % 100 !== 11
-                      ? "st"
-                      : newUserPosition % 10 === 2 &&
-                        newUserPosition % 100 !== 12
-                      ? "nd"
-                      : newUserPosition % 10 === 3 &&
-                        newUserPosition % 100 !== 13
-                      ? "rd"
-                      : "th"
-                  } place on the leaderboard`
-                : "You're now on the leaderboard";
-
-              const body = {
-                title: `You minted ${mintQuantity} ${
-                  mintQuantity > 1 ? "editions" : "edition"
-                } of ${songName}!`,
-                text: leaderboardText,
-                delay: 0,
-                fids: [userFid],
-              };
-
-              const response = await fetch("/api/manual-notification", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(body),
-              });
-
-              if (!response.ok) {
-                throw new Error("Failed to send notification");
-              }
-            } catch (error) {
-              toast("Error sending notification");
-            }
-          }
-        };
-
-        const createCollection: () => Promise<{
-          position: number | null;
-          amount: number | null;
-        } | null> = async () => {
-          let fid;
-          if (contextType === "farcaster") {
-            if (context && context.user.fid) {
-              fid = context.user.fid;
-            }
-          }
-          try {
-            const response = await fetch("/api/collection", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                userId: fid,
-                songId: tokenId,
-                amount: mintQuantity,
-              }),
-            });
-
-            if (!response.ok) {
-              const errorData = await response.json();
-              toast(
-                `Error creating collection: ${
-                  errorData.error || "Unknown error"
-                }`
-              );
-              return null;
-            }
-
-            refetchCollectors();
-            refetchUserCollector();
-
-            const collectionDetails = await response.json();
-            return collectionDetails as {
-              position: number | null;
-              amount: number | null;
-            };
-          } catch (error: unknown) {
-            toast("Error creating collection");
-            return null;
-          }
-        };
-
-        await signUpUser();
-        const collectionDetails = await createCollection();
-        await sendNotification(collectionDetails);
-        trackEvent("mint", {
-          fid: userFid,
-          songId: tokenId,
-          quantity: mintQuantity,
-          paymentMethod: paymentMethod,
-          totalUsd: usdPrice * mintQuantity,
-        });
+        await executePostMintLogic();
       } else if (
         mintTxResult &&
         mintTxResult.status === "error" &&
@@ -497,22 +472,7 @@ export function MintModal({
     if (!postMintExecuted) {
       postMint();
     }
-  }, [
-    mintTxResult,
-    mintQuantity,
-    mintState,
-    songName,
-    tokenId,
-    promptToAddMiniApp,
-    context,
-    contextType,
-    paymentMethod,
-    postMintExecuted,
-    refetchCollectors,
-    refetchUserCollector,
-    usdPrice,
-    userFid,
-  ]);
+  }, [mintTxResult, mintState, postMintExecuted, executePostMintLogic]);
 
   useEffect(() => {
     const composeCastParams = composeMintCastUrl(
@@ -628,7 +588,10 @@ export function MintModal({
                       onValueChange={setWayMoreAccordionValue}
                       className="w-full"
                     >
-                      <AccordionItem value="more" className="border-none">
+                      <AccordionItem
+                        value="more"
+                        className="border-none"
+                      >
                         <AccordionContent>
                           <div className="flex items-center gap-4 mt-2">
                             <Slider

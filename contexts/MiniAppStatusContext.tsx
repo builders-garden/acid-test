@@ -4,6 +4,8 @@ import React, { createContext, useState, useContext, useEffect } from "react";
 import { ContextType, useMiniAppContext } from "@/hooks/use-miniapp-context";
 import { handleAddMiniApp } from "@/lib/utils";
 import { useFarcaster } from "@/components/farcaster-provider";
+import { useUpdateUser } from "@/hooks/use-update-user";
+import { useGetUser } from "@/hooks/use-get-user";
 
 interface MiniAppStatusContextType {
   userAddedMiniApp: boolean;
@@ -34,6 +36,9 @@ export const MiniAppStatusProvider: React.FC<{ children: React.ReactNode }> = ({
   const { type: contextType, context } = useMiniAppContext();
   const { context: farcasterContext, isMiniAppReady } = useFarcaster();
 
+  const updateUserMutation = useUpdateUser();
+  const { data: userData } = useGetUser(false); // Don't auto-fetch on mount
+
   const promptToAddMiniApp = async () => {
     if (userAddedMiniApp || isLoading) return;
 
@@ -44,18 +49,12 @@ export const MiniAppStatusProvider: React.FC<{ children: React.ReactNode }> = ({
 
         // If we have a Farcaster user, save their notification details
         if (contextType === ContextType.Farcaster && context?.user?.fid) {
-          const response = await fetch("/api/user", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
+          try {
+            await updateUserMutation.mutateAsync({
               fid: context.user.fid,
               notificationDetails,
-            }),
-          });
-
-          if (!response.ok) {
+            });
+          } catch (error) {
             console.error("Failed to save user notification details");
           }
         }
@@ -68,8 +67,7 @@ export const MiniAppStatusProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch("/api/user");
-        const result = await response.json();
+        const result = userData;
 
         if (result?.data?.notificationDetails) {
           setUserAddedMiniApp(true);
@@ -99,7 +97,7 @@ export const MiniAppStatusProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsLoading(false);
     };
     fetchUser();
-  }, [contextType, farcasterContext, isMiniAppReady]);
+  }, [contextType, farcasterContext, isMiniAppReady, userData]);
 
   return (
     <MiniAppStatusContext.Provider

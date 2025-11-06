@@ -32,13 +32,19 @@ export async function POST(request: Request) {
 
     console.log(`Notification scheduled: title=${title}, delay=${delay}`);
 
-    return new Response("Notification scheduled successfully", {
-      status: 200,
-    });
+    return Response.json(
+      { message: "Notification scheduled successfully" },
+      {
+        status: 200,
+      }
+    );
   } catch (error) {
     console.error("Error sending notification:", error);
-    return new Response("Failed to send notification", {
-      status: 500,
-    });
+    return Response.json(
+      { error: "Failed to send notification" },
+      {
+        status: 500,
+      }
+    );
   }
 }

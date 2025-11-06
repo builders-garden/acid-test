@@ -12,6 +12,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { upload } from "@vercel/blob/client";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
 import { useUsersByUsernames } from "@/hooks/use-users-by-usernames";
+import { useSetupNotifications } from "@/hooks/use-setup-notifications";
+import {
+  useCreateRedactedSong,
+  useUnveilRedactedSong,
+} from "@/hooks/use-redacted-songs";
+import { useCreateSong } from "@/hooks/use-create-song";
+import { usePinataUpload } from "@/hooks/use-pinata";
 
 interface SongSaleFormProps {
   setModalOpen: (open: boolean) => void;
@@ -40,6 +47,13 @@ export default function SongSaleForm({
     redactedUntil: "",
   });
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  // API hooks
+  const setupNotificationsMutation = useSetupNotifications();
+  const createRedactedSongMutation = useCreateRedactedSong();
+  const unveilRedactedSongMutation = useUnveilRedactedSong();
+  const createSongMutation = useCreateSong();
+  const pinataUploadMutation = usePinataUpload();
 
   const getIdCounter = useReadContract({
     abi: AcidTestABI,
@@ -129,24 +143,13 @@ export default function SongSaleForm({
       const setNotifications = async () => {
         if (!tokenCounter) return;
         try {
-          const setupNotisResponse = await fetch("/api/setup-notifications", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              title: formData.title,
-              startDate: formData.startDate.toString(),
-              endDate: formData.endDate.toString(),
-              price: formatUnits(BigInt(formData.price), 6),
-              tokenId: (tokenCounter + 1).toString(),
-            }),
+          await setupNotificationsMutation.mutateAsync({
+            title: formData.title,
+            startDate: formData.startDate,
+            endDate: formData.endDate,
+            price: formData.price,
+            tokenId: tokenCounter + 1,
           });
-
-          if (!setupNotisResponse.ok) {
-            const errorData = await setupNotisResponse.json();
-            console.error("Failed to setup notifications:", errorData);
-          }
         } catch (error) {
           console.error("Error calling notification API:", error);
         }
@@ -272,21 +275,7 @@ export default function SongSaleForm({
     // Handle creating a new redacted song placeholder
     if (formData.isNewRedactedSong) {
       try {
-        const response = await fetch("/api/redacted-songs", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          setModalStatus("error");
-          setModalMessage(
-            errorData.error || "Failed to create redacted song placeholder"
-          );
-          return;
-        }
+        await createRedactedSongMutation.mutateAsync();
 
         setModalStatus("success");
         setModalMessage("Redacted song placeholder created successfully!");
@@ -339,52 +328,25 @@ export default function SongSaleForm({
       setModalMessage("Files uploaded. Pinning to IPFS...");
 
       // Send the Blob URLs to Pinata API
-      const uploadResponse = await fetch("/api/pinata", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          type: "combined",
-          audioFileUrl: audioBlob.url,
-          imageFileUrl: imageBlob.url,
-          title: formData.title,
-          description: formData.description,
-        }),
+      const uploadResult = await pinataUploadMutation.mutateAsync({
+        type: "combined",
+        audioFileUrl: audioBlob.url,
+        imageFileUrl: imageBlob.url,
+        title: formData.title,
+        description: formData.description,
       });
 
-      if (!uploadResponse.ok) {
-        const errorData = await uploadResponse.json();
-        setModalStatus("error");
-        setModalMessage(errorData.error || "Error during upload process");
-        return;
-      }
-
-      const uploadResult = await uploadResponse.json();
       console.log("Upload result:", JSON.stringify(uploadResult, null, 2));
-      console.log("Metadata URL:", uploadResult.metadataUrl);
+      console.log("Metadata URL:", uploadResult.ipfsUrl);
 
       // Create the song with featuring data
-      const songResponse = await fetch("/api/song", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          tokenId: tokenCounter !== undefined ? tokenCounter + 1 : 0,
-          title: formData.title,
-          startDate: formData.startDate.toString(),
-          endDate: formData.endDate.toString(),
-          feat: featData ? JSON.stringify(featData) : null,
-        }),
+      await createSongMutation.mutateAsync({
+        id: tokenCounter !== undefined ? tokenCounter + 1 : 0,
+        title: formData.title,
+        startDate: formData.startDate.toString(),
+        endDate: formData.endDate.toString(),
+        feat: featData ? JSON.stringify(featData) : undefined,
       });
-
-      if (!songResponse.ok) {
-        const errorData = await songResponse.json();
-        setModalStatus("error");
-        setModalMessage(errorData.error || "Error creating song");
-        return;
-      }
 
       setModalStatus("success");
       setModalMessage("Upload successful!");
@@ -392,20 +354,8 @@ export default function SongSaleForm({
       // If unveiling a song, call the unveil API
       if (!formData.isNewRedactedSong) {
         try {
-          const unveilResponse = await fetch("/api/redacted-songs/unveil", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-
-          if (!unveilResponse.ok) {
-            console.warn(
-              "Failed to unveil redacted song, but continuing with upload"
-            );
-          } else {
-            console.log("Successfully unveiled a redacted song");
-          }
+          await unveilRedactedSongMutation.mutateAsync({ id: 1 });
+          console.log("Successfully unveiled a redacted song");
         } catch (error) {
           console.warn(
             "Error unveiling redacted song, but continuing with upload:",

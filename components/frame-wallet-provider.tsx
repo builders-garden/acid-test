@@ -1,13 +1,14 @@
-import { CHAIN } from "@/lib/constants";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createConfig, http, WagmiProvider } from "wagmi";
 import { ChainHandler } from "./chain-handler";
 import { farcasterMiniApp as miniAppConnector } from "@farcaster/miniapp-wagmi-connector";
+import { base } from "viem/chains";
 
 export const config = createConfig({
-  chains: [CHAIN],
+  chains: [base],
+  ssr: true,
   transports: {
-    [CHAIN.id]: http(),
+    [base.id]: http("https://mainnet.base.org"),
   },
   connectors: [miniAppConnector()],
 });

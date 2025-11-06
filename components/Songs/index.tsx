@@ -15,6 +15,7 @@ import { Header } from "../ui/header";
 import { trackEvent } from "@/lib/posthog/client";
 import { ContextType, useMiniAppContext } from "@/hooks/use-miniapp-context";
 import { ReleaseBlockCard } from "./ReleaseBlockCard";
+import { useGetSongsSummary } from "@/hooks/use-get-songs";
 
 interface TokenInfo {
   salesStartDate: number;
@@ -73,6 +74,8 @@ export default function SongsPage() {
   const userFid =
     contextType === ContextType.Farcaster ? context.user.fid : undefined;
 
+  const { data: songsSummaryData } = useGetSongsSummary();
+
   const getTokenInfosResult = useReadContract({
     abi: AcidTestABI,
     address: CONTRACT_ADDRESS,
@@ -81,7 +84,7 @@ export default function SongsPage() {
   });
 
   useEffect(() => {
-    if (getTokenInfosResult.data) {
+    if (getTokenInfosResult.data && songsSummaryData) {
       const allContractReleases =
         getTokenInfosResult.data as ReadonlyArray<TokenInfo>;
       const contractReleases = allContractReleases.filter(
@@ -91,11 +94,6 @@ export default function SongsPage() {
       const fetchReleasesData = async () => {
         setMetadataLoading(true);
         try {
-          // Fetch songs summary with all the data we need in one call
-          const summaryResponse = await fetch("/api/songs/summary");
-          const summaryData: SongsSummaryResponse =
-            await summaryResponse.json();
-
           const releasesData = await Promise.all(
             contractReleases.map(async (release, i) => {
               const songId = i + 1;
@@ -103,7 +101,9 @@ export default function SongsPage() {
               const now = Math.floor(Date.now() / 1000);
 
               // Get song data from summary
-              const songData = summaryData.songs.find((s) => s.id === songId);
+              const songData = songsSummaryData.songs.find(
+                (s) => s.id === songId
+              );
 
               // Regular song processing for all contract songs
               let title = songData?.title || formatSongId(songId);
@@ -154,7 +154,7 @@ export default function SongsPage() {
           );
 
           // Add redacted song placeholders to the releases list
-          summaryData.redactedSongs.forEach((redactedSong, i) => {
+          songsSummaryData.redactedSongs.forEach((redactedSong, i) => {
             filteredReleases.push({
               id: formatSongId(contractReleases.length + i + 1),
               title: "REDACTED",
@@ -185,7 +185,7 @@ export default function SongsPage() {
 
       fetchReleasesData();
     }
-  }, [getTokenInfosResult.data]);
+  }, [getTokenInfosResult.data, songsSummaryData]);
 
   useEffect(() => {
     if (releases.length === 0) return;

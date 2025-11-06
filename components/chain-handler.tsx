@@ -1,7 +1,7 @@
 "use client";
 
-import { CHAIN } from "@/lib/constants";
 import { useEffect } from "react";
+import { base } from "viem/chains";
 import { useChainId, useSwitchChain, useConnect, useAccount } from "wagmi";
 
 export const ChainHandler = () => {
@@ -26,9 +26,9 @@ export const ChainHandler = () => {
 
   // Switch to correct chain if needed
   useEffect(() => {
-    if (chainId !== CHAIN.id) {
+    if (chainId !== base.id) {
       switchChain({
-        chainId: CHAIN.id,
+        chainId: base.id,
       });
     }
   }, [chainId, switchChain]);

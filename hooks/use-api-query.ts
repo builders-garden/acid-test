@@ -3,8 +3,9 @@ import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
 interface UseApiQueryOptions<TData, TBody = unknown>
-  extends Omit<UseQueryOptions<TData>, "queryFn"> {
+  extends Omit<UseQueryOptions<TData>, "queryFn" | "queryKey"> {
   url: string;
+  queryKey: unknown[];
   method?: HttpMethod;
   body?: TBody;
   isProtected?: boolean;
@@ -15,6 +16,7 @@ export const useApiQuery = <TData, TBody = unknown>(
 ) => {
   const {
     url,
+    queryKey,
     method = "GET",
     body,
     isProtected = false,
@@ -22,6 +24,7 @@ export const useApiQuery = <TData, TBody = unknown>(
   } = options;
 
   return useQuery<TData>({
+    queryKey,
     ...queryOptions,
     queryFn: async () => {
       const token = localStorage.getItem("auth_token");

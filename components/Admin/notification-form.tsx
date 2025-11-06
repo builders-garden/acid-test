@@ -16,6 +16,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useGetSongs } from "@/hooks/use-get-songs";
+import { useSendNotification } from "@/hooks/use-send-notification";
 
 interface NotificationFormProps {
   setModalOpen: (open: boolean) => void;
@@ -52,18 +54,15 @@ export default function NotificationForm({
     "announce"
   );
 
+  // API hooks
+  const { data: songsData } = useGetSongs();
+  const sendNotificationMutation = useSendNotification();
+
   useEffect(() => {
-    const fetchSongsAndCollectors = async () => {
-      const response = await fetch("/api/songs");
-      const data = await response.json();
-      if (response.ok) {
-        setSongsAndCollectors(data);
-      } else {
-        console.error("Failed to fetch songs and collectors:", data.error);
-      }
-    };
-    fetchSongsAndCollectors();
-  }, []);
+    if (songsData) {
+      setSongsAndCollectors(songsData);
+    }
+  }, [songsData]);
 
   const handleSongSelect = (songId: string, isChecked: boolean) => {
     const newSelectedSongs = new Set(selectedSongIds);
@@ -198,17 +197,7 @@ export default function NotificationForm({
         }
       }
 
-      const response = await fetch("/api/manual-notification", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to send notification");
-      }
+      await sendNotificationMutation.mutateAsync(body);
 
       let successMessage = `Notification scheduled successfully in ${mode} mode`;
 
@@ -250,13 +239,19 @@ export default function NotificationForm({
       >
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="test">Test Mode</TabsTrigger>
-          <TabsTrigger value="prod" className="text-red-500">
+          <TabsTrigger
+            value="prod"
+            className="text-red-500"
+          >
             Production Mode
           </TabsTrigger>
         </TabsList>
       </Tabs>
 
-      <form onSubmit={handleSubmit} className="w-full space-y-4">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full space-y-4"
+      >
         {mode === "prod" && (
           <Tabs
             value={prodTab}
@@ -282,13 +277,19 @@ export default function NotificationForm({
 
             <Card className="mt-4 border-white/60 bg-black text-white">
               <CardContent className="pt-4">
-                <TabsContent value="announce" className="mt-0">
+                <TabsContent
+                  value="announce"
+                  className="mt-0"
+                >
                   <p className="text-sm text-white/70">
                     This will send a notification to ALL users of the platform.
                   </p>
                 </TabsContent>
 
-                <TabsContent value="holders" className="mt-0 space-y-4">
+                <TabsContent
+                  value="holders"
+                  className="mt-0 space-y-4"
+                >
                   <p className="text-sm text-white/70">
                     Select songs to send notifications to their collectors.
                     Duplicate collectors will receive only one notification.
@@ -300,7 +301,10 @@ export default function NotificationForm({
                       onCheckedChange={handleSelectAllToggle}
                       id="select-all"
                     />
-                    <label htmlFor="select-all" className="text-sm font-medium">
+                    <label
+                      htmlFor="select-all"
+                      className="text-sm font-medium"
+                    >
                       Select All Songs
                     </label>
                   </div>
@@ -319,7 +323,10 @@ export default function NotificationForm({
                           disabled={selectAllSongs}
                           id={`song-${song.id}`}
                         />
-                        <label htmlFor={`song-${song.id}`} className="text-sm">
+                        <label
+                          htmlFor={`song-${song.id}`}
+                          className="text-sm"
+                        >
                           {song.title} ({song.collectors?.length || 0}{" "}
                           collectors)
                         </label>
@@ -328,7 +335,10 @@ export default function NotificationForm({
                   </div>
                 </TabsContent>
 
-                <TabsContent value="custom" className="mt-0 space-y-4">
+                <TabsContent
+                  value="custom"
+                  className="mt-0 space-y-4"
+                >
                   <p className="text-sm text-white/70">
                     Upload a CSV file with one FID per line to send a
                     notification to custom users.
@@ -377,7 +387,10 @@ export default function NotificationForm({
         )}
 
         <div>
-          <label htmlFor="title" className="block mb-1 text-sm text-white/80">
+          <label
+            htmlFor="title"
+            className="block mb-1 text-sm text-white/80"
+          >
             Notification Title
           </label>
           <div className="relative">
@@ -394,7 +407,10 @@ export default function NotificationForm({
         </div>
 
         <div>
-          <label htmlFor="body" className="block mb-1 text-sm text-white/80">
+          <label
+            htmlFor="body"
+            className="block mb-1 text-sm text-white/80"
+          >
             Notification Body
           </label>
           <textarea

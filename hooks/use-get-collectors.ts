@@ -48,7 +48,7 @@ export const useUserCollector = (songId: number, fid: number | null) => {
 };
 
 export const useTotalMints = (songId?: number) => {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ["totalMints", songId],
     queryFn: async () => {
       if (!songId) return 0;
@@ -65,5 +65,6 @@ export const useTotalMints = (songId?: number) => {
   return {
     totalMints: data ?? 0,
     isLoading,
+    refetch,
   };
 };
