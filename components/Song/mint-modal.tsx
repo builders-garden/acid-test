@@ -137,6 +137,8 @@ export function MintModal({
   useEffect(() => {
     if (allowanceTxResult.isSuccess) {
       refetchAllowance();
+      // After approval succeeds, automatically mint
+      handleMint(mintQuantity, false);
     }
   }, [allowanceTxResult.isSuccess, refetchAllowance]);
 
@@ -210,10 +212,31 @@ export function MintModal({
     } catch (error: unknown) {
       setIsSendCallsPending(false);
       if (error instanceof Error) {
-        if (!error.message.includes("The user rejected the request")) {
+        // Check if wallet doesn't support sendCalls
+        if (
+          error.message.includes('Method "wallet_sendCalls" is not supported')
+        ) {
+          // Fallback to traditional approve-then-mint flow
+          handleApproveOnly();
+        } else if (!error.message.includes("The user rejected the request")) {
           toast(error.message);
         }
       }
+    }
+  };
+
+  const handleApproveOnly = () => {
+    try {
+      if (!userAddress) return;
+
+      writeContractAllowance({
+        address: USDC_CONTRACT_ADDRESS,
+        abi: erc20Abi,
+        functionName: "approve",
+        args: [CONTRACT_ADDRESS, BigInt(usdPrice * mintQuantity * 10 ** 6)],
+      });
+    } catch (error: unknown) {
+      // Error handled by allowanceError state
     }
   };
 
@@ -676,6 +699,8 @@ export function MintModal({
                       disabled={
                         !hasEnoughUsdcBalance() ||
                         isSendCallsPending ||
+                        allowanceStatus === "pending" ||
+                        (allowanceTxHash && allowanceTxResult.isPending) ||
                         mintStatus === "pending" ||
                         (mintTxHash && mintTxResult.isPending)
                       }
@@ -683,11 +708,14 @@ export function MintModal({
                       {!hasEnoughUsdcBalance()
                         ? "INSUFFICIENT USDC BALANCE"
                         : isSendCallsPending
-                        ? "APPROVING & MINTING"
-                        : !hasEnoughUsdcAllowance()
-                        ? "APPROVE & MINT USDC"
+                        ? "MINTING"
+                        : allowanceStatus === "pending" ||
+                          (allowanceTxHash && allowanceTxResult.isPending)
+                        ? "APPROVING"
                         : "MINT WITH USDC"}
                       {(isSendCallsPending ||
+                        allowanceStatus === "pending" ||
+                        (allowanceTxHash && allowanceTxResult.isPending) ||
                         mintStatus === "pending" ||
                         (mintTxHash && mintTxResult.isPending)) && (
                         <Loader2 className="ml-2 w-4 h-4 animate-spin" />
