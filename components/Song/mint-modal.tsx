@@ -16,7 +16,11 @@ import { Loader2, X } from "lucide-react";
 import { useBalance, useReadContract, useWriteContract } from "wagmi";
 import { AcidTestABI } from "@/lib/abi/AcidTestABI";
 import { toast } from "sonner";
-import { CONTRACT_ADDRESS, USDC_CONTRACT_ADDRESS } from "@/lib/constants";
+import {
+  CONTRACT_ADDRESS,
+  USDC_CONTRACT_ADDRESS,
+  CHAIN,
+} from "@/lib/constants";
 import { useWaitForTransactionReceipt } from "wagmi";
 import { useMiniAppContext } from "@/hooks/use-miniapp-context";
 import { erc20Abi } from "viem";
@@ -29,8 +33,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { isAddress } from "viem";
+import { encodeFunctionData } from "viem";
 import { useMiniAppStatus } from "@/contexts/MiniAppStatusContext";
+import { sendCalls, getCallsStatus } from "@wagmi/core";
+import { config } from "../frame-wallet-provider";
 
 interface MintModalProps {
   isOpen: boolean;
@@ -83,6 +89,8 @@ export function MintModal({
   const [postMintExecuted, setPostMintExecuted] = useState(false);
   const [wayMoreAccordionValue, setWayMoreAccordionValue] =
     useState<string>("");
+  const [sendCallsId, setSendCallsId] = useState<string | null>(null);
+  const [isSendCallsPending, setIsSendCallsPending] = useState(false);
 
   const presetQuantities = [1, 2, 5, 10];
   const modalRef = useRef<HTMLDivElement>(null);
@@ -134,19 +142,76 @@ export function MintModal({
     }
   }, [allowanceTxResult.isSuccess, refetchAllowance]);
 
-  const handleApprove = async () => {
+  const handleApproveAndMintWithSendCalls = async () => {
     try {
-      if (userAddress) {
-        setPostMintExecuted(false);
-        writeContractAllowance({
-          address: USDC_CONTRACT_ADDRESS,
-          abi: erc20Abi,
-          functionName: "approve",
-          args: [CONTRACT_ADDRESS, BigInt(usdPrice * mintQuantity * 10 ** 6)],
-        });
-      }
+      if (!userAddress) return;
+
+      setPostMintExecuted(false);
+      setIsSendCallsPending(true);
+
+      // Encode approve function call
+      const approveData = encodeFunctionData({
+        abi: erc20Abi,
+        functionName: "approve",
+        args: [CONTRACT_ADDRESS, BigInt(usdPrice * mintQuantity * 10 ** 6)],
+      });
+
+      // Encode mint function call
+      const mintData = encodeFunctionData({
+        abi: AcidTestABI,
+        functionName: "mint",
+        args: [userAddress, BigInt(tokenId), BigInt(mintQuantity), false],
+      });
+
+      // Send both calls together
+      const result = await sendCalls(config, {
+        calls: [
+          {
+            to: USDC_CONTRACT_ADDRESS,
+            data: approveData,
+          },
+          {
+            to: CONTRACT_ADDRESS,
+            data: mintData,
+          },
+        ],
+      });
+
+      const id = typeof result === "string" ? result : result.id;
+      setSendCallsId(id);
+
+      // Poll for calls status
+      const checkCallsStatus = async () => {
+        try {
+          const status = await getCallsStatus(config, { id });
+
+          if (status.status === "success") {
+            setIsSendCallsPending(false);
+            refetchAllowance();
+            setMintState(MintState.Success);
+          } else if (status.status === "pending") {
+            setTimeout(checkCallsStatus, 2000);
+          } else if (status.status === "failure") {
+            setIsSendCallsPending(false);
+            toast("Transaction failed");
+          }
+        } catch (error) {
+          setTimeout(() => {
+            refetchAllowance();
+            setIsSendCallsPending(false);
+          }, 5000);
+        }
+      };
+
+      // Start checking status after a short delay
+      setTimeout(checkCallsStatus, 2000);
     } catch (error: unknown) {
-      console.error(error);
+      setIsSendCallsPending(false);
+      if (error instanceof Error) {
+        if (!error.message.includes("The user rejected the request")) {
+          toast(error.message);
+        }
+      }
     }
   };
 
@@ -182,7 +247,7 @@ export function MintModal({
         });
       }
     } catch (error: unknown) {
-      console.error(error);
+      // Error handled by mintError state
     }
   };
 
@@ -209,7 +274,6 @@ export function MintModal({
   useEffect(() => {
     if (mintError) {
       setPostMintExecuted(false);
-      console.error(mintError);
       if (!mintError.message.includes("The user rejected the request")) {
         toast(mintError.message);
       }
@@ -218,7 +282,6 @@ export function MintModal({
 
   useEffect(() => {
     if (allowanceError) {
-      console.error(allowanceError);
       if (!allowanceError.message.includes("The user rejected the request")) {
         toast(allowanceError.message);
       }
@@ -310,7 +373,6 @@ export function MintModal({
                 throw new Error("Failed to sign up user");
               }
             } catch (error) {
-              console.error("Error signing up user:", error);
               toast("Error signing up user");
             }
           }
@@ -361,7 +423,6 @@ export function MintModal({
                 throw new Error("Failed to send notification");
               }
             } catch (error) {
-              console.error("Error sending notification:", error);
               toast("Error sending notification");
             }
           }
@@ -409,10 +470,6 @@ export function MintModal({
               amount: number | null;
             };
           } catch (error: unknown) {
-            console.error(
-              "Error creating collection: ",
-              error instanceof Error ? error.message : error
-            );
             toast("Error creating collection");
             return null;
           }
@@ -571,10 +628,7 @@ export function MintModal({
                       onValueChange={setWayMoreAccordionValue}
                       className="w-full"
                     >
-                      <AccordionItem
-                        value="more"
-                        className="border-none"
-                      >
+                      <AccordionItem value="more" className="border-none">
                         <AccordionContent>
                           <div className="flex items-center gap-4 mt-2">
                             <Slider
@@ -649,28 +703,30 @@ export function MintModal({
                       className="w-full h-8py-6 text-lg bg-mint text-black hover:bg-plum hover:text-black disabled:bg-gray-500 disabled:text-white/60"
                       onClick={() => {
                         if (!hasEnoughUsdcAllowance()) {
-                          handleApprove();
+                          // Use sendCalls to combine approve + mint
+                          handleApproveAndMintWithSendCalls();
                         } else {
+                          // If already approved, just mint
                           handleMint(mintQuantity, false);
                         }
                       }}
                       disabled={
                         !hasEnoughUsdcBalance() ||
-                        allowanceStatus === "pending" ||
+                        isSendCallsPending ||
                         mintStatus === "pending" ||
-                        (allowanceTxHash && allowanceTxResult.isPending)
+                        (mintTxHash && mintTxResult.isPending)
                       }
                     >
                       {!hasEnoughUsdcBalance()
                         ? "INSUFFICIENT USDC BALANCE"
-                        : allowanceStatus === "pending" ||
-                          (allowanceTxHash && allowanceTxResult.isPending)
-                        ? "APPROVING"
+                        : isSendCallsPending
+                        ? "APPROVING & MINTING"
                         : !hasEnoughUsdcAllowance()
-                        ? "APPROVE USDC"
+                        ? "APPROVE & MINT USDC"
                         : "MINT WITH USDC"}
-                      {(allowanceStatus === "pending" ||
-                        (allowanceTxHash && allowanceTxResult.isPending)) && (
+                      {(isSendCallsPending ||
+                        mintStatus === "pending" ||
+                        (mintTxHash && mintTxResult.isPending)) && (
                         <Loader2 className="ml-2 w-4 h-4 animate-spin" />
                       )}
                     </Button>

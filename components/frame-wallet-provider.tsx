@@ -7,7 +7,7 @@ import { farcasterMiniApp as miniAppConnector } from "@farcaster/miniapp-wagmi-c
 export const config = createConfig({
   chains: [CHAIN],
   transports: {
-    [CHAIN.id]: http("https://base.drpc.org"),
+    [CHAIN.id]: http(),
   },
   connectors: [miniAppConnector()],
 });
