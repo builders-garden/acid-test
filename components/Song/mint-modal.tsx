@@ -71,7 +71,7 @@ export function MintModal({
   refetchTotalMints,
 }: MintModalProps) {
   const WAY_MORE_MIN = 11;
-  const WAY_MORE_MAX = 100;
+  const WAY_MORE_MAX = 1000;
 
   const [isSliderInteracting, setIsSliderInteracting] = useState(false);
   const [mintState, setMintState] = useState<MintState>(MintState.Initial);
@@ -611,10 +611,7 @@ export function MintModal({
                       onValueChange={setWayMoreAccordionValue}
                       className="w-full"
                     >
-                      <AccordionItem
-                        value="more"
-                        className="border-none"
-                      >
+                      <AccordionItem value="more" className="border-none">
                         <AccordionContent>
                           <div className="flex items-center gap-4 mt-2">
                             <Slider
