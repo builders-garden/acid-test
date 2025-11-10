@@ -618,7 +618,14 @@ export function MintModal({
                         className="border-none"
                       >
                         <AccordionContent className="pb-0">
-                          <div className="flex items-center gap-4 mt-2">
+                          <div
+                            className="flex items-center gap-4 mt-2"
+                            onPointerDown={(e) => {
+                              e.stopPropagation();
+                              handleSliderPointerDown(e);
+                            }}
+                            onPointerUp={handleSliderPointerUp}
+                          >
                             <Slider
                               min={WAY_MORE_MIN}
                               max={WAY_MORE_MAX}
@@ -632,8 +639,6 @@ export function MintModal({
                                 setMintQuantity(value[0])
                               }
                               className="flex-1"
-                              onPointerDown={handleSliderPointerDown}
-                              onPointerUp={handleSliderPointerUp}
                             />
                             <span className="text-sm font-medium min-w-[40px] text-right">
                               {mintQuantity}
@@ -731,9 +736,9 @@ export function MintModal({
                       <div>
                         {paymentMethod === "ETH"
                           ? `${(safePrice * mintQuantity).toFixed(6)} ETH`
-                          : `${usdPrice * mintQuantity} USDC`}
+                          : `${(usdPrice * mintQuantity).toFixed(2)} USDC`}
                       </div>
-                      <div className="text-white/60 text-xs h-[16px]">
+                      <div className="text-white/60 text-xs h-4">
                         {paymentMethod === "ETH" &&
                           `$${(safePrice * mintQuantity * ethUsd).toFixed(
                             2
