@@ -593,14 +593,16 @@ export function MintModal({
                             setMintQuantity(WAY_MORE_MIN);
                           }
                         }}
-                        className={`aspect-square flex items-center justify-center border-2 rounded-md text-[10px] transition-colors
+                        className={`aspect-square flex items-center justify-center border-2 rounded-md text-[10px] transition-colors leading-tight
                           ${
                             wayMoreAccordionValue
                               ? "border-white text-white bg-white/10"
                               : "border-white/20 text-white/60 hover:border-white/60 hover:text-white"
                           }`}
                       >
-                        Way More
+                        WAY
+                        <br />
+                        MORE
                       </button>
                     </div>
 
@@ -611,8 +613,11 @@ export function MintModal({
                       onValueChange={setWayMoreAccordionValue}
                       className="w-full"
                     >
-                      <AccordionItem value="more" className="border-none">
-                        <AccordionContent>
+                      <AccordionItem
+                        value="more"
+                        className="border-none"
+                      >
+                        <AccordionContent className="pb-0">
                           <div className="flex items-center gap-4 mt-2">
                             <Slider
                               min={WAY_MORE_MIN}
